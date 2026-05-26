@@ -1,0 +1,212 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Plus, X } from "lucide-react";
+import { useApp } from "../context/AppContext";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { toast } from "sonner";
+
+export default function AskQuestion() {
+    const { addQuestion, currentUser } = useApp();
+    const navigate = useNavigate();
+
+    const [title, setTitle] = useState("");
+    const [body, setBody] = useState("");
+    const [tags, setTags] = useState([]);
+    const [tagInput, setTagInput] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
+    const addTag = (e) => {
+        e?.preventDefault();
+
+        const t = tagInput.trim().replace(/^#/, "").toLowerCase();
+
+        if (t && !tags.includes(t) && tags.length < 5) {
+            setTags([...tags, t]);
+        }
+
+        setTagInput("");
+    };
+
+    const removeTag = (t) => {
+        setTags(tags.filter((x) => x !== t));
+    };
+
+    const submit = (e) => {
+        e.preventDefault();
+
+        if (!title.trim() || !body.trim()) {
+            toast.error("Title and body are required.");
+            return;
+        }
+
+        setSubmitting(true);
+
+        setTimeout(() => {
+            const q = addQuestion({
+                title: title.trim(),
+                body: body.trim(),
+                tags,
+            });
+
+            setSubmitting(false);
+            toast.success("Question posted");
+            navigate(`/questions/${q.id}`);
+        }, 500);
+    };
+
+    return (
+        <div className="max-w-3xl mx-auto fade-in-up">
+            {/* Back Button */}
+            <button
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-400 mb-6 transition-colors"
+            >
+                <ArrowLeft className="w-4 h-4" />
+                back
+            </button>
+
+            {/* Header */}
+            <header className="mb-8">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-blue-400 mb-2">
+          // new question
+                </p>
+
+                <h1 className="font-display text-4xl font-bold tracking-tighter text-zinc-50">
+                    Ask the community.
+                </h1>
+
+                <p className="mt-2 text-zinc-400">
+                    The clearer your question, the better the answers.
+                </p>
+            </header>
+
+            {/* Tips */}
+            <div className="mb-6 p-4 border border-blue-500/20 bg-blue-500/[0.04] rounded-lg">
+                <h3 className="font-display font-semibold text-zinc-50 text-sm mb-2">
+                    Tips for a great question
+                </h3>
+
+                <ul className="space-y-1 text-sm text-zinc-400">
+                    <li>
+                        <span className="text-zinc-600 font-mono mr-2">01</span>
+                        Summarize the problem in the title.
+                    </li>
+
+                    <li>
+                        <span className="text-zinc-600 font-mono mr-2">02</span>
+                        Include code snippets, error messages, and what you've tried.
+                    </li>
+
+                    <li>
+                        <span className="text-zinc-600 font-mono mr-2">03</span>
+                        Add up to 5 relevant tags.
+                    </li>
+                </ul>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={submit} className="space-y-6">
+                {/* Title */}
+                <Field label="Title *">
+                    <Input
+                        data-testid="ask-title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Be specific and imagine you're asking another student"
+                        className="bg-zinc-950 border-zinc-800 h-12 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                    />
+
+                    <p className="font-mono text-xs text-zinc-500">
+                        {title.length}/150
+                    </p>
+                </Field>
+
+                {/* Body */}
+                <Field label="Body *">
+                    <Textarea
+                        data-testid="ask-body"
+                        value={body}
+                        onChange={(e) => setBody(e.target.value)}
+                        placeholder="Describe your problem clearly. Use ```language ... ``` for code blocks."
+                        className="bg-zinc-950 border-zinc-800 min-h-[240px] font-body focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                    />
+                </Field>
+
+                {/* Tags */}
+                <Field label="Tags (up to 5)">
+                    <div className="flex gap-2">
+                        <Input
+                            data-testid="ask-tag-input"
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") addTag(e);
+                            }}
+                            placeholder="add a tag and press Enter (e.g. react, dsa, mongodb)"
+                            className="bg-zinc-950 border-zinc-800 h-11 flex-1 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                        />
+
+                        <button
+                            type="button"
+                            onClick={addTag}
+                            data-testid="ask-add-tag-btn"
+                            className="h-11 px-3 rounded-md bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-sm text-zinc-300 transition-colors flex items-center gap-1.5"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            add
+                        </button>
+                    </div>
+
+                    {tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                            {tags.map((t) => (
+                                <span
+                                    key={t}
+                                    className="inline-flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300"
+                                >
+                                    #{t}
+
+                                    <button
+                                        onClick={() => removeTag(t)}
+                                        type="button"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </Field>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+                    <p className="font-mono text-xs text-zinc-500">
+            // posted as @{currentUser.username}
+                    </p>
+
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        data-testid="submit-question-btn"
+                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-md text-sm font-semibold text-zinc-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 active:scale-95 transition-all"
+                    >
+                        {submitting ? "Posting..." : "Post question"}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+function Field({ label, children }) {
+    return (
+        <div className="space-y-2">
+            <label className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+                {label}
+            </label>
+
+            {children}
+        </div>
+    );
+}
