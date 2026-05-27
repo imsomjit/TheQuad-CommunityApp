@@ -110,7 +110,7 @@ export default function UploadResource() {
             {/* Back button */}
             <button
                 onClick={() => navigate(-1)}
-                className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-400 mb-6 transition-colors"
+                className="inline-flex items-center gap-1 text-sm text-ink-2 hover:text-accent mb-6 transition-colors"
             >
                 <ArrowLeft className="w-4 h-4" />
                 back
@@ -118,15 +118,15 @@ export default function UploadResource() {
 
             {/* Header */}
             <header className="mb-8">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-emerald-400 mb-2">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-2">
           // new resource
                 </p>
 
-                <h1 className="font-display text-4xl font-bold tracking-tighter text-zinc-50">
+                <h1 className="font-display text-4xl font-bold tracking-tighter text-ink">
                     Share something useful.
                 </h1>
 
-                <p className="mt-2 text-zinc-400">
+                <p className="mt-2 text-ink-2">
                     Upload notes, papers, assignments — anything that helps someone
                     else level up.
                 </p>
@@ -139,9 +139,9 @@ export default function UploadResource() {
                         data-testid="file-drop-zone"
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={onDrop}
-                        className={`flex flex-col items-center justify-center gap-2 h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${file
-                                ? "border-emerald-500/50 bg-emerald-500/5"
-                                : "border-zinc-800 hover:border-zinc-700 bg-zinc-900/40"
+                        className={`flex flex-col items-center justify-center gap-2 h-40 border-2 border-dashed rounded-sm cursor-pointer transition-colors ${file
+                                ? "border-accent/50 bg-accent-soft"
+                                : "border-rule hover:border-ink-3 bg-paper-2/40"
                             }`}
                     >
                         <input
@@ -153,21 +153,21 @@ export default function UploadResource() {
 
                         {file ? (
                             <>
-                                <FileText className="w-7 h-7 text-emerald-400" />
-                                <p className="font-mono text-sm text-zinc-200">
+                                <FileText className="w-7 h-7 text-accent" />
+                                <p className="font-mono text-sm text-ink">
                                     {file.name}
                                 </p>
-                                <p className="font-mono text-xs text-zinc-500">
+                                <p className="font-mono text-xs text-ink-3">
                                     {(file.size / (1024 * 1024)).toFixed(1)} MB
                                 </p>
                             </>
                         ) : (
                             <>
-                                <Upload className="w-7 h-7 text-zinc-500" />
-                                <p className="text-sm text-zinc-300">
+                                <Upload className="w-7 h-7 text-ink-3" />
+                                <p className="text-sm text-ink-2">
                                     Drag & drop or click to upload
                                 </p>
-                                <p className="font-mono text-xs text-zinc-600">
+                                <p className="font-mono text-xs text-ink-3">
                                     PDF, DOCX, PNG, MD — up to 25 MB
                                 </p>
                             </>
@@ -182,7 +182,7 @@ export default function UploadResource() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g. Operating Systems Hand-Written Notes"
-                        className="bg-zinc-950 border-zinc-800 h-11 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                        className="bg-paper border-rule h-11 focus-visible:border-accent/40 focus-visible:ring-accent/30"
                     />
                 </Field>
 
@@ -193,7 +193,7 @@ export default function UploadResource() {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="What does this cover? Who is it for?"
-                        className="bg-zinc-950 border-zinc-800 min-h-[120px] focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                        className="bg-paper border-rule min-h-[120px] focus-visible:border-accent/40 focus-visible:ring-accent/30"
                     />
                 </Field>
 
@@ -203,12 +203,12 @@ export default function UploadResource() {
                         <Select value={type} onValueChange={setType}>
                             <SelectTrigger
                                 data-testid="upload-type"
-                                className="bg-zinc-950 border-zinc-800 h-11"
+                                className="bg-paper border-rule h-11"
                             >
                                 <SelectValue />
                             </SelectTrigger>
 
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                            <SelectContent className="bg-paper border-rule text-ink">
                                 {RESOURCE_TYPES.map((item) => (
                                     <SelectItem key={item.key} value={item.key}>
                                         {item.label}
@@ -222,12 +222,12 @@ export default function UploadResource() {
                         <Select value={college} onValueChange={setCollege}>
                             <SelectTrigger
                                 data-testid="upload-college"
-                                className="bg-zinc-950 border-zinc-800 h-11"
+                                className="bg-paper border-rule h-11"
                             >
                                 <SelectValue />
                             </SelectTrigger>
 
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                            <SelectContent className="bg-paper border-rule text-ink">
                                 {COLLEGES.map((item) => (
                                     <SelectItem key={item} value={item}>
                                         {item}
@@ -241,12 +241,12 @@ export default function UploadResource() {
                         <Select value={branch} onValueChange={setBranch}>
                             <SelectTrigger
                                 data-testid="upload-branch"
-                                className="bg-zinc-950 border-zinc-800 h-11"
+                                className="bg-paper border-rule h-11"
                             >
                                 <SelectValue />
                             </SelectTrigger>
 
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                            <SelectContent className="bg-paper border-rule text-ink">
                                 {BRANCHES.map((item) => (
                                     <SelectItem key={item} value={item}>
                                         {item}
@@ -260,12 +260,12 @@ export default function UploadResource() {
                         <Select value={semester} onValueChange={setSemester}>
                             <SelectTrigger
                                 data-testid="upload-semester"
-                                className="bg-zinc-950 border-zinc-800 h-11"
+                                className="bg-paper border-rule h-11"
                             >
                                 <SelectValue />
                             </SelectTrigger>
 
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                            <SelectContent className="bg-paper border-rule text-ink">
                                 {SEMESTERS.map((item) => (
                                     <SelectItem key={item} value={String(item)}>
                                         Sem {item}
@@ -279,12 +279,12 @@ export default function UploadResource() {
                         <Select value={subject} onValueChange={setSubject}>
                             <SelectTrigger
                                 data-testid="upload-subject"
-                                className="bg-zinc-950 border-zinc-800 h-11"
+                                className="bg-paper border-rule h-11"
                             >
                                 <SelectValue />
                             </SelectTrigger>
 
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                            <SelectContent className="bg-paper border-rule text-ink">
                                 {SUBJECTS.map((item) => (
                                     <SelectItem key={item} value={item}>
                                         {item}
@@ -306,14 +306,14 @@ export default function UploadResource() {
                                 if (e.key === "Enter") addTag(e);
                             }}
                             placeholder="add a tag and press Enter"
-                            className="bg-zinc-950 border-zinc-800 h-11 flex-1 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                            className="bg-paper border-rule h-11 flex-1 focus-visible:border-accent/40 focus-visible:ring-accent/30"
                         />
 
                         <button
                             type="button"
                             data-testid="add-tag-btn"
                             onClick={addTag}
-                            className="h-11 px-3 rounded-md bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-sm text-zinc-300 transition-colors flex items-center gap-1.5"
+                            className="h-11 px-3 rounded-sm bg-paper-2 border border-rule hover:border-ink-3 text-sm text-ink-2 transition-colors flex items-center gap-1.5"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             add
@@ -325,7 +325,7 @@ export default function UploadResource() {
                             {tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="inline-flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300"
+                                    className="inline-flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-sm bg-accent-soft border border-accent text-accent"
                                 >
                                     #{tag}
                                     <button
@@ -341,8 +341,8 @@ export default function UploadResource() {
                 </Field>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-zinc-800/70">
-                    <p className="font-mono text-xs text-zinc-500">
+                <div className="flex items-center justify-between pt-4 border-t border-rule">
+                    <p className="font-mono text-xs text-ink-3">
             // frontend preview · saved to local mock store
                     </p>
 
@@ -350,7 +350,7 @@ export default function UploadResource() {
                         type="submit"
                         disabled={submitting}
                         data-testid="publish-resource-btn"
-                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-md text-sm font-semibold text-zinc-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 active:scale-95 transition-all"
+                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-sm text-sm font-semibold text-paper bg-accent glow-btn disabled:opacity-50"
                     >
                         {submitting ? "Publishing..." : "Publish resource"}
                     </button>
@@ -363,7 +363,7 @@ export default function UploadResource() {
 function Field({ label, children, className = "" }) {
     return (
         <div className={`space-y-2 ${className}`}>
-            <label className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+            <label className="font-mono text-xs uppercase tracking-wider text-ink-3">
                 {label}
             </label>
             {children}

@@ -5,103 +5,79 @@ import {
     Bell,
     Upload,
     Plus,
-    Code2,
     Command,
+    Sun,
+    Moon,
+    Braces,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { useTheme } from "../context/ThemeContext";
 import NotificationDropdown from "./NotificationDropdown";
 import { Input } from "./ui/input";
 
 export default function Navbar() {
     const { currentUser, unreadCount } = useApp();
+    const { theme, toggle } = useTheme();
 
     const linkClass = ({ isActive }) =>
-        `relative px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive
-            ? "text-emerald-400"
-            : "text-zinc-400 hover:text-zinc-50"
+        `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? "text-ink" : "text-ink-2 hover:text-ink"
         }`;
 
     return (
         <header
             data-testid="app-navbar"
-            className="sticky top-0 z-40 border-b border-zinc-800/70 bg-zinc-950/75 backdrop-blur-xl"
+            className="sticky top-0 z-40 border-b border-rule bg-paper/85 backdrop-blur-xl"
         >
-            <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-                {/* Logo */}
+            <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-5 px-4 sm:px-6 lg:px-2">
+                {/* Logo — bracket mark + serif wordmark */}
                 <Link
                     to="/"
                     data-testid="nav-logo"
-                    className="group flex items-center gap-2"
+                    className="group flex items-baseline gap-2"
                 >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-emerald-500/40 bg-emerald-500/10 transition-colors group-hover:bg-emerald-500/20">
-                        <Code2
-                            className="h-4 w-4 text-emerald-400"
-                            strokeWidth={2.5}
+                    <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 transition-colors group-hover:border-accent">
+                        <Braces
+                            className="h-4 w-4 text-accent"
+                            strokeWidth={2}
                         />
-                    </div>
+                    </span>
 
-                    <div className="flex items-baseline gap-0.5">
-                        <span className="font-display text-lg font-bold tracking-tight text-zinc-50">
+                    <span className="flex items-baseline gap-0.5">
+                        <span className="font-display text-2xl font-bold leading-none tracking-tight text-ink">
                             Peer
                         </span>
-                        <span className="font-display text-lg font-bold tracking-tight text-emerald-400">
+
+                        <span className="font-display-italic text-2xl font-bold leading-none tracking-tight text-accent">
                             Verse
                         </span>
-                        <span className="ml-1 hidden font-mono text-[10px] text-zinc-500 sm:inline">
-                            /v1.0
+
+                        <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">
+                            /vol.01
                         </span>
-                    </div>
+                    </span>
                 </Link>
 
-                {/* Desktop Nav Links */}
-                <nav className="hidden items-center gap-1 md:flex">
-                    <NavLink
-                        to="/"
-                        end
-                        className={linkClass}
-                        data-testid="nav-home"
-                    >
-                        Feed
-                    </NavLink>
-
-                    <NavLink
-                        to="/resources"
-                        className={linkClass}
-                        data-testid="nav-resources"
-                    >
-                        Resources
-                    </NavLink>
-
-                    <NavLink
-                        to="/questions"
-                        className={linkClass}
-                        data-testid="nav-questions"
-                    >
-                        Q&amp;A
-                    </NavLink>
-
-                    <NavLink
-                        to={`/u/${currentUser.username}`}
-                        className={linkClass}
-                        data-testid="nav-profile"
-                    >
-                        Profile
-                    </NavLink>
+                {/* Desktop Nav Links — magazine-style indices */}
+                <nav className="hidden items-center gap-0.5 md:flex">
+                    <NavItem to="/" index="01" label="Feed" testId="nav-home" linkClass={linkClass} end />
+                    <NavItem to="/resources" index="02" label="Library" testId="nav-resources" linkClass={linkClass} />
+                    <NavItem to="/questions" index="03" label="Q&A" testId="nav-questions" linkClass={linkClass} />
+                    <NavItem to={`/u/${currentUser.username}`} index="04" label="You" testId="nav-profile" linkClass={linkClass} />
                 </nav>
 
                 {/* Search */}
                 <div className="hidden max-w-md flex-1 sm:block">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
 
                         <Input
                             data-testid="navbar-search-input"
-                            placeholder="Search resources, questions, tags..."
-                            className="h-9 border-zinc-800 bg-zinc-900/70 pl-9 pr-12 text-sm placeholder:text-zinc-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                            placeholder="search notes, papers, questions…"
+                            className="h-9 rounded-sm border-rule bg-paper-2/60 pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                         />
 
-                        <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 font-mono text-[10px] text-zinc-500 lg:flex">
+                        <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 lg:flex">
                             <Command className="h-3 w-3" />
                             K
                         </kbd>
@@ -113,7 +89,7 @@ export default function Navbar() {
                     <Link
                         to="/upload"
                         data-testid="nav-upload-btn"
-                        className="hidden h-9 items-center gap-1.5 rounded-md border border-zinc-800 bg-zinc-900 px-3 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-700 hover:text-zinc-50 sm:inline-flex"
+                        className="hidden h-9 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
                     >
                         <Upload className="h-3.5 w-3.5" />
                         Upload
@@ -122,28 +98,41 @@ export default function Navbar() {
                     <Link
                         to="/ask"
                         data-testid="nav-ask-btn"
-                        className="inline-flex h-9 items-center gap-1.5 rounded-md bg-emerald-500 px-3 text-sm font-semibold text-zinc-950 transition-all hover:bg-emerald-400 active:scale-95"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn"
                     >
-                        <Plus
-                            className="h-3.5 w-3.5"
-                            strokeWidth={2.5}
-                        />
+                        <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                         Ask
                     </Link>
+
+                    {/* Theme toggle */}
+                    <button
+                        type="button"
+                        onClick={toggle}
+                        data-testid="theme-toggle"
+                        aria-label="Toggle theme"
+                        title={theme === "light" ? "Switch to ink (dark)" : "Switch to paper (light)"}
+                        className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                    >
+                        {theme === "light" ? (
+                            <Moon className="h-4 w-4" />
+                        ) : (
+                            <Sun className="h-4 w-4" />
+                        )}
+                    </button>
 
                     {/* Notifications */}
                     <NotificationDropdown>
                         <button
                             data-testid="notifications-bell"
                             aria-label="Notifications"
-                            className="relative flex h-9 w-9 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-50"
+                            className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-transparent text-ink-2 transition-colors hover:border-rule hover:bg-paper-2 hover:text-ink"
                         >
                             <Bell className="h-4 w-4" />
 
                             {unreadCount > 0 && (
                                 <span
                                     data-testid="notifications-unread-badge"
-                                    className="absolute right-1.5 top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[10px] font-bold text-zinc-950"
+                                    className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-bold text-paper"
                                 >
                                     {unreadCount}
                                 </span>
@@ -160,41 +149,47 @@ export default function Navbar() {
                         <img
                             src={currentUser.avatar}
                             alt={currentUser.name}
-                            className="h-9 w-9 rounded-full border border-zinc-800 object-cover transition-colors hover:border-emerald-500/60"
+                            className="h-9 w-9 rounded-sm border border-rule object-cover transition-colors hover:border-accent"
                         />
 
-                        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-zinc-950 bg-emerald-500" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-paper bg-accent-2" />
                     </Link>
                 </div>
             </div>
 
             {/* Mobile Nav */}
-            <div className="flex gap-1 overflow-x-auto border-t border-zinc-900/70 px-4 py-2 md:hidden">
+            <div className="flex gap-1 overflow-x-auto border-t border-rule/60 px-4 py-2 md:hidden">
                 <NavLink to="/" end className={linkClass}>
                     Feed
                 </NavLink>
-
-                <NavLink
-                    to="/resources"
-                    className={linkClass}
-                >
-                    Resources
+                <NavLink to="/resources" className={linkClass}>
+                    Library
                 </NavLink>
-
-                <NavLink
-                    to="/questions"
-                    className={linkClass}
-                >
-                    Q&amp;A
+                <NavLink to="/questions" className={linkClass}>
+                    Q&A
                 </NavLink>
-
-                <NavLink
-                    to={`/u/${currentUser.username}`}
-                    className={linkClass}
-                >
-                    Profile
+                <NavLink to={`/u/${currentUser.username}`} className={linkClass}>
+                    You
                 </NavLink>
             </div>
         </header>
+    );
+}
+
+function NavItem({ to, index, label, testId, linkClass, end = false }) {
+    return (
+        <NavLink to={to} end={end} className={linkClass} data-testid={testId}>
+            {({ isActive }) => (
+                <span className="flex items-baseline gap-1.5">
+                    <span
+                        className={`font-mono text-[10px] tracking-wider ${isActive ? "text-accent" : "text-ink-3"
+                            }`}
+                    >
+                        {index}
+                    </span>
+                    <span>{label}</span>
+                </span>
+            )}
+        </NavLink>
     );
 }

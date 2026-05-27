@@ -60,7 +60,7 @@ export default function AskQuestion() {
             {/* Back Button */}
             <button
                 onClick={() => navigate(-1)}
-                className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-400 mb-6 transition-colors"
+                className="inline-flex items-center gap-1 text-sm text-ink-2 hover:text-accent mb-6 transition-colors"
             >
                 <ArrowLeft className="w-4 h-4" />
                 back
@@ -68,38 +68,38 @@ export default function AskQuestion() {
 
             {/* Header */}
             <header className="mb-8">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-blue-400 mb-2">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-syntax-cyan mb-2">
           // new question
                 </p>
 
-                <h1 className="font-display text-4xl font-bold tracking-tighter text-zinc-50">
+                <h1 className="font-display text-4xl font-bold tracking-tighter text-ink">
                     Ask the community.
                 </h1>
 
-                <p className="mt-2 text-zinc-400">
+                <p className="mt-2 text-ink-2">
                     The clearer your question, the better the answers.
                 </p>
             </header>
 
             {/* Tips */}
-            <div className="mb-6 p-4 border border-blue-500/20 bg-blue-500/[0.04] rounded-lg">
-                <h3 className="font-display font-semibold text-zinc-50 text-sm mb-2">
+            <div className="mb-6 p-4 border border-syntax-cyan/20 bg-syntax-cyan/[0.04] rounded-sm">
+                <h3 className="font-display font-semibold text-ink text-sm mb-2">
                     Tips for a great question
                 </h3>
 
-                <ul className="space-y-1 text-sm text-zinc-400">
+                <ul className="space-y-1 text-sm text-ink-2">
                     <li>
-                        <span className="text-zinc-600 font-mono mr-2">01</span>
+                        <span className="text-ink-3 font-mono mr-2">01</span>
                         Summarize the problem in the title.
                     </li>
 
                     <li>
-                        <span className="text-zinc-600 font-mono mr-2">02</span>
+                        <span className="text-ink-3 font-mono mr-2">02</span>
                         Include code snippets, error messages, and what you've tried.
                     </li>
 
                     <li>
-                        <span className="text-zinc-600 font-mono mr-2">03</span>
+                        <span className="text-ink-3 font-mono mr-2">03</span>
                         Add up to 5 relevant tags.
                     </li>
                 </ul>
@@ -114,10 +114,10 @@ export default function AskQuestion() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Be specific and imagine you're asking another student"
-                        className="bg-zinc-950 border-zinc-800 h-12 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                        className="bg-paper border-rule h-12 focus-visible:border-accent/40 focus-visible:ring-accent/30"
                     />
 
-                    <p className="font-mono text-xs text-zinc-500">
+                    <p className="font-mono text-xs text-ink-3">
                         {title.length}/150
                     </p>
                 </Field>
@@ -129,7 +129,7 @@ export default function AskQuestion() {
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
                         placeholder="Describe your problem clearly. Use ```language ... ``` for code blocks."
-                        className="bg-zinc-950 border-zinc-800 min-h-[240px] font-body focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                        className="bg-paper border-rule min-h-[240px] font-body focus-visible:border-accent/40 focus-visible:ring-accent/30"
                     />
                 </Field>
 
@@ -144,14 +144,14 @@ export default function AskQuestion() {
                                 if (e.key === "Enter") addTag(e);
                             }}
                             placeholder="add a tag and press Enter (e.g. react, dsa, mongodb)"
-                            className="bg-zinc-950 border-zinc-800 h-11 flex-1 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                            className="bg-paper border-rule h-11 flex-1 focus-visible:border-accent/40 focus-visible:ring-accent/30"
                         />
 
                         <button
                             type="button"
                             onClick={addTag}
                             data-testid="ask-add-tag-btn"
-                            className="h-11 px-3 rounded-md bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-sm text-zinc-300 transition-colors flex items-center gap-1.5"
+                            className="h-11 px-3 rounded-sm bg-paper-2 border border-rule hover:border-ink-3 text-sm text-ink-2 transition-colors flex items-center gap-1.5"
                         >
                             <Plus className="w-3.5 h-3.5" />
                             add
@@ -163,7 +163,7 @@ export default function AskQuestion() {
                             {tags.map((t) => (
                                 <span
                                     key={t}
-                                    className="inline-flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300"
+                                    className="inline-flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-sm bg-accent-soft border border-accent text-accent"
                                 >
                                     #{t}
 
@@ -180,8 +180,8 @@ export default function AskQuestion() {
                 </Field>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
-                    <p className="font-mono text-xs text-zinc-500">
+                <div className="flex items-center justify-between pt-4 border-t border-rule">
+                    <p className="font-mono text-xs text-ink-3">
             // posted as @{currentUser.username}
                     </p>
 
@@ -189,7 +189,7 @@ export default function AskQuestion() {
                         type="submit"
                         disabled={submitting}
                         data-testid="submit-question-btn"
-                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-md text-sm font-semibold text-zinc-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 active:scale-95 transition-all"
+                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-sm text-sm font-semibold text-paper bg-accent glow-btn disabled:opacity-50"
                     >
                         {submitting ? "Posting..." : "Post question"}
                     </button>
@@ -202,7 +202,7 @@ export default function AskQuestion() {
 function Field({ label, children }) {
     return (
         <div className="space-y-2">
-            <label className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+            <label className="font-mono text-xs uppercase tracking-wider text-ink-3">
                 {label}
             </label>
 

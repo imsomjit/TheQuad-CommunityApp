@@ -57,93 +57,84 @@ export default function Questions() {
                 return false;
             }
 
-            if (tag && !question.tags.includes(tag)) {
-                return false;
-            }
+            if (tag && !question.tags.includes(tag)) return false;
 
             return true;
         });
 
         if (sort === "newest") {
-            list = list.sort(
-                (a, b) => new Date(b.created_at) - new Date(a.created_at)
-            );
+            list = list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         } else if (sort === "votes") {
             list = list.sort(
-                (a, b) =>
-                    b.upvotes -
-                    b.downvotes -
-                    (a.upvotes - a.downvotes)
+                (a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes)
             );
         } else if (sort === "unanswered") {
-            list = list.filter((q) => q.answers.length === 0);
+            list = list.filter((q2) => q2.answers.length === 0);
         } else if (sort === "active") {
-            list = list.sort(
-                (a, b) => b.answers.length - a.answers.length
-            );
+            list = list.sort((a, b) => b.answers.length - a.answers.length);
         }
 
         return list;
     }, [questions, q, tag, sort]);
 
     return (
-        <div className="space-y-8 fade-in-up">
-            {/* Header */}
-            <header className="flex items-end justify-between flex-wrap gap-4">
-                <div>
-                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-blue-400 mb-2">
-            // q&amp;a
-                    </p>
+        <div className="space-y-10 fade-in-up">
+            <header className="border-b-2 border-double border-rule pb-8">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-cyan">
+                            &sect;03 &middot; the forum
+                        </p>
 
-                    <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tighter text-zinc-50">
-                        Ask. Answer. Argue.
-                    </h1>
+                        <h1 className="mt-2 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                            Ask. <span className="font-display-italic text-accent">Answer.</span>{" "}
+                            Argue.
+                        </h1>
 
-                    <p className="mt-2 text-zinc-400 max-w-2xl">
-                        Stack Overflow energy, with people who know your syllabus.
-                    </p>
+                        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+                            Stack-Overflow energy, with people who know your syllabus and
+                            actually care about your grade.
+                        </p>
+                    </div>
+
+                    <Link
+                        to="/ask"
+                        data-testid="ask-question-button"
+                        className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Ask question
+                    </Link>
                 </div>
-
-                <Link
-                    to="/ask"
-                    data-testid="ask-question-button"
-                    className="inline-flex items-center gap-2 h-10 px-4 rounded-md text-sm font-semibold text-zinc-950 bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all"
-                >
-                    <Plus className="w-4 h-4" />
-                    Ask question
-                </Link>
             </header>
 
-            {/* Main Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Questions Section */}
-                <div className="lg:col-span-9 space-y-4">
-                    {/* Search + Sort */}
-                    <div className="flex flex-col sm:flex-row gap-3">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                <div className="space-y-4 lg:col-span-9">
+                    <div className="flex flex-col gap-3 sm:flex-row">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
 
                             <Input
                                 data-testid="questions-search"
                                 value={q}
                                 onChange={(e) => setQ(e.target.value)}
-                                placeholder="Search questions..."
-                                className="pl-9 h-10 bg-zinc-900/60 border-zinc-800 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                                placeholder="Search questions…"
+                                className="h-10 rounded-sm border-rule bg-paper-2/60 pl-9 text-ink focus-visible:border-accent/60 focus-visible:ring-accent/30"
                             />
                         </div>
 
                         <Select value={sort} onValueChange={setSort}>
                             <SelectTrigger
                                 data-testid="questions-sort"
-                                className="w-full sm:w-[200px] h-10 bg-zinc-900/60 border-zinc-800"
+                                className="h-10 w-full rounded-sm border-rule bg-paper-2/60 sm:w-[200px]"
                             >
                                 <div className="flex items-center gap-2">
-                                    <ArrowDownUp className="w-3.5 h-3.5 text-zinc-500" />
+                                    <ArrowDownUp className="h-3.5 w-3.5 text-ink-3" />
                                     <SelectValue />
                                 </div>
                             </SelectTrigger>
 
-                            <SelectContent className="bg-zinc-950 border-zinc-800 text-zinc-100">
+                            <SelectContent className="border-rule bg-paper text-ink">
                                 {SORTS.map((s) => (
                                     <SelectItem key={s.key} value={s.key}>
                                         {s.label}
@@ -153,66 +144,48 @@ export default function Questions() {
                         </Select>
                     </div>
 
-                    {/* Active Tag Filter */}
                     {tag && (
-                        <div className="flex items-center gap-3 p-3 border border-emerald-500/30 rounded-md bg-emerald-500/5">
-                            <span className="font-mono text-xs text-zinc-400">
-                                tag:
-                            </span>
+                        <div className="flex items-center gap-3 rounded-sm border border-accent bg-accent-soft p-3">
+                            <span className="font-mono text-xs text-ink-2">tag:</span>
 
-                            <TagBadge active>#{tag}</TagBadge>
+                            <TagBadge active>{tag}</TagBadge>
 
                             <button
                                 onClick={() => setTag("")}
-                                className="ml-auto text-xs text-zinc-400 hover:text-rose-400 transition-colors"
+                                className="ml-auto text-xs text-ink-2 transition-colors hover:text-syntax-rose"
                             >
                                 clear
                             </button>
                         </div>
                     )}
 
-                    {/* Count */}
-                    <p className="text-sm text-zinc-400">
-                        <span className="font-mono text-zinc-200 font-semibold">
-                            {filtered.length}
-                        </span>{" "}
+                    <p className="text-sm text-ink-2">
+                        <span className="font-mono font-semibold text-ink">{filtered.length}</span>{" "}
                         question{filtered.length !== 1 && "s"}
                     </p>
 
-                    {/* Questions List */}
                     <div className="space-y-3">
                         {filtered.length === 0 ? (
-                            <div className="text-center py-16 border border-dashed border-zinc-800 rounded-lg">
-                                <MessageSquare className="w-8 h-8 text-zinc-700 mx-auto mb-2" />
-
-                                <p className="font-display text-lg text-zinc-300">
-                                    Nothing here yet
-                                </p>
-
-                                <p className="text-sm text-zinc-500 mt-1">
-                                    Be the first to ask.
-                                </p>
+                            <div className="rounded-sm border border-dashed border-rule py-16 text-center">
+                                <MessageSquare className="mx-auto mb-2 h-8 w-8 text-ink-3" />
+                                <p className="font-display text-lg text-ink">Nothing here yet</p>
+                                <p className="mt-1 text-sm text-ink-3">Be the first to ask.</p>
                             </div>
                         ) : (
                             filtered.map((question) => (
-                                <QuestionCard
-                                    key={question.id}
-                                    question={question}
-                                />
+                                <QuestionCard key={question.id} question={question} />
                             ))
                         )}
                     </div>
                 </div>
 
-                {/* Sidebar */}
-                <aside className="lg:col-span-3 space-y-4">
-                    <div className="p-4 border border-zinc-800 rounded-lg bg-zinc-900/40 sticky top-24">
-                        <h3 className="font-mono text-xs uppercase tracking-wider text-zinc-500 mb-3">
-              // filter by tag
+                <aside className="lg:col-span-3">
+                    <div className="sticky top-24 space-y-4 rounded-sm border border-rule bg-paper-2/40 p-4">
+                        <h3 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                            // filter by tag
                         </h3>
 
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1.5 max-h-[300px] overflow-y-auto">
+                        <div className="flex max-h-[300px] flex-wrap gap-1.5 overflow-y-auto">
                             {allTags.map(([t, count]) => (
                                 <button
                                     key={t}
@@ -220,58 +193,41 @@ export default function Questions() {
                                     data-testid={`filter-tag-${t}`}
                                 >
                                     <TagBadge active={t === tag}>
-                                        #{t}
-                                        <span className="ml-1.5 text-zinc-600">
-                                            {count}
-                                        </span>
+                                        {t}
+                                        <span className="ml-1.5 text-ink-3">{count}</span>
                                     </TagBadge>
                                 </button>
                             ))}
                         </div>
 
-                        <hr className="border-zinc-800 my-4" />
+                        <hr className="border-rule" />
 
-                        {/* Stats */}
                         <div className="space-y-2 text-sm">
                             <div className="flex items-center justify-between">
-                                <span className="text-zinc-400 flex items-center gap-1.5">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className="flex items-center gap-1.5 text-ink-2">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-accent-2" />
                                     accepted
                                 </span>
-
-                                <span className="font-mono text-zinc-200">
+                                <span className="font-mono text-ink">
                                     {
-                                        questions.filter((q) =>
-                                            q.answers.some((a) => a.accepted)
+                                        questions.filter((qq) =>
+                                            qq.answers.some((a) => a.accepted)
                                         ).length
                                     }
                                 </span>
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <span className="text-zinc-400">
-                                    unanswered
-                                </span>
-
-                                <span className="font-mono text-rose-400">
-                                    {
-                                        questions.filter(
-                                            (q) => q.answers.length === 0
-                                        ).length
-                                    }
+                                <span className="text-ink-2">unanswered</span>
+                                <span className="font-mono text-syntax-rose">
+                                    {questions.filter((qq) => qq.answers.length === 0).length}
                                 </span>
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <span className="text-zinc-400">
-                                    total answers
-                                </span>
-
-                                <span className="font-mono text-zinc-200">
-                                    {questions.reduce(
-                                        (acc, q) => acc + q.answers.length,
-                                        0
-                                    )}
+                                <span className="text-ink-2">total answers</span>
+                                <span className="font-mono text-ink">
+                                    {questions.reduce((acc, qq) => acc + qq.answers.length, 0)}
                                 </span>
                             </div>
                         </div>

@@ -1,5 +1,26 @@
 import React from "react";
 
+// Cycle of syntax colors keyed by tag string for visual variety.
+const PALETTE = [
+    "syntax-cyan",
+    "syntax-magenta",
+    "syntax-lime",
+    "syntax-amber",
+    "syntax-violet",
+    "syntax-rose",
+    "syntax-mint",
+];
+
+function hashIndex(str) {
+    let h = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        h = (h * 31 + str.charCodeAt(i)) | 0;
+    }
+
+    return Math.abs(h) % PALETTE.length;
+}
+
 export default function TagBadge({
     children,
     onClick,
@@ -13,20 +34,28 @@ export default function TagBadge({
         md: "px-2.5 py-1 text-sm",
     }[size];
 
-    const variantClass = active
-        ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
-        : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-emerald-300";
+    // derive a color from the tag's literal string when possible
+    const label = typeof children === "string" ? children : "";
+    const colorVar = `var(--${PALETTE[hashIndex(label)]})`;
 
-    const Component = onClick
-        ? "button"
-        : "span";
+    const baseClass = active
+        ? "border-current text-current"
+        : "border-rule text-ink-2 hover:text-ink";
+
+    const Component = onClick ? "button" : "span";
 
     return (
         <Component
             onClick={onClick}
             data-testid={testId}
-            className={`inline-flex items-center rounded-md border font-mono transition-colors ${sizes} ${variantClass}`}
+            className={`inline-flex items-center rounded-sm border bg-paper-2 font-mono transition-colors ${sizes} ${baseClass}`}
+            style={active ? { color: colorVar, borderColor: colorVar } : undefined}
         >
+            <span
+                aria-hidden
+                className="mr-1.5 inline-block h-1 w-1 rounded-full"
+                style={{ backgroundColor: colorVar }}
+            />
             {children}
         </Component>
     );

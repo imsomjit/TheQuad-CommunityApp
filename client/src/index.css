@@ -2,79 +2,204 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────
+   PeerVerse — Design tokens
+   "An annotated lab notebook for people who code."
+   Two themes: paper (light) · ink (dark)
+   ───────────────────────────────────────────────────────── */
+
 :root {
+    /* default to dark/ink */
     color-scheme: dark;
+
+    /* surfaces — deep blue-blacks with clear separation */
+    --paper: #08090d;
+    --paper-2: #10131a;
+    --paper-3: #181c26;
+    --ink: #f0efe6;
+    --ink-2: #b8b5aa;
+    --ink-3: #6e6b63;
+    --rule: #1e2330;
+    --rule-2: #2a3040;
+
+    /* signature accents — more vivid */
+    --accent: #ffb340;
+    /* molten amber — slightly warmer & brighter */
+    --accent-soft: rgba(255, 179, 64, 0.16);
+    --accent-2: #b8f24e;
+    /* electric lime */
+    --accent-2-soft: rgba(184, 242, 78, 0.14);
+
+    /* glow / shimmer (dark only) */
+    --glow-accent: rgba(255, 179, 64, 0.12);
+    --glow-accent-2: rgba(184, 242, 78, 0.10);
+    --card-glow: 0 0 0 1px var(--rule), 0 4px 24px -6px rgba(0, 0, 0, 0.55), 0 0 40px -14px var(--glow-accent);
+    --card-glow-hover: 0 0 0 1px var(--rule-2), 0 8px 32px -8px rgba(0, 0, 0, 0.65), 0 0 60px -10px var(--glow-accent);
+
+    /* syntax palette (used across tags / categories / charts) */
+    --syntax-cyan: #6cd4ff;
+    --syntax-magenta: #f9a8d4;
+    --syntax-lime: #bef264;
+    --syntax-amber: #fcd34d;
+    --syntax-violet: #c4b5fd;
+    --syntax-rose: #fda4af;
+    --syntax-mint: #6ee7b7;
+
+    /* code surface */
+    --code-bg: #0d1018;
+    --code-fg: #f0efe6;
+
+    /* selection / highlighter */
+    --highlight: rgba(255, 179, 64, 0.30);
+
+    /* shadows — richer depth */
+    --shadow-paper: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 30px 60px -30px rgba(0, 0, 0, 0.7);
+}
+
+html.light {
+    color-scheme: light;
+
+    --paper: #f4efe3;
+    --paper-2: #ede6d4;
+    --paper-3: #e5dcc4;
+    --ink: #1c1814;
+    --ink-2: #5a534a;
+    --ink-3: #8a8278;
+    --rule: #d8cfb9;
+    --rule-2: #c3b89e;
+
+    --accent: #c14a1a;
+    /* deep rust */
+    --accent-soft: rgba(193, 74, 26, 0.10);
+    --accent-2: #1f5e3a;
+    /* deep forest */
+    --accent-2-soft: rgba(31, 94, 58, 0.10);
+
+    --syntax-cyan: #0e7490;
+    --syntax-magenta: #9d174d;
+    --syntax-lime: #3f6212;
+    --syntax-amber: #b45309;
+    --syntax-violet: #5b21b6;
+    --syntax-rose: #be123c;
+    --syntax-mint: #047857;
+
+    --code-bg: #ebe2cc;
+    --code-fg: #1c1814;
+
+    --highlight: rgba(255, 220, 110, 0.55);
+
+    --shadow-paper: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 30px 60px -28px rgba(60, 40, 10, 0.18);
 }
 
 html,
 body,
 #root {
-    background-color: #09090b;
-    color: #fafafa;
+    background-color: var(--paper);
+    color: var(--ink);
 }
 
 body {
     margin: 0;
-    font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #09090b;
+    font-feature-settings: "ss01", "cv11";
 }
 
 code,
+pre,
 .font-mono {
     font-family: 'JetBrains Mono', source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-feature-settings: "calt", "liga";
 }
 
 .font-display {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+    font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 0;
     letter-spacing: -0.02em;
 }
 
-.font-body {
-    font-family: 'IBM Plex Sans', sans-serif;
+.font-display-italic {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
 }
 
-/* Custom scrollbar */
+.font-body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Scrollbar
+   ───────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #09090b;
+    background: var(--paper);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #27272a;
+    background: var(--rule-2);
     border-radius: 6px;
-    border: 2px solid #09090b;
+    border: 2px solid var(--paper);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #3f3f46;
+    background: var(--ink-3);
 }
 
-/* Selection */
 ::selection {
-    background-color: rgba(16, 185, 129, 0.3);
-    color: #fafafa;
+    background-color: var(--highlight);
+    color: var(--ink);
 }
 
-/* Subtle grid backdrop */
+/* ─────────────────────────────────────────────────────────
+   Paper / IDE textures
+   ───────────────────────────────────────────────────────── */
+
+/* faint grid backdrop (IDE) */
 .grid-bg {
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
+        linear-gradient(rgba(127, 127, 127, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(127, 127, 127, 0.07) 1px, transparent 1px);
+    background-size: 56px 56px;
 }
 
+/* lined notebook backdrop (light) / dotted (dark) */
 .dot-bg {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(127, 127, 127, 0.10) 1px, transparent 1px);
     background-size: 22px 22px;
 }
 
-/* Aurora glow */
+html.light .dot-bg {
+    background-image: linear-gradient(transparent 23px, rgba(143, 122, 80, 0.18) 24px);
+    background-size: 100% 24px;
+}
+
+/* warm grain (paper noise) */
+.paper-grain {
+    position: relative;
+}
+
+.paper-grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+html.light .paper-grain::before {
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+}
+
+/* aurora corner glows (dark) — vivid + animated */
 .aurora {
     position: absolute;
     inset: 0;
@@ -89,27 +214,188 @@ code,
     width: 600px;
     height: 600px;
     border-radius: 9999px;
-    filter: blur(120px);
-    opacity: 0.15;
+    filter: blur(130px);
+    opacity: 0.25;
+    animation: aurora-drift 12s ease-in-out infinite alternate;
 }
 
 .aurora::before {
-    background: #10b981;
+    background: var(--accent);
     top: -200px;
-    left: -100px;
+    left: -120px;
 }
 
 .aurora::after {
-    background: #3b82f6;
+    background: var(--accent-2);
     bottom: -200px;
-    right: -100px;
+    right: -120px;
+    animation-delay: -6s;
 }
 
-/* Animations */
+@keyframes aurora-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(30px, 15px) scale(1.08); }
+}
+
+html.light .aurora::before {
+    opacity: 0.14;
+    animation: none;
+}
+
+html.light .aurora::after {
+    opacity: 0.11;
+    animation: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Editorial bits
+   ───────────────────────────────────────────────────────── */
+
+/* drop cap for headlines / lede */
+.dropcap::first-letter {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+    float: left;
+    font-size: 5.2rem;
+    line-height: 0.85;
+    padding: 0.35rem 0.7rem 0 0;
+    color: var(--accent);
+}
+
+/* IDE-style line gutter (used left of cards) */
+.gutter-rule {
+    position: relative;
+}
+
+.gutter-rule::before {
+    content: attr(data-gutter);
+    position: absolute;
+    left: -2.25rem;
+    top: 0.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    color: var(--ink-3);
+    text-align: right;
+    width: 1.75rem;
+    opacity: 0.7;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Buttons / shared
+   ───────────────────────────────────────────────────────── */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.5rem;
+    padding: 0 1rem;
+    background: var(--accent);
+    color: var(--paper);
+    border-radius: 4px;
+    border: 1px solid var(--accent);
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.25s ease;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 6px 18px -10px rgba(0, 0, 0, 0.6), 0 0 20px -8px var(--glow-accent);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18) inset, 0 8px 24px -8px rgba(0, 0, 0, 0.5), 0 0 36px -6px var(--glow-accent);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.5rem;
+    padding: 0 0.875rem;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink);
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-ghost:hover {
+    border-color: var(--ink-3);
+    background: var(--paper-2);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Code-like tags / pills
+   ───────────────────────────────────────────────────────── */
+.kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+    background: var(--paper-2);
+    color: var(--ink-2);
+}
+
+/* Markdown-ish prose for question / resource bodies */
+.prose-dev {
+    color: var(--ink);
+    font-size: 0.95rem;
+    line-height: 1.75;
+}
+
+.prose-dev p {
+    color: var(--ink);
+    margin: 0 0 0.85rem;
+}
+
+.prose-dev code {
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    color: var(--syntax-amber);
+}
+
+html.light .prose-dev code {
+    color: var(--syntax-magenta);
+}
+
+.prose-dev pre {
+    background: var(--code-bg);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.85rem 0;
+    color: var(--code-fg);
+    line-height: 1.55;
+}
+
+.prose-dev pre code {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Animations
+   ───────────────────────────────────────────────────────── */
 @keyframes fade-in-up {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(10px);
     }
 
     to {
@@ -119,7 +405,7 @@ code,
 }
 
 .fade-in-up {
-    animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: fade-in-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes pulse-dot {
@@ -131,8 +417,8 @@ code,
     }
 
     50% {
-        opacity: 0.6;
-        transform: scale(1.4);
+        opacity: 0.55;
+        transform: scale(1.5);
     }
 }
 
@@ -140,83 +426,173 @@ code,
     animation: pulse-dot 1.8s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
+@keyframes blink-caret {
+
+    0%,
+    49% {
+        opacity: 1;
     }
 
+    50%,
     100% {
-        background-position: 1000px 0;
+        opacity: 0;
     }
 }
 
-/* Code block-ish look for tags */
-.kbd {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #27272a;
-    background: #18181b;
-    color: #a1a1aa;
+.caret {
+    display: inline-block;
+    width: 0.55ch;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: -0.12em;
+    animation: blink-caret 1.05s steps(1) infinite;
 }
 
-/* Markdown-ish prose */
-.prose-dev p {
-    line-height: 1.7;
-    color: #d4d4d8;
-    margin-bottom: 0.75rem;
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
 }
 
-.prose-dev code {
-    background: #18181b;
-    border: 1px solid #27272a;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.85em;
-    color: #34d399;
+.marquee {
+    animation: marquee 50s linear infinite;
 }
 
-.prose-dev pre {
-    background: #09090b;
-    border: 1px solid #27272a;
-    padding: 1rem;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin: 0.75rem 0;
+/* Underline reveal */
+.link-reveal {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    transition: background-size 0.35s ease;
 }
 
+.link-reveal:hover {
+    background-size: 100% 1px;
+}
+
+/* hand-drawn underline accent for hero words */
+.hand-underline {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 20' preserveAspectRatio='none'><path d='M2 12 Q 100 2 200 10 T 398 8' stroke='currentColor' stroke-width='3' fill='none' stroke-linecap='round'/></svg>");
+    background-position: 0 100%;
+    background-size: 100% 0.5em;
+    background-repeat: no-repeat;
+    padding-bottom: 0.1em;
+}
+
+/* highlighter swatch (used to mark hero words) */
+.marker {
+    background-image: linear-gradient(120deg, var(--highlight) 0%, var(--highlight) 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 0.55em;
+    background-position: 0 88%;
+    padding: 0 0.15em;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Dark-mode card & interactive glow utilities
+   ───────────────────────────────────────────────────────── */
+
+/* Elevated card with subtle accent glow — dark only */
+.card-elevated {
+    box-shadow: var(--card-glow);
+    transition: box-shadow 0.3s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.card-elevated:hover {
+    box-shadow: var(--card-glow-hover);
+    transform: translateY(-1px);
+}
+
+html.light .card-elevated {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+html.light .card-elevated:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
+}
+
+/* Accent-glow button (for primary CTAs) */
+.glow-btn {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 4px 14px -6px rgba(0, 0, 0, 0.5), 0 0 24px -8px var(--glow-accent);
+    transition: all 0.25s ease;
+}
+
+.glow-btn:hover {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 6px 20px -4px rgba(0, 0, 0, 0.4), 0 0 44px -4px var(--glow-accent);
+    filter: brightness(1.1);
+}
+
+html.light .glow-btn {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 4px 12px -6px rgba(0, 0, 0, 0.2);
+}
+
+html.light .glow-btn:hover {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 6px 16px -4px rgba(0, 0, 0, 0.25);
+    filter: brightness(1.05);
+}
+
+/* Glowing border ring on focus — dark only */
+.ring-glow:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent), 0 0 20px -4px var(--glow-accent);
+}
+
+html.light .ring-glow:focus-visible {
+    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Shadcn base layer (keep so existing primitives render)
+   ───────────────────────────────────────────────────────── */
 @layer base {
     :root {
-        --background: 240 10% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 240 10% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 240 10% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 158 64% 52%;
-        --primary-foreground: 240 10% 3.9%;
-        --secondary: 240 4% 16%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 240 4% 16%;
-        --muted-foreground: 240 5% 64.9%;
-        --accent: 240 4% 16%;
-        --accent-foreground: 0 0% 98%;
+        --background: 33 28% 92%;
+        --foreground: 28 16% 10%;
+        --card: 33 30% 95%;
+        --card-foreground: 28 16% 10%;
+        --popover: 33 30% 95%;
+        --popover-foreground: 28 16% 10%;
+        --primary: 17 76% 43%;
+        --primary-foreground: 33 28% 96%;
+        --secondary: 33 18% 88%;
+        --secondary-foreground: 28 16% 10%;
+        --muted: 33 18% 88%;
+        --muted-foreground: 28 8% 36%;
+        --destructive: 0 70% 38%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 38 26% 78%;
+        --input: 38 26% 78%;
+        --ring: 17 76% 43%;
+        --radius: 0.25rem;
+    }
+
+    html:not(.light) {
+        --background: 222 18% 6%;
+        --foreground: 48 14% 91%;
+        --card: 222 18% 8%;
+        --card-foreground: 48 14% 91%;
+        --popover: 222 18% 8%;
+        --popover-foreground: 48 14% 91%;
+        --primary: 32 100% 64%;
+        --primary-foreground: 222 18% 6%;
+        --secondary: 222 16% 14%;
+        --secondary-foreground: 48 14% 91%;
+        --muted: 222 16% 14%;
+        --muted-foreground: 45 8% 70%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
-        --border: 240 4% 14%;
-        --input: 240 4% 14%;
-        --ring: 158 64% 52%;
-        --chart-1: 158 64% 52%;
-        --chart-2: 217 91% 60%;
-        --chart-3: 280 65% 60%;
-        --chart-4: 38 92% 50%;
-        --chart-5: 340 75% 55%;
-        --radius: 0.5rem;
+        --border: 220 14% 18%;
+        --input: 220 14% 18%;
+        --ring: 32 100% 64%;
     }
-}
 
-@layer base {
     * {
         @apply border-border;
     }
@@ -224,4 +600,13 @@ code,
     body {
         @apply bg-background text-foreground;
     }
+}
+
+/* ─────────────────────────────────────────────────────────
+   View Transitions (Theme Toggle Animation)
+   ───────────────────────────────────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

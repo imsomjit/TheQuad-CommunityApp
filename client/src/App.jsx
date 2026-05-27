@@ -3,6 +3,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { AppProvider } from "./context/AppContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import Layout from "./components/Layout";
 
@@ -17,25 +18,27 @@ import Profile from "./pages/Profile";
 
 function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
+    <ThemeProvider>
+      <AppProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Home />} />
 
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/resources/:id" element={<ResourceDetail />} />
-            <Route path="/upload" element={<UploadResource />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/resources/:id" element={<ResourceDetail />} />
+              <Route path="/upload" element={<UploadResource />} />
 
-            <Route path="/questions" element={<Questions />} />
-            <Route path="/questions/:id" element={<QuestionDetail />} />
-            <Route path="/ask" element={<AskQuestion />} />
+              <Route path="/questions" element={<Questions />} />
+              <Route path="/questions/:id" element={<QuestionDetail />} />
+              <Route path="/ask" element={<AskQuestion />} />
 
-            <Route path="/u/:username" element={<Profile />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AppProvider>
+              <Route path="/u/:username" element={<Profile />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AppProvider>
+    </ThemeProvider>
   );
 }
 

@@ -29,10 +29,6 @@ function timeAgo(ts) {
 }
 
 function renderMarkdownLite(body) {
-    // Lightweight markdown support:
-    // - ```code blocks```
-    // - `inline code`
-
     const blocks = body.split(/```/);
 
     return blocks.map((chunk, i) => {
@@ -50,11 +46,7 @@ function renderMarkdownLite(body) {
             return (
                 <p key={`${i}-${j}`}>
                     {parts.map((part, k) =>
-                        k % 2 === 1 ? (
-                            <code key={k}>{part}</code>
-                        ) : (
-                            part
-                        )
+                        k % 2 === 1 ? <code key={k}>{part}</code> : part
                     )}
                 </p>
             );
@@ -75,30 +67,20 @@ export default function QuestionDetail() {
         incrementViews,
     } = useApp();
 
-    const question = questions.find((q) => q.id === id);
-
+    const question = questions.find((qq) => qq.id === id);
     const [answerBody, setAnswerBody] = useState("");
 
     useEffect(() => {
-        if (question) {
-            incrementViews("question", id);
-        }
-
+        if (question) incrementViews("question", id);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     if (!question) {
         return (
-            <div className="text-center py-20">
-                <p className="font-display text-2xl text-zinc-300">
-                    Question not found
-                </p>
-
-                <Link
-                    to="/questions"
-                    className="text-emerald-400 mt-2 inline-block"
-                >
-                    ← back to questions
+            <div className="py-20 text-center">
+                <p className="font-display text-2xl text-ink">Question not found</p>
+                <Link to="/questions" className="mt-2 inline-block text-accent">
+                    &larr; back to questions
                 </Link>
             </div>
         );
@@ -113,7 +95,6 @@ export default function QuestionDetail() {
 
         addAnswer(question.id, answerBody.trim());
         setAnswerBody("");
-
         toast.success("Answer posted");
     };
 
@@ -129,59 +110,57 @@ export default function QuestionDetail() {
         if (a.accepted && !b.accepted) return -1;
         if (!a.accepted && b.accepted) return 1;
 
-        return (
-            b.upvotes -
-            b.downvotes -
-            (a.upvotes - a.downvotes)
-        );
+        return b.upvotes - b.downvotes - (a.upvotes - a.downvotes);
     });
 
     return (
-        <div className="max-w-5xl mx-auto fade-in-up">
-            {/* Back */}
+        <div className="mx-auto max-w-5xl fade-in-up">
             <Link
                 to="/questions"
-                className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-400 mb-6 transition-colors"
+                className="mb-6 inline-flex items-center gap-1 text-sm text-ink-2 transition-colors hover:text-accent"
             >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 all questions
             </Link>
 
-            {/* Header */}
-            <header className="space-y-3 pb-6 border-b border-zinc-800">
-                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-zinc-50 leading-tight">
+            <header className="space-y-3 border-b-2 border-double border-rule pb-6">
+                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-cyan">
+                    &sect;03 &middot; question / {question.id}
+                </p>
+
+                <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
                     {question.title}
                 </h1>
 
-                <div className="flex items-center gap-4 flex-wrap text-xs font-mono text-zinc-500">
+                <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-ink-3">
                     <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
+                        <Calendar className="h-3.5 w-3.5" />
                         asked {timeAgo(question.created_at)}
                     </span>
 
                     <span className="flex items-center gap-1">
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="h-3.5 w-3.5" />
                         {question.views} views
                     </span>
 
                     <span className="flex items-center gap-1">
-                        <MessageSquare className="w-3.5 h-3.5" />
+                        <MessageSquare className="h-3.5 w-3.5" />
                         {question.answers.length} answers
                     </span>
 
                     {isOwner && (
-                        <div className="flex items-center gap-2 ml-auto">
+                        <div className="ml-auto flex items-center gap-3">
                             <button
                                 data-testid="delete-question-btn"
                                 onClick={handleDelete}
-                                className="inline-flex items-center gap-1 text-zinc-400 hover:text-rose-400 transition-colors"
+                                className="inline-flex items-center gap-1 text-ink-2 transition-colors hover:text-syntax-rose"
                             >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="h-3.5 w-3.5" />
                                 delete
                             </button>
 
-                            <button className="inline-flex items-center gap-1 text-zinc-400 hover:text-zinc-50 transition-colors">
-                                <Edit3 className="w-3.5 h-3.5" />
+                            <button className="inline-flex items-center gap-1 text-ink-2 transition-colors hover:text-ink">
+                                <Edit3 className="h-3.5 w-3.5" />
                                 edit
                             </button>
                         </div>
@@ -189,9 +168,8 @@ export default function QuestionDetail() {
                 </div>
             </header>
 
-            {/* Question Body */}
-            <article className="flex gap-5 py-6 border-b border-zinc-800">
-                <div className="hidden sm:block pt-1">
+            <article className="flex gap-5 border-b border-rule py-6">
+                <div className="hidden pt-1 sm:block">
                     <VoteButtons
                         kind="question"
                         id={question.id}
@@ -201,43 +179,40 @@ export default function QuestionDetail() {
                     />
                 </div>
 
-                <div className="flex-1 min-w-0">
-                    <div className="prose-dev">
-                        {renderMarkdownLite(question.body)}
-                    </div>
+                <div className="min-w-0 flex-1">
+                    <div className="prose-dev">{renderMarkdownLite(question.body)}</div>
 
-                    <div className="mt-5 flex items-center gap-1.5 flex-wrap">
+                    <div className="mt-5 flex flex-wrap items-center gap-1.5">
                         {question.tags.map((tag) => (
-                            <TagBadge key={tag}>#{tag}</TagBadge>
+                            <TagBadge key={tag}>{tag}</TagBadge>
                         ))}
                     </div>
 
-                    <div className="mt-5 flex items-center justify-between flex-wrap gap-3">
+                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                         <button
                             data-testid="report-question-btn"
                             onClick={() => toast.info("Reported.")}
-                            className="text-xs text-zinc-500 hover:text-rose-400 transition-colors flex items-center gap-1"
+                            className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
                         >
-                            <Flag className="w-3 h-3" />
+                            <Flag className="h-3 w-3" />
                             report
                         </button>
 
                         <Link
                             to={`/u/${question.author.username}`}
-                            className="flex items-center gap-2 p-2 pr-3 bg-blue-500/5 border border-blue-500/20 rounded-md"
+                            className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                         >
                             <img
                                 src={question.author.avatar}
                                 alt=""
-                                className="w-8 h-8 rounded-full object-cover"
+                                className="h-8 w-8 rounded-sm object-cover"
                             />
 
                             <div className="text-xs">
-                                <div className="font-semibold text-zinc-50">
+                                <div className="font-semibold text-ink">
                                     {question.author.name}
                                 </div>
-
-                                <div className="font-mono text-zinc-500">
+                                <div className="font-mono text-ink-3">
                                     @{question.author.username}
                                 </div>
                             </div>
@@ -246,17 +221,13 @@ export default function QuestionDetail() {
                 </div>
             </article>
 
-            {/* Answers */}
-            <section className="py-8 space-y-6">
-                <h2 className="font-display text-2xl font-semibold text-zinc-50 flex items-center gap-3">
+            <section className="space-y-6 py-8">
+                <h2 className="flex items-center gap-3 font-display text-2xl font-semibold text-ink">
                     {question.answers.length}{" "}
-                    {question.answers.length === 1
-                        ? "answer"
-                        : "answers"}
-
+                    {question.answers.length === 1 ? "answer" : "answers"}
                     {question.answers.some((a) => a.accepted) && (
-                        <span className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5">
-                            <CheckCircle2 className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 rounded-sm border border-accent-2 bg-accent-2-soft px-2 py-0.5 font-mono text-xs uppercase tracking-[0.15em] text-accent-2">
+                            <CheckCircle2 className="h-3 w-3" />
                             solved
                         </span>
                     )}
@@ -266,12 +237,12 @@ export default function QuestionDetail() {
                     <article
                         key={answer.id}
                         data-testid={`answer-${answer.id}`}
-                        className={`flex gap-5 p-5 border rounded-lg ${answer.accepted
-                                ? "border-emerald-500/40 bg-emerald-500/[0.03]"
-                                : "border-zinc-800 bg-zinc-900/30"
+                        className={`flex gap-5 rounded-sm border p-5 ${answer.accepted
+                                ? "border-accent-2 bg-accent-2-soft"
+                                : "border-rule bg-paper-2/40"
                             }`}
                     >
-                        <div className="hidden sm:block pt-1">
+                        <div className="hidden pt-1 sm:block">
                             <VoteButtons
                                 kind="answer"
                                 id={answer.id}
@@ -283,68 +254,63 @@ export default function QuestionDetail() {
                             {answer.accepted && (
                                 <div
                                     title="Accepted answer"
-                                    className="mt-3 w-9 h-9 rounded-md bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center"
+                                    className="mt-3 flex h-9 w-9 items-center justify-center rounded-sm border border-accent-2 bg-accent-2-soft"
                                 >
-                                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                    <CheckCircle2 className="h-5 w-5 text-accent-2" />
                                 </div>
                             )}
                         </div>
 
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                             {answer.accepted && (
-                                <div className="mb-3 inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-emerald-400">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                <div className="mb-3 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.15em] text-accent-2">
+                                    <CheckCircle2 className="h-3.5 w-3.5" />
                                     accepted answer
                                 </div>
                             )}
 
-                            <div className="prose-dev">
-                                {renderMarkdownLite(answer.body)}
-                            </div>
+                            <div className="prose-dev">{renderMarkdownLite(answer.body)}</div>
 
-                            <div className="mt-4 flex items-center justify-between flex-wrap gap-3">
-                                <div className="flex items-center gap-2">
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
                                     {isOwner && !answer.accepted && (
                                         <button
                                             data-testid={`accept-answer-${answer.id}`}
                                             onClick={() => {
                                                 acceptAnswer(question.id, answer.id);
-                                                toast.success(
-                                                    "Marked as accepted answer"
-                                                );
+                                                toast.success("Marked as accepted answer");
                                             }}
-                                            className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
+                                            className="flex items-center gap-1 text-xs text-ink-2 transition-colors hover:text-accent-2"
                                         >
-                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                            <CheckCircle2 className="h-3.5 w-3.5" />
                                             accept
                                         </button>
                                     )}
 
                                     <button
                                         onClick={() => toast.info("Reported.")}
-                                        className="text-xs text-zinc-500 hover:text-rose-400 transition-colors flex items-center gap-1"
+                                        className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
                                     >
-                                        <Flag className="w-3 h-3" />
+                                        <Flag className="h-3 w-3" />
                                         report
                                     </button>
                                 </div>
 
                                 <Link
                                     to={`/u/${answer.author.username}`}
-                                    className="flex items-center gap-2 p-2 pr-3 bg-zinc-900 border border-zinc-800 rounded-md"
+                                    className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                                 >
                                     <img
                                         src={answer.author.avatar}
                                         alt=""
-                                        className="w-8 h-8 rounded-full object-cover"
+                                        className="h-8 w-8 rounded-sm object-cover"
                                     />
 
                                     <div className="text-xs">
-                                        <div className="font-semibold text-zinc-50">
+                                        <div className="font-semibold text-ink">
                                             {answer.author.name}
                                         </div>
-
-                                        <div className="font-mono text-zinc-500">
+                                        <div className="font-mono text-ink-3">
                                             answered {timeAgo(answer.created_at)}
                                         </div>
                                     </div>
@@ -355,51 +321,37 @@ export default function QuestionDetail() {
                 ))}
 
                 {question.answers.length === 0 && (
-                    <div className="text-center py-12 border border-dashed border-zinc-800 rounded-lg">
-                        <p className="font-display text-lg text-zinc-300">
-                            No answers yet.
-                        </p>
-
-                        <p className="text-sm text-zinc-500 mt-1">
-                            Be the helpful one.
-                        </p>
+                    <div className="rounded-sm border border-dashed border-rule py-12 text-center">
+                        <p className="font-display text-lg text-ink">No answers yet.</p>
+                        <p className="mt-1 text-sm text-ink-3">Be the helpful one.</p>
                     </div>
                 )}
             </section>
 
-            {/* Answer Form */}
-            <section className="space-y-3 pt-6 border-t border-zinc-800">
-                <h3 className="font-display text-xl font-semibold text-zinc-50">
-                    Your answer
-                </h3>
+            <section className="space-y-3 border-t-2 border-double border-rule pt-6">
+                <h3 className="font-display text-xl font-semibold text-ink">Your answer</h3>
 
-                <form
-                    onSubmit={submitAnswer}
-                    className="space-y-3"
-                >
+                <form onSubmit={submitAnswer} className="space-y-3">
                     <Textarea
                         data-testid="answer-input"
                         value={answerBody}
-                        onChange={(e) =>
-                            setAnswerBody(e.target.value)
-                        }
-                        placeholder="Share what you know. Code blocks with ``` are supported."
-                        className="bg-zinc-950 border-zinc-800 min-h-[160px] font-body placeholder:text-zinc-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30"
+                        onChange={(e) => setAnswerBody(e.target.value)}
+                        placeholder="Share what you know. Wrap code in ```language ... ```."
+                        className="min-h-[160px] rounded-sm border-rule bg-paper font-body text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                     />
 
                     <div className="flex items-center justify-between">
-                        <p className="font-mono text-xs text-zinc-500">
-              // tip: backtick `code` for inline · ``` for
-                            code blocks
+                        <p className="font-mono text-xs text-ink-3">
+                            // tip: backtick `code` inline &middot; ``` for code blocks
                         </p>
 
                         <button
                             type="submit"
                             data-testid="submit-answer-btn"
                             disabled={!answerBody.trim()}
-                            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-md text-sm font-semibold text-zinc-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 active:scale-95 transition-all"
+                            className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
                         >
-                            <Send className="w-3.5 h-3.5" />
+                            <Send className="h-3.5 w-3.5" />
                             Post answer
                         </button>
                     </div>

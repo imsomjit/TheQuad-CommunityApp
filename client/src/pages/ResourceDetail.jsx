@@ -16,6 +16,7 @@ import {
     Calendar,
     Send,
 } from "lucide-react";
+
 import { useApp } from "../context/AppContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
@@ -23,20 +24,14 @@ import { RESOURCE_TYPES } from "../data/mockData";
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 
-const ICONS = {
-    BookOpen,
-    FileText,
-    ClipboardList,
-    Sparkles,
-    Folder,
-};
+const ICONS = { BookOpen, FileText, ClipboardList, Sparkles, Folder };
 
-const TYPE_COLORS = {
-    notes: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
-    pyq: "text-blue-400 bg-blue-500/10 border-blue-500/30",
-    assignment: "text-violet-400 bg-violet-500/10 border-violet-500/30",
-    cheatsheet: "text-amber-400 bg-amber-500/10 border-amber-500/30",
-    other: "text-zinc-300 bg-zinc-800 border-zinc-700",
+const TYPE_VAR = {
+    notes: "--syntax-mint",
+    pyq: "--syntax-cyan",
+    assignment: "--syntax-violet",
+    cheatsheet: "--syntax-amber",
+    other: "--ink-2",
 };
 
 function format(ts) {
@@ -81,14 +76,9 @@ export default function ResourceDetail() {
 
     if (!resource) {
         return (
-            <div className="text-center py-20">
-                <p className="font-display text-2xl text-zinc-300">
-                    Resource not found
-                </p>
-                <Link
-                    to="/resources"
-                    className="text-emerald-400 mt-2 inline-block"
-                >
+            <div className="py-20 text-center">
+                <p className="font-display text-2xl text-ink">Resource not found</p>
+                <Link to="/resources" className="mt-2 inline-block text-accent">
                     ← back to resources
                 </Link>
             </div>
@@ -96,10 +86,9 @@ export default function ResourceDetail() {
     }
 
     const type =
-        RESOURCE_TYPES.find((t) => t.key === resource.type) ||
-        RESOURCE_TYPES[4];
-
+        RESOURCE_TYPES.find((t) => t.key === resource.type) || RESOURCE_TYPES[4];
     const Icon = ICONS[type.icon] || Folder;
+    const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
 
     const isMine = resource.uploader.id === currentUser.id;
     const isBookmarked = bookmarks.has(resource.id);
@@ -115,9 +104,7 @@ export default function ResourceDetail() {
     };
 
     const handleDownload = () => {
-        toast.success("Download started", {
-            description: resource.file.name,
-        });
+        toast.success("Download started", { description: resource.file.name });
     };
 
     const handleDelete = () => {
@@ -129,51 +116,40 @@ export default function ResourceDetail() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto fade-in-up">
-            {/* Back Button */}
+        <div className="mx-auto max-w-5xl fade-in-up">
             <Link
                 to="/resources"
                 data-testid="back-to-resources"
-                className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-emerald-400 mb-6 transition-colors"
+                className="mb-6 inline-flex items-center gap-1 text-sm text-ink-2 transition-colors hover:text-accent"
             >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 all resources
             </Link>
 
             <article className="space-y-6">
-                {/* Header */}
-                <header className="space-y-3">
-                    <div className="flex items-center gap-2 flex-wrap">
+                <header className="space-y-3 border-b-2 border-double border-rule pb-6">
+                    <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-3">
                         <span
-                            className={`inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider px-2.5 py-1 rounded border ${TYPE_COLORS[resource.type]}`}
+                            className="inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1"
+                            style={{ color: colorVar, borderColor: colorVar }}
                         >
-                            <Icon className="w-3 h-3" />
+                            <Icon className="h-3 w-3" />
                             {type.label}
                         </span>
 
-                        <span className="font-mono text-xs text-zinc-500">
-                            {resource.subject}
-                        </span>
-
-                        <span className="text-zinc-700">·</span>
-
-                        <span className="font-mono text-xs text-zinc-500">
-                            {resource.college}
-                        </span>
-
-                        <span className="text-zinc-700">·</span>
-
-                        <span className="font-mono text-xs text-zinc-500">
-                            {resource.branch} · Sem {resource.semester}
-                        </span>
+                        <span>{resource.subject}</span>
+                        <span className="text-ink-3/60">·</span>
+                        <span>{resource.college}</span>
+                        <span className="text-ink-3/60">·</span>
+                        <span>{resource.branch} · Sem {resource.semester}</span>
                     </div>
 
-                    <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-zinc-50 leading-tight">
+                    <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
                         {resource.title}
                     </h1>
 
-                    <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-                        <Calendar className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-2 font-mono text-xs text-ink-3">
+                        <Calendar className="h-3.5 w-3.5" />
                         uploaded {format(resource.created_at)}
                         {resource.updated_at !== resource.created_at && (
                             <> · updated {timeAgo(resource.updated_at)}</>
@@ -181,8 +157,8 @@ export default function ResourceDetail() {
                     </div>
                 </header>
 
-                {/* Action Bar */}
-                <div className="flex items-center gap-3 flex-wrap p-4 bg-zinc-900/40 border border-zinc-800 rounded-lg">
+                {/* Action bar */}
+                <div className="flex flex-wrap items-center gap-3 rounded-sm border border-rule bg-paper-2/50 p-4">
                     <VoteButtons
                         kind="resource"
                         id={resource.id}
@@ -192,27 +168,27 @@ export default function ResourceDetail() {
                         size="md"
                     />
 
-                    <div className="h-8 w-px bg-zinc-800" />
+                    <div className="h-8 w-px bg-rule" />
 
                     <button
                         onClick={handleDownload}
                         data-testid="download-resource-btn"
-                        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium text-zinc-950 bg-emerald-500 hover:bg-emerald-400 active:scale-95 transition-all"
+                        className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-3 py-2 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
                     >
-                        <Download className="w-4 h-4" />
+                        <Download className="h-4 w-4" />
                         Download
                     </button>
 
                     <button
                         onClick={() => toggleBookmark(resource.id)}
                         data-testid="bookmark-detail-btn"
-                        className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium border transition-colors ${isBookmarked
-                                ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-300"
-                                : "bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-zinc-700"
+                        className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm font-medium transition-colors ${isBookmarked
+                                ? "border-accent bg-accent-soft text-accent"
+                                : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
                             }`}
                     >
                         <Bookmark
-                            className="w-4 h-4"
+                            className="h-4 w-4"
                             fill={isBookmarked ? "currentColor" : "none"}
                         />
                         {isBookmarked ? "Saved" : "Save"}
@@ -221,13 +197,11 @@ export default function ResourceDetail() {
                     <button
                         data-testid="report-resource-btn"
                         onClick={() =>
-                            toast.info(
-                                "Reported. Thanks for keeping the library clean."
-                            )
+                            toast.info("Reported. Thanks for keeping the library clean.")
                         }
-                        className="ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm text-zinc-400 hover:text-rose-400 transition-colors"
+                        className="ml-auto inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
                     >
-                        <Flag className="w-3.5 h-3.5" />
+                        <Flag className="h-3.5 w-3.5" />
                         Report
                     </button>
 
@@ -235,63 +209,56 @@ export default function ResourceDetail() {
                         <>
                             <Link
                                 to={`/upload?edit=${resource.id}`}
-                                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm text-zinc-400 hover:text-zinc-50 transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink"
                             >
-                                <Edit3 className="w-3.5 h-3.5" />
+                                <Edit3 className="h-3.5 w-3.5" />
                                 Edit
                             </Link>
 
                             <button
                                 data-testid="delete-resource-btn"
                                 onClick={handleDelete}
-                                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm text-zinc-400 hover:text-rose-400 transition-colors"
+                                className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
                             >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="h-3.5 w-3.5" />
                                 Delete
                             </button>
                         </>
                     )}
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <Stat label="views" value={resource.views.toLocaleString()} />
-                    <Stat
-                        label="downloads"
-                        value={resource.downloads.toLocaleString()}
-                    />
+                    <Stat label="downloads" value={resource.downloads.toLocaleString()} />
                     <Stat
                         label="bookmarks"
                         value={resource.bookmarks?.toLocaleString() || "0"}
                     />
                 </div>
 
-                {/* File Preview */}
-                <div className="p-5 border border-zinc-800 rounded-lg bg-gradient-to-br from-zinc-900/80 to-zinc-950 flex items-center gap-4">
-                    <div className="w-14 h-16 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                        <FileText
-                            className="w-7 h-7 text-emerald-400"
-                            strokeWidth={1.5}
-                        />
+                {/* File preview */}
+                <div className="flex items-center gap-4 rounded-sm border border-rule bg-paper-2/40 p-5">
+                    <div
+                        className="flex h-14 w-14 items-center justify-center rounded-sm border"
+                        style={{ borderColor: colorVar, color: colorVar }}
+                    >
+                        <FileText className="h-7 w-7" strokeWidth={1.5} />
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                        <p className="font-mono text-sm text-zinc-50 truncate">
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate font-mono text-sm text-ink">
                             {resource.file.name}
                         </p>
-                        <p className="text-xs text-zinc-500 font-mono mt-0.5">
+                        <p className="mt-0.5 font-mono text-xs text-ink-3">
                             {resource.file.size}
-                            {resource.file.pages && (
-                                <> · {resource.file.pages} pages</>
-                            )}
+                            {resource.file.pages && <> · {resource.file.pages} pages</>}
                         </p>
                     </div>
                 </div>
 
-                {/* Description */}
                 <section className="space-y-3">
-                    <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500">
-            // description
+                    <h2 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        // description
                     </h2>
 
                     <div className="prose-dev">
@@ -299,54 +266,47 @@ export default function ResourceDetail() {
                     </div>
                 </section>
 
-                {/* Tags */}
                 <div className="flex flex-wrap gap-1.5">
                     {resource.tags.map((t) => (
-                        <TagBadge key={t}>#{t}</TagBadge>
+                        <TagBadge key={t}>{t}</TagBadge>
                     ))}
                 </div>
 
-                {/* Uploader */}
-                <div className="flex items-center gap-3 p-4 border border-zinc-800 rounded-lg bg-zinc-900/40">
+                <div className="flex items-center gap-3 rounded-sm border border-rule bg-paper-2/40 p-4">
                     <Link to={`/u/${resource.uploader.username}`}>
                         <img
                             src={resource.uploader.avatar}
                             alt=""
-                            className="w-12 h-12 rounded-full object-cover border border-zinc-800"
+                            className="h-12 w-12 rounded-sm border border-rule object-cover"
                         />
                     </Link>
 
                     <div className="flex-1">
                         <Link
                             to={`/u/${resource.uploader.username}`}
-                            className="font-semibold text-zinc-50 hover:text-emerald-400 transition-colors"
+                            className="font-semibold text-ink transition-colors hover:text-accent"
                         >
                             {resource.uploader.name}
                         </Link>
-
-                        <p className="font-mono text-xs text-zinc-500">
+                        <p className="font-mono text-xs text-ink-3">
                             @{resource.uploader.username}
                         </p>
                     </div>
                 </div>
 
-                {/* Comments */}
                 <section className="space-y-4">
-                    <h2 className="font-mono text-xs uppercase tracking-[0.2em] text-zinc-500 flex items-center gap-2">
-                        <MessageCircle className="w-3.5 h-3.5" />
-            // comments ({resource.comments?.length || 0})
+                    <h2 className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        // comments ({resource.comments?.length || 0})
                     </h2>
 
-                    <form
-                        onSubmit={handleComment}
-                        className="flex flex-col gap-2"
-                    >
+                    <form onSubmit={handleComment} className="flex flex-col gap-2">
                         <Textarea
                             data-testid="comment-input"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            placeholder="Leave a thoughtful comment..."
-                            className="bg-zinc-950 border-zinc-800 text-sm placeholder:text-zinc-600 focus-visible:border-emerald-500/40 focus-visible:ring-emerald-500/30 min-h-[80px]"
+                            placeholder="Leave a thoughtful comment…"
+                            className="min-h-[80px] rounded-sm border-rule bg-paper text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                         />
 
                         <div className="flex justify-end">
@@ -354,9 +314,9 @@ export default function ResourceDetail() {
                                 type="submit"
                                 data-testid="post-comment-btn"
                                 disabled={!comment.trim()}
-                                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md text-sm font-semibold text-zinc-950 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+                                className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                <Send className="w-3.5 h-3.5" />
+                                <Send className="h-3.5 w-3.5" />
                                 Post
                             </button>
                         </div>
@@ -366,25 +326,25 @@ export default function ResourceDetail() {
                         {(resource.comments || []).map((c) => (
                             <li
                                 key={c.id}
-                                className="flex gap-3 p-4 border border-zinc-800 rounded-lg bg-zinc-900/30"
+                                className="flex gap-3 rounded-sm border border-rule bg-paper-2/40 p-4"
                             >
                                 <img
                                     src={c.author.avatar}
                                     alt=""
-                                    className="w-9 h-9 rounded-full object-cover"
+                                    className="h-9 w-9 rounded-sm border border-rule object-cover"
                                 />
 
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 text-sm">
-                                        <span className="font-semibold text-zinc-50">
+                                        <span className="font-semibold text-ink">
                                             {c.author.name}
                                         </span>
-                                        <span className="font-mono text-xs text-zinc-600">
+                                        <span className="font-mono text-xs text-ink-3">
                                             · {timeAgo(c.created_at)}
                                         </span>
                                     </div>
 
-                                    <p className="text-sm text-zinc-300 mt-1 leading-relaxed">
+                                    <p className="mt-1 text-sm leading-relaxed text-ink-2">
                                         {c.text}
                                     </p>
                                 </div>
@@ -399,11 +359,11 @@ export default function ResourceDetail() {
 
 function Stat({ label, value }) {
     return (
-        <div className="p-4 border border-zinc-800 rounded-lg bg-zinc-900/40">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+        <div className="rounded-sm border border-rule bg-paper-2/40 p-4">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-3">
                 {label}
             </div>
-            <div className="font-display text-2xl font-bold text-zinc-50 tabular-nums mt-1">
+            <div className="mt-1 font-display text-2xl font-bold tabular-nums text-ink">
                 {value}
             </div>
         </div>
