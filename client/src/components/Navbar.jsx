@@ -63,7 +63,6 @@ export default function Navbar() {
                     <NavItem to="/" index="01" label="Feed" testId="nav-home" linkClass={linkClass} end />
                     <NavItem to="/resources" index="02" label="Library" testId="nav-resources" linkClass={linkClass} />
                     <NavItem to="/questions" index="03" label="Q&A" testId="nav-questions" linkClass={linkClass} />
-                    <NavItem to={`/u/${currentUser.username}`} index="04" label="You" testId="nav-profile" linkClass={linkClass} />
                 </nav>
 
                 {/* Search */}
@@ -167,9 +166,6 @@ export default function Navbar() {
                 </NavLink>
                 <NavLink to="/questions" className={linkClass}>
                     Q&A
-                </NavLink>
-                <NavLink to={`/u/${currentUser.username}`} className={linkClass}>
-                    You
                 </NavLink>
             </div>
         </header>

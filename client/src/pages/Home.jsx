@@ -29,7 +29,7 @@ function StatTile({ icon: Icon, label, value, colorKey }) {
     const c = `var(${STAT_COLOR[colorKey]})`;
 
     return (
-        <div className="group relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-4 transition-colors hover:border-ink-3">
+        <div className="group relative overflow-hidden rounded-sm border border-rule bg-paper-2 p-4 transition-colors hover:border-ink-3">
             <span
                 aria-hidden
                 className="absolute left-0 top-0 h-full w-[2px]"
@@ -95,7 +95,7 @@ export default function Home() {
             <section className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/40 card-elevated">
                 <div className="aurora" />
                 <div className="absolute inset-0 grid-bg opacity-50" />
-
+                
                 <div className="relative grid grid-cols-12 gap-0">
                     {/* Left margin like a notebook gutter */}
                     <aside className="hidden sm:block col-span-12 border-b border-rule px-6 py-4 sm:col-span-2 sm:border-b-0 sm:border-r sm:px-4 sm:py-10">
@@ -122,7 +122,7 @@ export default function Home() {
                     <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
                         <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
                             <Terminal className="h-3.5 w-3.5 text-accent" />
-                            volume one · winter '26 · for people who code
+                            volume one · summer '26 · for people who code
                         </p>
 
                         <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
@@ -140,11 +140,11 @@ export default function Home() {
                             actually want to open.
                         </p>
 
-                        <div className="mt-9 flex flex-wrap items-center gap-3">
+                        <div className="mt-9 flex flex-wrap items-center gap-4">
                             <Link
                                 to="/resources"
                                 data-testid="hero-browse-btn"
-                                className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-paper glow-btn"
+                                className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-paper glow-btn shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
                             >
                                 Open the library <ArrowRight className="h-4 w-4" />
                             </Link>
@@ -152,18 +152,18 @@ export default function Home() {
                             <Link
                                 to="/ask"
                                 data-testid="hero-ask-btn"
-                                className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2 px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-ink-3"
+                                className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                             >
                                 Ask a question
                             </Link>
 
-                            <span className="ml-1 hidden font-mono text-xs text-ink-3 md:inline">
-                                press <kbd className="kbd">⌘ K</kbd> to jump anywhere
+                            <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
+                                press <kbd className="font-bold text-ink-2">⌘ K</kbd> to jump anywhere
                             </span>
                         </div>
 
-                        {/* Stats */}
-                        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {/* ── STATS SECTION ─────────────────────────────────── */}
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mt-9">
                             <StatTile
                                 icon={BookOpen}
                                 label="resources"
@@ -191,33 +191,33 @@ export default function Home() {
                         </div>
                     </div>
                 </div>
-
-                {/* Footer ticker */}
-                <div className="overflow-hidden border-t border-rule bg-paper py-2.5">
-                    <div className="flex whitespace-nowrap marquee">
-                        {[...Array(2)].map((_, k) => (
-                            <div
-                                key={k}
-                                className="flex shrink-0 items-center gap-8 px-4 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3"
-                            >
-                                <span>· operating systems</span>
-                                <span>· data structures</span>
-                                <span>· system design</span>
-                                <span>· dbms</span>
-                                <span>· compilers</span>
-                                <span>· machine learning</span>
-                                <span className="text-accent">★ pyq archive</span>
-                                <span>· networks</span>
-                                <span>· algorithms</span>
-                                <span>· react</span>
-                                <span>· python</span>
-                                <span>· rust</span>
-                                <span>· interview prep</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </section>
+
+            {/* ── FULL-WIDTH TICKER ─────────────────────────────── */}
+            <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] shadow-lg">
+                <div className="flex whitespace-nowrap marquee">
+                    {[...Array(2)].map((_, k) => (
+                        <div
+                            key={k}
+                            className="flex shrink-0 items-center gap-12 px-6 font-mono text-[13px] font-bold uppercase tracking-[0.2em] text-paper"
+                        >
+                            <span>· operating systems</span>
+                            <span>· data structures</span>
+                            <span>· system design</span>
+                            <span>· dbms</span>
+                            <span>· compilers</span>
+                            <span>· machine learning</span>
+                            <span className="text-accent flex items-center gap-2"><Sparkles className="h-4 w-4" /> pyq archive</span>
+                            <span>· networks</span>
+                            <span>· algorithms</span>
+                            <span>· react</span>
+                            <span>· python</span>
+                            <span>· rust</span>
+                            <span>· interview prep</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             {/* ── EDITORIAL DIVIDER ─────────────────────────────── */}
             <div className="flex items-center gap-4">
@@ -256,47 +256,6 @@ export default function Home() {
                 </section>
 
                 <aside className="space-y-6 lg:col-span-5">
-                    {/* Profile card — index-card style */}
-                    <div className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-5">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                            // profile card
-                        </p>
-
-                        <div className="mt-3 flex items-center gap-3">
-                            <img
-                                src={currentUser.avatar}
-                                alt=""
-                                className="h-14 w-14 rounded-sm border border-rule object-cover"
-                            />
-
-                            <div>
-                                <div className="font-display text-xl font-semibold text-ink">
-                                    {currentUser.name}
-                                </div>
-                                <div className="font-mono text-xs text-ink-3">
-                                    @{currentUser.username}
-                                </div>
-                            </div>
-                        </div>
-
-                        <p className="mt-4 text-sm leading-relaxed text-ink-2">
-                            {currentUser.bio}
-                        </p>
-
-                        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                            <MiniStat value={currentUser.stats.resources} label="uploads" colorVar="--syntax-mint" />
-                            <MiniStat value={currentUser.stats.answers} label="answers" colorVar="--syntax-cyan" />
-                            <MiniStat value={currentUser.stats.upvotes} label="upvotes" colorVar="--syntax-amber" />
-                        </div>
-
-                        <Link
-                            to={`/u/${currentUser.username}`}
-                            className="mt-4 block w-full rounded-sm border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-                        >
-                            View full profile →
-                        </Link>
-                    </div>
-
                     {/* Popular tags */}
                     <div className="rounded-sm border border-rule bg-paper-2/60 p-5">
                         <h3 className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
@@ -339,6 +298,47 @@ export default function Home() {
                                 </li>
                             ))}
                         </ul>
+                    </div>
+                    
+                    {/* Profile card — index-card style */}
+                    <div className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-5">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                            // profile card
+                        </p>
+
+                        <div className="mt-3 flex items-center gap-3">
+                            <img
+                                src={currentUser.avatar}
+                                alt=""
+                                className="h-14 w-14 rounded-sm border border-rule object-cover"
+                            />
+
+                            <div>
+                                <div className="font-display text-xl font-semibold text-ink">
+                                    {currentUser.name}
+                                </div>
+                                <div className="font-mono text-xs text-ink-3">
+                                    @{currentUser.username}
+                                </div>
+                            </div>
+                        </div>
+
+                        <p className="mt-4 text-sm leading-relaxed text-ink-2">
+                            {currentUser.bio}
+                        </p>
+
+                        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                            <MiniStat value={currentUser.stats.resources} label="uploads" colorVar="--syntax-mint" />
+                            <MiniStat value={currentUser.stats.answers} label="answers" colorVar="--syntax-cyan" />
+                            <MiniStat value={currentUser.stats.upvotes} label="upvotes" colorVar="--syntax-amber" />
+                        </div>
+
+                        <Link
+                            to={`/u/${currentUser.username}`}
+                            className="mt-4 block w-full rounded-sm border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                        >
+                            View full profile →
+                        </Link>
                     </div>
                 </aside>
             </div>
