@@ -11,6 +11,8 @@ import {
 import { useApp } from "../context/AppContext";
 import QuestionCard from "../components/QuestionCard";
 import TagBadge from "../components/TagBadge";
+import EmptyPlaceholder from "../components/EmptyPlaceholder";
+import { QuestionCardSkeleton } from "../components/Skeletons";
 import { Input } from "../components/ui/input";
 import {
     Select,
@@ -28,7 +30,7 @@ const SORTS = [
 ];
 
 export default function Questions() {
-    const { questions } = useApp();
+    const { questions, apiLoaded } = useApp();
 
     const [q, setQ] = useState("");
     const [tag, setTag] = useState("");
@@ -165,12 +167,14 @@ export default function Questions() {
                     </p>
 
                     <div className="space-y-3">
-                        {filtered.length === 0 ? (
-                            <div className="rounded-sm border border-dashed border-rule py-16 text-center">
-                                <MessageSquare className="mx-auto mb-2 h-8 w-8 text-ink-3" />
-                                <p className="font-display text-lg text-ink">Nothing here yet</p>
-                                <p className="mt-1 text-sm text-ink-3">Be the first to ask.</p>
-                            </div>
+                        {!apiLoaded ? (
+                            [1, 2, 3, 4, 5].map((i) => <QuestionCardSkeleton key={i} />)
+                        ) : filtered.length === 0 ? (
+                            <EmptyPlaceholder 
+                                icon={MessageSquare}
+                                title="No questions found"
+                                description="Try clearing some filters or searching differently."
+                            />
                         ) : (
                             filtered.map((question) => (
                                 <QuestionCard key={question.id} question={question} />
@@ -186,18 +190,22 @@ export default function Questions() {
                         </h3>
 
                         <div className="flex max-h-[300px] flex-wrap gap-1.5 overflow-y-auto">
-                            {allTags.map(([t, count]) => (
-                                <button
-                                    key={t}
-                                    onClick={() => setTag(t === tag ? "" : t)}
-                                    data-testid={`filter-tag-${t}`}
-                                >
-                                    <TagBadge active={t === tag}>
-                                        {t}
-                                        <span className="ml-1.5 text-ink-3">{count}</span>
-                                    </TagBadge>
-                                </button>
-                            ))}
+                            {allTags.length > 0 ? (
+                                allTags.map(([t, count]) => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setTag(t === tag ? "" : t)}
+                                        data-testid={`filter-tag-${t}`}
+                                    >
+                                        <TagBadge active={t === tag}>
+                                            {t}
+                                            <span className="ml-1.5 text-ink-3">{count}</span>
+                                        </TagBadge>
+                                    </button>
+                                ))
+                            ) : (
+                                <span className="text-xs text-ink-3 font-mono py-2">No tags available.</span>
+                            )}
                         </div>
 
                         <hr className="border-rule" />

@@ -37,10 +37,10 @@ let answerCounter = 1000;
 export function AppProvider({ children }) {
   const { user: authUser, isAuthenticated } = useAuth();
 
-  const [resources, setResources] = useState(RESOURCES_SEED);
-  const [questions, setQuestions] = useState(QUESTIONS_SEED);
-  const [notifications, setNotifications] = useState(NOTIFICATIONS_SEED);
-  const [bookmarks, setBookmarks] = useState(new Set(["r_003"]));
+  const [resources, setResources] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [bookmarks, setBookmarks] = useState(new Set());
   const [votes, setVotes] = useState({});
   const [apiLoaded, setApiLoaded] = useState(false);
 
@@ -68,10 +68,12 @@ export function AppProvider({ children }) {
         ]);
 
         if (resResult.status === "fulfilled") {
-          setResources(resResult.value.data);
+          const fetchedResources = resResult.value.data;
+          setResources(fetchedResources.length > 0 ? fetchedResources : RESOURCES_SEED);
         }
         if (qResult.status === "fulfilled") {
-          setQuestions(qResult.value.data);
+          const fetchedQuestions = qResult.value.data;
+          setQuestions(fetchedQuestions.length > 0 ? fetchedQuestions : QUESTIONS_SEED);
         }
         if (notifResult.status === "fulfilled") {
           setNotifications(notifResult.value.data);
@@ -396,6 +398,7 @@ export function AppProvider({ children }) {
       bookmarks,
       votes,
       unreadCount,
+      apiLoaded,
       voteOn,
       toggleBookmark,
       addResource,
@@ -419,6 +422,7 @@ export function AppProvider({ children }) {
       bookmarks,
       votes,
       unreadCount,
+      apiLoaded,
       voteOn,
       toggleBookmark,
       addResource,

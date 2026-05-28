@@ -17,6 +17,8 @@ import { useAuth } from "../context/AuthContext";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import TagBadge from "../components/TagBadge";
+import EmptyPlaceholder from "../components/EmptyPlaceholder";
+import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton } from "../components/Skeletons";
 import { COLLEGES } from "../data/mockData";
 
 const STAT_COLOR = {
@@ -60,36 +62,54 @@ function StatTile({ icon: Icon, label, value, colorKey }) {
 }
 
 export default function Home() {
-    const { resources, questions, currentUser } = useApp();
+    const { resources, questions, currentUser, apiLoaded } = useApp();
     const { isAuthenticated } = useAuth();
 
-    const trendingResources = useMemo(
-        () =>
-            [...resources]
-                .sort((a, b) => b.upvotes + b.downloads / 5 - (a.upvotes + a.downloads / 5))
-                .slice(0, 4),
-        [resources]
-    );
+    const trendingResources = useMemo(() => {
+        return [...resources]
+            .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes))
+            .slice(0, 3);
+    }, [resources]);
 
-    const recentQuestions = useMemo(
-        () =>
-            [...questions]
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .slice(0, 4),
-        [questions]
-    );
+    const recentQuestions = useMemo(() => {
+        return [...questions]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 3);
+    }, [questions]);
 
     const allTags = useMemo(() => {
         const counts = {};
+        
+        resources.forEach(r => r.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
+        questions.forEach(q => q.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
 
-        [...resources, ...questions].forEach((item) => {
-            (item.tags || []).forEach((t) => {
-                counts[t] = (counts[t] || 0) + 1;
-            });
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    }, [resources, questions]);
+
+    const activeColleges = useMemo(() => {
+        const counts = {};
+        
+        // Count colleges from resources
+        resources.forEach(r => {
+            if (r.college) counts[r.college] = (counts[r.college] || 0) + 1;
         });
 
-        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 14);
-    }, [resources, questions]);
+        // Add current user's college if they are logged in
+        if (isAuthenticated && currentUser?.college) {
+            counts[currentUser.college] = (counts[currentUser.college] || 0) + 1;
+        }
+
+        return Object.entries(counts)
+            .sort((a, b) => {
+                if (b[1] !== a[1]) return b[1] - a[1];
+                if (isAuthenticated && currentUser?.college) {
+                    if (a[0] === currentUser.college) return -1;
+                    if (b[0] === currentUser.college) return 1;
+                }
+                return a[0].localeCompare(b[0]);
+            })
+            .slice(0, 6);
+    }, [resources, currentUser, isAuthenticated]);
 
     return (
         <div className="space-y-16 fade-in-up">
@@ -251,9 +271,21 @@ export default function Home() {
                     </header>
 
                     <div className="space-y-3">
-                        {trendingResources.map((r) => (
-                            <ResourceCard key={r.id} resource={r} />
-                        ))}
+                        {!apiLoaded ? (
+                            [1, 2, 3].map((i) => <ResourceCardSkeleton key={i} />)
+                        ) : trendingResources.length > 0 ? (
+                            trendingResources.map((r) => (
+                                <ResourceCard key={r.id} resource={r} />
+                            ))
+                        ) : (
+                            <EmptyPlaceholder 
+                                icon={BookOpen}
+                                title="No resources found"
+                                description="The library is currently empty. Be the first to share your notes or past year papers!"
+                                linkTo="/resources"
+                                linkText="Upload Resource"
+                            />
+                        )}
                     </div>
                 </section>
 
@@ -266,14 +298,25 @@ export default function Home() {
                         </h3>
 
                         <div className="mt-3 flex flex-wrap gap-1.5">
-                            {allTags.map(([tag, count]) => (
-                                <Link key={tag} to={`/resources?tag=${tag}`}>
-                                    <TagBadge>
-                                        {tag}
-                                        <span className="ml-1.5 text-ink-3">{count}</span>
-                                    </TagBadge>
-                                </Link>
-                            ))}
+                            {!apiLoaded ? (
+                                <>
+                                    <Skeleton className="h-6 w-16" />
+                                    <Skeleton className="h-6 w-24" />
+                                    <Skeleton className="h-6 w-20" />
+                                    <Skeleton className="h-6 w-14" />
+                                </>
+                            ) : allTags.length > 0 ? (
+                                allTags.map(([tag, count]) => (
+                                    <Link key={tag} to={`/resources?tag=${tag}`}>
+                                        <TagBadge>
+                                            {tag}
+                                            <span className="ml-1.5 text-ink-3">{count}</span>
+                                        </TagBadge>
+                                    </Link>
+                                ))
+                            ) : (
+                                <span className="text-xs text-ink-3 font-mono py-2">No tags available.</span>
+                            )}
                         </div>
                     </div>
 
@@ -285,20 +328,31 @@ export default function Home() {
                         </h3>
 
                         <ul className="mt-3 space-y-1">
-                            {COLLEGES.slice(0, 6).map((c, i) => (
-                                <li
-                                    key={c}
-                                    className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule py-1.5 text-sm last:border-b-0"
-                                >
-                                    <span className="text-ink-2 transition-colors group-hover:text-ink">
-                                        <span className="mr-3 font-mono text-ink-3">
-                                            {String(i + 1).padStart(2, "0")}
+                            {!apiLoaded ? (
+                                [1, 2, 3, 4].map(i => (
+                                    <li key={i} className="flex justify-between py-1.5 border-b border-dotted border-rule last:border-0">
+                                        <div className="flex gap-2 w-full"><Skeleton className="h-4 w-4" /><Skeleton className="h-4 w-3/4" /></div>
+                                        <Skeleton className="h-4 w-6" />
+                                    </li>
+                                ))
+                            ) : activeColleges.length > 0 ? (
+                                activeColleges.map(([c, count], i) => (
+                                    <li
+                                        key={c}
+                                        className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule py-1.5 text-sm last:border-b-0"
+                                    >
+                                        <span className="text-ink-2 transition-colors group-hover:text-ink">
+                                            <span className="mr-3 font-mono text-ink-3">
+                                                {String(i + 1).padStart(2, "0")}
+                                            </span>
+                                            {c}
                                         </span>
-                                        {c}
-                                    </span>
-                                    <span className="font-mono text-xs text-ink-3">{180 - i * 17}</span>
-                                </li>
-                            ))}
+                                        <span className="font-mono text-xs text-ink-3">{count}</span>
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="text-xs text-ink-3 font-mono py-1.5">No active colleges.</li>
+                            )}
                         </ul>
                     </div>
                     
@@ -374,9 +428,21 @@ export default function Home() {
                 </header>
 
                 <div className="space-y-3">
-                    {recentQuestions.map((q) => (
-                        <QuestionCard key={q.id} question={q} />
-                    ))}
+                    {!apiLoaded ? (
+                        [1, 2, 3].map((i) => <QuestionCardSkeleton key={i} />)
+                    ) : recentQuestions.length > 0 ? (
+                        recentQuestions.map((q) => (
+                            <QuestionCard key={q.id} question={q} />
+                        ))
+                    ) : (
+                        <EmptyPlaceholder 
+                            icon={MessageSquare}
+                            title="No questions asked"
+                            description="The forum is quiet. Start a discussion or ask a question to the community!"
+                            linkTo="/questions"
+                            linkText="Ask a Question"
+                        />
+                    )}
                 </div>
             </section>
         </div>

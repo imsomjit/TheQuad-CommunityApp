@@ -3,10 +3,10 @@ import { GITHUB_MOCK } from "../data/mockData";
 
 // 5 contribution levels
 const LEVEL_BG = [
-    "var(--paper-3)",
-    "color-mix(in oklab, var(--accent-2) 25%, var(--paper-2))",
-    "color-mix(in oklab, var(--accent-2) 50%, var(--paper-2))",
-    "color-mix(in oklab, var(--accent-2) 75%, var(--paper-2))",
+    "var(--paper-2)",
+    "color-mix(in srgb, var(--accent-2) 30%, var(--paper-2))",
+    "color-mix(in srgb, var(--accent-2) 55%, var(--paper-2))",
+    "color-mix(in srgb, var(--accent-2) 80%, var(--paper-2))",
     "var(--accent-2)",
 ];
 
@@ -35,7 +35,7 @@ export default function ContributionGraph({
                     {LEVEL_BG.map((bg, index) => (
                         <span
                             key={index}
-                            className="h-2.5 w-2.5 rounded-sm border border-rule"
+                            className="h-3 w-3 rounded-[3px] border border-rule/50"
                             style={{ backgroundColor: bg }}
                         />
                     ))}
@@ -59,7 +59,7 @@ export default function ContributionGraph({
                             <div
                                 key={index}
                                 title={`Level ${level}`}
-                                className="h-2.5 w-2.5 rounded-sm border border-rule transition-transform hover:z-10 hover:scale-150"
+                                className="h-3 w-3 rounded-[3px] border border-rule/50 transition-all duration-200 hover:z-10 hover:scale-[1.6] hover:shadow-lg hover:border-accent-2 cursor-pointer"
                                 style={{ backgroundColor: LEVEL_BG[level] }}
                             />
                         );

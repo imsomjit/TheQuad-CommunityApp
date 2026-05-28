@@ -11,6 +11,8 @@ import {
     SEMESTERS,
     SUBJECTS,
 } from "../data/mockData";
+import EmptyPlaceholder from "../components/EmptyPlaceholder";
+import { ResourceCardSkeleton } from "../components/Skeletons";
 
 import { Input } from "../components/ui/input";
 import {
@@ -30,7 +32,7 @@ const SORTS = [
 const ALL = "__all__";
 
 export default function Resources() {
-    const { resources } = useApp();
+    const { resources, apiLoaded } = useApp();
     const [params, setParams] = useSearchParams();
 
     const [q, setQ] = useState("");
@@ -252,13 +254,14 @@ export default function Resources() {
 
             {/* Resource list */}
             <div className="space-y-3">
-                {filtered.length === 0 ? (
-                    <div className="rounded-sm border border-dashed border-rule py-20 text-center">
-                        <p className="font-display text-xl text-ink">No matches</p>
-                        <p className="mt-1 text-sm text-ink-3">
-                            Try clearing some filters or searching differently.
-                        </p>
-                    </div>
+                {!apiLoaded ? (
+                    [1, 2, 3, 4, 5].map((i) => <ResourceCardSkeleton key={i} />)
+                ) : filtered.length === 0 ? (
+                    <EmptyPlaceholder 
+                        icon={Search}
+                        title="No matches found"
+                        description="Try clearing some filters or searching differently."
+                    />
                 ) : (
                     filtered.map((resource) => (
                         <ResourceCard key={resource.id} resource={resource} />

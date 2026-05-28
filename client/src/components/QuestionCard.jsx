@@ -29,7 +29,7 @@ export default function QuestionCard({ question }) {
     return (
         <article
             data-testid={`question-card-${question.id}`}
-            className="group flex gap-5 rounded-sm border border-rule bg-paper-2/50 p-5 transition-all duration-200 hover:border-ink-3 hover:bg-paper-2 card-elevated"
+            className="group flex gap-5 rounded-xl border border-rule bg-paper-2/40 p-5 transition-all duration-300 hover:border-ink-3 hover:bg-paper-2/80 hover:-translate-y-1 hover:shadow-md card-elevated"
         >
             {/* Stats column — IDE gutter style */}
             <div className="hidden min-w-[88px] flex-col items-end gap-3 border-r border-rule/60 pr-4 pt-1 text-right sm:flex">

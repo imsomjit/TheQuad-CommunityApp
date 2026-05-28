@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Globe, Building2, Camera, ChevronRight, Loader2, UserCheck, UserPlus,
+    Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +12,7 @@ import { usersApi, githubApi } from "../services/api";
 import ContributionGraph from "../components/ContributionGraph";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
+import Loader from "../components/Loader";
 import TagBadge from "../components/TagBadge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { toast } from "sonner";
@@ -171,7 +172,7 @@ export default function Profile() {
                             disabled={bannerUploading}
                             className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-rule/60 bg-paper/80 px-3 py-1.5 text-xs font-mono text-ink backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-paper"
                         >
-                            {bannerUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+                            {bannerUploading ? <Loader inline size="sm" /> : <Camera className="h-3 w-3" />}
                             {bannerUploading ? "Uploading…" : "Change banner"}
                         </button>
                     )}
@@ -194,7 +195,7 @@ export default function Profile() {
                                     disabled={avatarUploading}
                                     className="absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
-                                    {avatarUploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-6 w-6 text-white" />}
+                                    {avatarUploading ? <Loader inline size="md" className="text-white" /> : <Camera className="h-6 w-6 text-white" />}
                                 </button>
                             )}
                             <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
@@ -220,7 +221,7 @@ export default function Profile() {
                                     }`}
                                 >
                                     {followLoading ? (
-                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        <Loader inline size="sm" />
                                     ) : following ? (
                                         <><UserCheck className="w-3.5 h-3.5" /> Following</>
                                     ) : (
@@ -241,114 +242,125 @@ export default function Profile() {
                         </div>
                     </div>
 
-                    {/* Name & username */}
-                    <h1 className="font-display text-3xl sm:text-4xl font-bold text-ink tracking-tight leading-tight">
-                        {profile.name}
-                    </h1>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-sm text-ink-2">
-                        <span>@{profile.username}</span>
-                        {profile.githubUsername && (
-                            <>
-                                <span className="text-ink-3">·</span>
+                    {/* Name & tags */}
+                    <div className="flex flex-col gap-3 mt-2">
+                        <h1 className="font-display text-4xl sm:text-5xl font-extrabold text-ink tracking-tight leading-none">
+                            {profile.name}
+                        </h1>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper border border-rule text-sm font-medium text-ink-2">
+                                @{profile.username}
+                            </span>
+                            {profile.githubUsername && (
                                 <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer"
-                                    className="inline-flex items-center gap-1 hover:text-accent transition-colors">
-                                    <Github className="w-3.5 h-3.5" /> {profile.githubUsername}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper border border-rule text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors">
+                                    <Github className="w-4 h-4" /> {profile.githubUsername}
                                 </a>
-                            </>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* Bio */}
                     {profile.bio && (
-                        <p className="mt-3 text-ink-2 max-w-2xl leading-relaxed">{profile.bio}</p>
+                        <p className="mt-5 text-ink-2 text-base sm:text-lg max-w-2xl leading-relaxed">{profile.bio}</p>
                     )}
 
-                    {/* Location / org / website / joined */}
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-mono text-ink-3">
+                    {/* Metadata Grid */}
+                    <div className="mt-6 flex flex-wrap gap-4 text-sm text-ink-2">
                         {profile.location && (
-                            <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" /> {profile.location}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-md bg-paper border border-rule"><MapPin className="w-4 h-4 text-ink-3" /></div>
+                                <span>{profile.location}</span>
+                            </div>
                         )}
                         {profile.organization && (
-                            <span className="flex items-center gap-1">
-                                <Building2 className="w-3 h-3" /> {profile.organization}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-md bg-paper border border-rule"><Building2 className="w-4 h-4 text-ink-3" /></div>
+                                <span>{profile.organization}</span>
+                            </div>
                         )}
                         {profile.college && (
-                            <span className="flex items-center gap-1">
-                                <BookOpen className="w-3 h-3" /> {profile.college}
-                                {profile.branch && ` · ${profile.branch}`}
-                                {profile.graduationYear && ` · ${profile.graduationYear}`}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-md bg-paper border border-rule"><BookOpen className="w-4 h-4 text-ink-3" /></div>
+                                <span>
+                                    {profile.college}
+                                    {profile.branch && <span className="text-ink-3 mx-1">•</span>}
+                                    {profile.branch}
+                                    {profile.graduationYear && <span className="text-ink-3 mx-1">•</span>}
+                                    {profile.graduationYear && `'${String(profile.graduationYear).slice(-2)}`}
+                                </span>
+                            </div>
                         )}
                         {profile.website && (
                             <a href={profile.website} target="_blank" rel="noreferrer"
-                                className="flex items-center gap-1 hover:text-accent transition-colors">
-                                <Globe className="w-3 h-3" /> {profile.website.replace(/^https?:\/\//, "")}
+                                className="flex items-center gap-2 hover:text-accent transition-colors">
+                                <div className="p-1.5 rounded-md bg-paper border border-rule"><Globe className="w-4 h-4 text-ink-3" /></div>
+                                <span>{profile.website.replace(/^https?:\/\//, "")}</span>
                             </a>
                         )}
                         {profile.joined && (
-                            <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                Joined {new Date(profile.joined).toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-md bg-paper border border-rule"><Calendar className="w-4 h-4 text-ink-3" /></div>
+                                <span>Joined {new Date(profile.joined).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span>
+                            </div>
                         )}
                     </div>
 
-                    {/* Social links row */}
-                    <div className="mt-3 flex items-center gap-3">
-                        {profile.linkedinUrl && (
-                            <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" title="LinkedIn"
-                                className="text-ink-3 hover:text-[#0077B5] transition-colors">
-                                <Linkedin className="w-4 h-4" />
-                            </a>
-                        )}
-                        {profile.twitterHandle && (
-                            <a href={`https://x.com/${profile.twitterHandle}`} target="_blank" rel="noreferrer" title="X / Twitter"
-                                className="text-ink-3 hover:text-ink transition-colors">
-                                <Twitter className="w-4 h-4" />
-                            </a>
-                        )}
-                        {profile.instagramHandle && (
-                            <a href={`https://instagram.com/${profile.instagramHandle}`} target="_blank" rel="noreferrer" title="Instagram"
-                                className="text-ink-3 hover:text-[#E1306C] transition-colors">
-                                <Instagram className="w-4 h-4" />
-                            </a>
-                        )}
-                        {profile.leetcodeUsername && (
-                            <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" title="LeetCode"
-                                className="text-ink-3 hover:text-[#FFA116] transition-colors text-xs font-mono font-bold">
-                                LC
-                            </a>
-                        )}
-                    </div>
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-rule pt-5">
+                        {/* Follower / Following counts */}
+                        <div className="flex items-center gap-6">
+                            {isOwnProfile ? (
+                                <>
+                                    <Link to={`/pv/${username}/followers`} className="group flex items-baseline gap-1.5">
+                                        <span className="font-sans text-xl font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.followers || 0).toLocaleString()}</span>
+                                        <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">followers</span>
+                                    </Link>
+                                    <Link to={`/pv/${username}/following`} className="group flex items-baseline gap-1.5">
+                                        <span className="font-sans text-xl font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.following || 0).toLocaleString()}</span>
+                                        <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">following</span>
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="font-sans text-xl font-bold text-ink">{(profile.stats?.followers || 0).toLocaleString()}</span>
+                                        <span className="text-ink-3 text-sm font-medium">followers</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1.5">
+                                        <span className="font-sans text-xl font-bold text-ink">{(profile.stats?.following || 0).toLocaleString()}</span>
+                                        <span className="text-ink-3 text-sm font-medium">following</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
-                    {/* Follower / Following counts */}
-                    <div className="mt-4 flex items-center gap-4 text-sm">
-                        {isOwnProfile ? (
-                            <>
-                                <Link to={`/pv/${username}/followers`} className="flex items-center gap-1.5 text-ink hover:text-accent transition-colors">
-                                    <span className="font-semibold font-mono">{(profile.stats?.followers || 0).toLocaleString()}</span>
-                                    <span className="text-ink-3 font-mono text-xs">followers</span>
-                                </Link>
-                                <Link to={`/pv/${username}/following`} className="flex items-center gap-1.5 text-ink hover:text-accent transition-colors">
-                                    <span className="font-semibold font-mono">{(profile.stats?.following || 0).toLocaleString()}</span>
-                                    <span className="text-ink-3 font-mono text-xs">following</span>
-                                </Link>
-                            </>
-                        ) : (
-                            <>
-                                <span className="flex items-center gap-1.5">
-                                    <span className="font-semibold font-mono">{(profile.stats?.followers || 0).toLocaleString()}</span>
-                                    <span className="text-ink-3 font-mono text-xs">followers</span>
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <span className="font-semibold font-mono">{(profile.stats?.following || 0).toLocaleString()}</span>
-                                    <span className="text-ink-3 font-mono text-xs">following</span>
-                                </span>
-                            </>
-                        )}
+                        {/* Social links row */}
+                        <div className="flex items-center gap-2">
+                            {profile.linkedinUrl && (
+                                <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" title="LinkedIn"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] transition-all">
+                                    <Linkedin className="w-4 h-4" />
+                                </a>
+                            )}
+                            {profile.twitterHandle && (
+                                <a href={`https://x.com/${profile.twitterHandle}`} target="_blank" rel="noreferrer" title="X / Twitter"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-black hover:border-black transition-all">
+                                    <Twitter className="w-4 h-4" />
+                                </a>
+                            )}
+                            {profile.instagramHandle && (
+                                <a href={`https://instagram.com/${profile.instagramHandle}`} target="_blank" rel="noreferrer" title="Instagram"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition-all">
+                                    <Instagram className="w-4 h-4" />
+                                </a>
+                            )}
+                            {profile.leetcodeUsername && (
+                                <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" title="LeetCode"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-[#111] hover:bg-[#FFA116] hover:border-[#FFA116] transition-all flex items-center justify-center font-mono font-bold text-xs" style={{ width: 34, height: 34 }}>
+                                    LC
+                                </a>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -370,29 +382,33 @@ export default function Profile() {
 
             {/* ── GitHub bento ────────────────────────────────────────────────── */}
             {profile.githubUsername ? (
-                <section className="border border-rule rounded-sm bg-paper-2/30 overflow-hidden card-elevated">
-                    <header className="flex items-center justify-between px-5 py-4 border-b border-rule">
+                <section className="border border-rule rounded-xl bg-paper overflow-hidden card-elevated mt-8">
+                    <header className="flex items-center justify-between px-6 py-5 border-b border-rule bg-paper-2/20">
                         <div className="flex items-center gap-3">
-                            <Github className="w-5 h-5 text-ink-2" />
-                            <h2 className="font-display text-lg font-semibold text-ink">GitHub</h2>
-                            {ghProfile && <span className="font-mono text-xs text-ink-3">@{ghProfile.login}</span>}
+                            <Github className="w-6 h-6 text-ink" />
+                            <h2 className="font-sans text-xl font-bold text-ink tracking-tight">GitHub Overview</h2>
+                            {ghProfile && (
+                                <span className="px-2.5 py-0.5 rounded-full bg-paper border border-rule text-xs font-mono font-medium text-ink-2">
+                                    @{ghProfile.login}
+                                </span>
+                            )}
                         </div>
                         <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer"
-                            className="text-xs font-mono uppercase tracking-wider text-ink-3 hover:text-accent inline-flex items-center gap-1 transition-colors">
-                            visit <ExternalLink className="w-3 h-3" />
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-xs font-bold text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider">
+                            visit profile <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                     </header>
 
                     {ghLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <Loader2 className="w-6 h-6 animate-spin text-ink-3" />
+                        <div className="flex items-center justify-center py-16">
+                            <Loader text="fetching github..." size="sm" />
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                             {/* Stats column */}
-                            <div className="lg:col-span-4 p-5 border-b lg:border-b-0 lg:border-r border-rule space-y-4">
+                            <div className="lg:col-span-4 p-6 border-b lg:border-b-0 lg:border-r border-rule space-y-6 bg-paper-2/10">
                                 {ghProfile && (
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-2 gap-3">
                                         <MiniStat icon={Users} label="followers" value={ghProfile.followers || 0} />
                                         <MiniStat icon={Users} label="following" value={ghProfile.following || 0} />
                                         <MiniStat icon={FolderGit2} label="repos" value={ghProfile.publicRepos || 0} />
@@ -402,25 +418,25 @@ export default function Profile() {
 
                                 {ghLanguages.length > 0 && (
                                     <div>
-                                        <p className="font-mono text-xs uppercase tracking-wider text-ink-3 mb-3">// top languages</p>
-                                        <div className="h-2 rounded-full overflow-hidden flex bg-paper-3">
+                                        <h3 className="font-sans text-sm font-bold text-ink mb-3 uppercase tracking-wider">Top Languages</h3>
+                                        <div className="h-2.5 rounded-full overflow-hidden flex bg-paper-3 shadow-inner">
                                             {ghLanguages.map((l) => {
                                                 const pct = Math.round((l.bytes / totalLangBytes) * 1000) / 10;
                                                 const color = LANG_COLORS[l.name] || "#71717a";
                                                 return <div key={l.name} style={{ width: `${pct}%`, backgroundColor: color }} title={`${l.name} ${pct}%`} />;
                                             })}
                                         </div>
-                                        <ul className="mt-3 space-y-1.5">
+                                        <ul className="mt-4 space-y-2.5">
                                             {ghLanguages.map(l => {
                                                 const pct = Math.round((l.bytes / totalLangBytes) * 1000) / 10;
                                                 const color = LANG_COLORS[l.name] || "#71717a";
                                                 return (
-                                                    <li key={l.name} className="flex items-center justify-between text-xs">
-                                                        <span className="flex items-center gap-2 text-ink-2">
-                                                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                                                    <li key={l.name} className="flex items-center justify-between text-sm">
+                                                        <span className="flex items-center gap-2.5 text-ink-2 font-medium">
+                                                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
                                                             {l.name}
                                                         </span>
-                                                        <span className="font-mono text-ink-3">{pct}%</span>
+                                                        <span className="font-mono text-ink-3 text-xs">{pct}%</span>
                                                     </li>
                                                 );
                                             })}
@@ -430,30 +446,35 @@ export default function Profile() {
                             </div>
 
                             {/* Contributions + repos */}
-                            <div className="lg:col-span-8 p-5 space-y-5">
-                                <ContributionGraph contributionData={ghContribs?.contributionsByDay} />
+                            <div className="lg:col-span-8 p-6 space-y-8">
+                                <div>
+                                    <h3 className="font-sans text-sm font-bold text-ink mb-4 uppercase tracking-wider">Contributions</h3>
+                                    <ContributionGraph contributionData={ghContribs?.contributionsByDay} />
+                                </div>
 
                                 {ghRepos.length > 0 && (
                                     <div>
-                                        <p className="font-mono text-xs uppercase tracking-wider text-ink-3 mb-3">// pinned repositories</p>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <h3 className="font-sans text-sm font-bold text-ink mb-4 uppercase tracking-wider">Pinned Repositories</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {ghRepos.map(repo => (
                                                 <a key={repo.id || repo.name} href={repo.htmlUrl} target="_blank" rel="noreferrer"
-                                                    className="block p-4 border border-rule rounded-sm hover:border-ink-3 bg-paper/50 transition-colors group">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <FolderGit2 className="w-3.5 h-3.5 text-ink-3 shrink-0" />
-                                                        <span className="font-mono text-sm font-semibold text-accent group-hover:brightness-110 truncate">{repo.name}</span>
+                                                    className="block p-5 border border-rule rounded-xl hover:border-ink-3 bg-paper-2/20 hover:bg-paper-2/50 transition-all hover:-translate-y-0.5 hover:shadow-md group flex flex-col justify-between h-full">
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <FolderGit2 className="w-4 h-4 text-ink-3 shrink-0 group-hover:text-accent transition-colors" />
+                                                            <span className="font-sans text-base font-bold text-ink group-hover:text-accent truncate transition-colors">{repo.name}</span>
+                                                        </div>
+                                                        <p className="text-sm text-ink-2 line-clamp-2 mb-4 leading-relaxed">{repo.description || "No description"}</p>
                                                     </div>
-                                                    <p className="text-xs text-ink-2 line-clamp-2 mb-3">{repo.description || "No description"}</p>
-                                                    <div className="flex items-center gap-3 text-xs font-mono text-ink-3">
+                                                    <div className="flex items-center gap-4 text-xs font-semibold text-ink-3">
                                                         {repo.language && (
-                                                            <span className="flex items-center gap-1">
-                                                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: LANG_COLORS[repo.language] || "#71717a" }} />
+                                                            <span className="flex items-center gap-1.5">
+                                                                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: LANG_COLORS[repo.language] || "#71717a" }} />
                                                                 {repo.language}
                                                             </span>
                                                         )}
-                                                        <span className="flex items-center gap-1"><Star className="w-3 h-3" /> {repo.stars || 0}</span>
-                                                        <span className="flex items-center gap-1"><GitFork className="w-3 h-3" /> {repo.forks || 0}</span>
+                                                        <span className="flex items-center gap-1.5 hover:text-ink transition-colors"><Star className="w-3.5 h-3.5" /> {repo.stars || 0}</span>
+                                                        <span className="flex items-center gap-1.5 hover:text-ink transition-colors"><GitFork className="w-3.5 h-3.5" /> {repo.forks || 0}</span>
                                                     </div>
                                                 </a>
                                             ))}
@@ -522,9 +543,9 @@ function ActivityTabs({ profile }) {
             <TabsContent value="questions" className="mt-5 space-y-3">
                 {myQuestions.length === 0 ? <Empty label="No questions asked yet." /> : myQuestions.map(q => <QuestionCard key={q.id} question={q} />)}
             </TabsContent>
-            <TabsContent value="answers" className="mt-5 space-y-3">
+            <TabsContent value="answers" className="mt-5 space-y-4">
                 {myAnswers.length === 0 ? <Empty label="No answers yet." /> : myAnswers.map(a => (
-                    <Link to={`/questions/${a.question.id}`} key={a.id} className="block p-4 border border-rule rounded-sm bg-paper-2/30 hover:border-ink-3 hover:bg-paper-2/60 transition-colors">
+                    <Link to={`/questions/${a.question.id}`} key={a.id} className="block p-5 border border-rule rounded-xl bg-paper-2/40 hover:border-ink-3 hover:bg-paper-2/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md card-elevated">
                         <p className="font-mono text-xs uppercase tracking-wider text-ink-3 mb-1">// answer on</p>
                         <p className="font-display font-semibold text-ink">{a.question.title}</p>
                         <p className="mt-2 text-sm text-ink-2 line-clamp-2">{a.body}</p>
@@ -548,24 +569,27 @@ function ActivityTabs({ profile }) {
 function StatTile({ icon: Icon, label, value, colorVar }) {
     const c = `var(${colorVar})`;
     return (
-        <div className="p-5 border border-rule rounded-sm bg-paper-2/40 card-elevated">
-            <div className="w-9 h-9 rounded-sm border flex items-center justify-center" style={{ borderColor: c, color: c }}>
-                <Icon className="w-4 h-4" />
+        <div className="relative overflow-hidden p-6 border border-rule rounded-xl bg-paper-2/40 card-elevated group transition-all duration-300 hover:border-ink-3 hover:-translate-y-1 hover:shadow-lg">
+            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20 transition-opacity group-hover:opacity-40" style={{ backgroundColor: c }} />
+            <div className="relative z-10">
+                <div className="w-10 h-10 rounded-lg border flex items-center justify-center mb-4 transition-colors" style={{ borderColor: c, color: c, backgroundColor: `color-mix(in srgb, ${c} 10%, transparent)` }}>
+                    <Icon className="w-5 h-5" />
+                </div>
+                <div className="font-sans text-4xl font-extrabold text-ink tabular-nums tracking-tight">{value.toLocaleString()}</div>
+                <div className="font-mono text-xs uppercase tracking-wider text-ink-3 mt-2 group-hover:text-ink-2 transition-colors">{label}</div>
             </div>
-            <div className="mt-3 font-display text-3xl font-bold text-ink tabular-nums">{value.toLocaleString()}</div>
-            <div className="font-mono text-[10px] uppercase tracking-wider text-ink-3 mt-1">{label}</div>
         </div>
     );
 }
 
 function MiniStat({ icon: Icon, label, value }) {
     return (
-        <div className="p-3 border border-rule rounded-sm bg-paper/50">
-            <div className="flex items-center gap-1.5 text-ink-3">
-                <Icon className="w-3 h-3" />
+        <div className="p-4 border border-rule rounded-lg bg-paper/40 hover:bg-paper/80 group transition-colors flex flex-col justify-between">
+            <div className="flex items-center gap-1.5 text-ink-3 group-hover:text-ink-2 transition-colors mb-1.5">
+                <Icon className="w-3.5 h-3.5" />
                 <span className="font-mono text-[10px] uppercase tracking-wider">{label}</span>
             </div>
-            <div className="mt-1 font-display text-xl font-bold text-ink tabular-nums">{value.toLocaleString()}</div>
+            <div className="font-sans text-2xl font-bold text-ink tabular-nums tracking-tight">{value.toLocaleString()}</div>
         </div>
     );
 }

@@ -129,8 +129,16 @@ export default function ResourceDetail() {
             </Link>
 
             <article className="space-y-6">
-                <header className="space-y-3 border-b-2 border-double border-rule pb-6">
-                    <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-3">
+                <header className="border-b-2 border-double border-rule pb-8">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+                        &sect;02 &middot; the library
+                    </p>
+
+                    <h1 className="mt-2 font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
+                        {resource.title}
+                    </h1>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-3">
                         <span
                             className="inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1"
                             style={{ color: colorVar, borderColor: colorVar }}
@@ -146,11 +154,7 @@ export default function ResourceDetail() {
                         <span>{resource.branch} · Sem {resource.semester}</span>
                     </div>
 
-                    <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
-                        {resource.title}
-                    </h1>
-
-                    <div className="flex items-center gap-2 font-mono text-xs text-ink-3">
+                    <div className="mt-3 flex items-center gap-2 font-mono text-xs text-ink-3">
                         <Calendar className="h-3.5 w-3.5" />
                         uploaded {format(resource.created_at)}
                         {resource.updated_at !== resource.created_at && (

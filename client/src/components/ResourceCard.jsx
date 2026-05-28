@@ -59,7 +59,7 @@ export default function ResourceCard({ resource, variant = "list" }) {
     return (
         <article
             data-testid={`resource-card-${resource.id}`}
-            className="group relative flex gap-4 rounded-sm border border-rule bg-paper-2/50 p-5 transition-all duration-200 hover:border-ink-3 hover:bg-paper-2 card-elevated"
+            className="group relative flex gap-4 rounded-xl border border-rule bg-paper-2/40 p-5 transition-all duration-300 hover:border-ink-3 hover:bg-paper-2/80 hover:-translate-y-1 hover:shadow-md card-elevated"
         >
             {/* color stripe (left rail) */}
             <span

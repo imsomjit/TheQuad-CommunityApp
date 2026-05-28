@@ -101,16 +101,16 @@ export default function QuestionDetail() {
                 all questions
             </Link>
 
-            <header className="space-y-3 border-b-2 border-double border-rule pb-6">
-                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-cyan">
+            <header className="border-b-2 border-double border-rule pb-8">
+                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
                     &sect;03 &middot; question / {question.id}
                 </p>
 
-                <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
+                <h1 className="mt-2 font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
                     {question.title}
                 </h1>
 
-                <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-ink-3">
+                <div className="mt-4 flex flex-wrap items-center gap-4 font-mono text-xs text-ink-3">
                     <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
                         asked {timeAgo(question.created_at)}
