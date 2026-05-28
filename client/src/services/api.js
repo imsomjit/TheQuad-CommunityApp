@@ -8,8 +8,10 @@
  */
 
 import axios from "axios";
+import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
 
 // ── Base instance ────────────────────────────────────────────────────────────
+
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
@@ -90,15 +92,36 @@ const mapUser = (u) => {
     id: u.id,
     name: u.name,
     username: u.username,
-    avatar: u.avatarUrl || u.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${u.username}`,
+    email: u.email || "",
+    role: u.role || "student",
+    // Images
+    avatar: u.avatarUrl || u.avatar || getAvatarFallback(u.name, u.username),
+    avatarUrl: u.avatarUrl || null,
+    bannerUrl: u.bannerUrl || getBannerFallback(u.username),
+    // Profile
     bio: u.bio || "",
+    location: u.location || "",
+    organization: u.organization || "",
+    website: u.website || "",
+    // Academic
     college: u.college || "",
     branch: u.branch || "",
+    graduationYear: u.graduationYear || null,
     semester: u.semester || u.graduationYear || null,
+    // Skills
     skills: u.skills || [],
-    github_username: u.githubUsername || "",
+    // Social
+    githubUsername: u.githubUsername || u.github_username || "",
+    github_username: u.githubUsername || u.github_username || "",
+    linkedinUrl: u.linkedinUrl || "",
+    twitterHandle: u.twitterHandle || "",
+    instagramHandle: u.instagramHandle || "",
+    leetcodeUsername: u.leetcodeUsername || "",
+    // Meta
     joined: u.createdAt || u.joined || null,
-    stats: u.stats || { resources: 0, questions: 0, answers: 0, upvotes: 0 },
+    createdAt: u.createdAt || null,
+    stats: u.stats || { resources: 0, questions: 0, answers: 0, followers: 0, following: 0, totalUpvotes: 0 },
+    viewerFollows: u.viewerFollows || false,
   };
 };
 
@@ -183,16 +206,22 @@ const mapAnswer = (a) => ({
 /** Map API comment → frontend comment shape */
 const mapComment = (c) => ({
   id: c.id,
+  authorId: c.authorId || c.author?.id,
+  parentId: c.parentId || null,
   author: c.author
     ? {
         id: c.author.id || c.authorId,
         name: c.author.name || c.authorName || "",
         username: c.author.username || c.authorUsername || "",
         avatar: c.author.avatarUrl || c.author.avatar || c.authorAvatarUrl || "",
+        avatarUrl: c.author.avatarUrl || c.author.avatar || c.authorAvatarUrl || "",
       }
-    : { id: c.authorId, name: "", username: "", avatar: "" },
+    : { id: c.authorId, name: "", username: "", avatar: "", avatarUrl: "" },
+  body: c.body || c.text || "",
   text: c.body || c.text || "",
+  createdAt: c.createdAt || c.created_at,
   created_at: c.createdAt || c.created_at,
+  replies: (c.replies || []).map(mapComment),
 });
 
 /** Derive readable notification text from type */
@@ -208,6 +237,9 @@ const notifText = (type) => {
     follow: "started following you",
     report_resolved: "your report was resolved",
     content_removed: "your content was removed",
+    like_blog: "liked your post",
+    comment_on_blog: "commented on your post",
+    system_welcome: "Welcome to PeerVerse! Please take a moment to set up your profile.",
   };
   return map[type] || "interacted with your content";
 };
@@ -237,6 +269,8 @@ const mapNotification = (n) => ({
 // Auth
 export const authApi = {
   register: (data) => api.post("/auth/register", data),
+  verifyOtp: (data) => api.post("/auth/verify-otp", data),
+  resendOtp: (data) => api.post("/auth/resend-otp", data),
   login: (data) => api.post("/auth/login", data),
   refresh: () => api.post("/auth/refresh"),
   logout: () => api.post("/auth/logout"),
@@ -296,11 +330,7 @@ export const bookmarksApi = {
     api.get("/bookmarks", { params: { targetType } }).then((r) => r.data.data),
 };
 
-// Follows
-export const followsApi = {
-  follow: (username) => api.post(`/follows/${username}`),
-  unfollow: (username) => api.delete(`/follows/${username}`),
-};
+// Follows (deprecated — use usersApi.follow/unfollow below)
 
 // Notifications
 export const notificationsApi = {
@@ -329,6 +359,12 @@ export const usersApi = {
     api.patch("/users/me/avatar", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     }).then((r) => mapUser(r.data.data)),
+  uploadBanner: (formData) =>
+    api.patch("/users/me/banner", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => mapUser(r.data.data)),
+  follow: (username) => api.post(`/users/${username}/follow`).then((r) => r.data.data),
+  unfollow: (username) => api.delete(`/users/${username}/follow`).then((r) => r.data.data),
   getFollowers: (username) => api.get(`/users/${username}/followers`).then((r) => r.data.data),
   getFollowing: (username) => api.get(`/users/${username}/following`).then((r) => r.data.data),
 };
@@ -352,5 +388,91 @@ export const githubApi = {
     api.get(`/github/${username}/contributions`).then((r) => r.data.data),
 };
 
-export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification };
+/** Map an API post → frontend post shape */
+const mapPost = (p) => ({
+  id: p.id,
+  title: p.title,
+  slug: p.slug,
+  body: p.body || "",
+  renderedHtml: p.renderedHtml || "",
+  excerpt: p.excerpt || "",
+  coverImageUrl: p.coverImageUrl || null,
+  category: p.category,
+  categoryMeta: p.categoryMeta || {},
+  status: p.status,
+  authorId: p.authorId,
+  readingTimeMin: p.readingTimeMin || 1,
+  upvotes: p.upvotes || 0,
+  downvotes: p.downvotes || 0,
+  views: p.views || 0,
+  bookmarksCount: p.bookmarksCount || 0,
+  seriesId: p.seriesId || null,
+  seriesOrder: p.seriesOrder || null,
+  seriesNav: p.seriesNav || null,
+  publishedAt: p.publishedAt || null,
+  createdAt: p.createdAt || p.created_at,
+  updatedAt: p.updatedAt || p.updated_at,
+  author: p.author
+    ? {
+        id: p.author.id,
+        name: p.author.name || "",
+        username: p.author.username || "",
+        avatar: p.author.avatarUrl || p.author.avatar || getAvatarFallback(p.author.name, p.author.username),
+        bio: p.author.bio || "",
+      }
+    : null,
+  tags: p.tags || [],
+});
+
+// Posts (Knowledge Publishing)
+export const postsApi = {
+  list: (params) =>
+    api.get("/posts", { params }).then((r) => ({
+      data: r.data.data.map(mapPost),
+      pagination: r.data.pagination,
+    })),
+  drafts: (params) =>
+    api.get("/posts/drafts", { params }).then((r) => ({
+      data: r.data.data,
+      pagination: r.data.pagination,
+    })),
+  getBySlug: (slug) =>
+    api.get(`/posts/${slug}`).then((r) => mapPost(r.data.data)),
+  getById: (id) =>
+    api.get(`/posts/id/${id}`).then((r) => mapPost(r.data.data)),
+  create: (data) =>
+    api.post("/posts", data).then((r) => mapPost(r.data.data)),
+  update: (id, data) =>
+    api.patch(`/posts/${id}`, data).then((r) => mapPost(r.data.data)),
+  autosave: (id, data) =>
+    api.patch(`/posts/${id}/autosave`, data).then((r) => r.data.data),
+  publish: (id) =>
+    api.post(`/posts/${id}/publish`).then((r) => mapPost(r.data.data)),
+  unpublish: (id) =>
+    api.post(`/posts/${id}/unpublish`).then((r) => mapPost(r.data.data)),
+  delete: (id) => api.delete(`/posts/${id}`),
+  uploadCover: (id, formData) =>
+    api.patch(`/posts/${id}/cover`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data.data),
+};
+
+// Series
+export const seriesApi = {
+  getBySlug: (slug) =>
+    api.get(`/series/${slug}`).then((r) => r.data.data),
+  listByUser: (userId) =>
+    api.get(`/series/user/${userId}`).then((r) => r.data.data),
+  create: (data) =>
+    api.post("/series", data).then((r) => r.data.data),
+  update: (id, data) =>
+    api.patch(`/series/${id}`, data).then((r) => r.data.data),
+  delete: (id) => api.delete(`/series/${id}`),
+  addPost: (seriesId, postId, order) =>
+    api.post(`/series/${seriesId}/posts/${postId}`, { order }).then((r) => r.data.data),
+  removePost: (postId) =>
+    api.delete(`/series/posts/${postId}`),
+};
+
+export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };
 export default api;

@@ -23,8 +23,8 @@ const create = async ({
   targetId,
   targetTitle,
 }) => {
-  // Don't notify yourself
-  if (recipientId === actorId) return null;
+  // Don't notify yourself (except for system_welcome)
+  if (recipientId === actorId && type !== "system_welcome") return null;
 
   const [notification] = await db
     .insert(notifications)

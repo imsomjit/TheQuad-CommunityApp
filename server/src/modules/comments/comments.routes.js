@@ -12,6 +12,7 @@ const addCommentSchema = z.object({
   targetType: z.enum(["resource", "question", "answer", "blog"]),
   targetId: z.coerce.number().int().positive(),
   body: z.string().min(1, "Comment cannot be empty").max(2000).trim(),
+  parentId: z.coerce.number().int().positive().optional().or(z.null()),
 });
 
 const router = Router();

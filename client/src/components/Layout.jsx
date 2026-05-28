@@ -11,9 +11,13 @@ const ROUTE_LABELS = [
     { match: /^\/questions(\/.*)?$/, label: "questions", section: "§03" },
     { match: /^\/ask$/, label: "ask", section: "§03" },
     { match: /^\/upload$/, label: "upload", section: "§02" },
-    { match: /^\/pv\/.+$/, label: "profile", section: "§04" },
-    { match: /^\/notifications$/, label: "notifications", section: "§05" },
+    { match: /^\/pv\/.+$/, label: "profile", section: "§05" },
+    { match: /^\/notifications$/, label: "notifications", section: "§06" },
     { match: /^\/auth\/callback$/, label: "authenticating", section: "§00" },
+    { match: /^\/posts$/, label: "posts", section: "§04" },
+    { match: /^\/posts\/new$/, label: "write", section: "§04" },
+    { match: /^\/posts\/.+\/edit$/, label: "editing", section: "§04" },
+    { match: /^\/posts\/.+$/, label: "post", section: "§04" },
 ];
 
 function getRouteMeta(pathname) {
@@ -106,6 +110,7 @@ export default function Layout() {
                                 {[
                                     { label: "Resources", href: "/resources" },
                                     { label: "Questions", href: "/questions" },
+                                    { label: "Posts", href: "/posts" },
                                     { label: "Upload", href: "/upload" },
                                     { label: "Ask a question", href: "/ask" },
                                 ].map((link) => (

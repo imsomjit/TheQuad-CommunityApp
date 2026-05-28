@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
+import MarkdownEditor from "../components/MarkdownEditor";
 import { toast } from "sonner";
 
 export default function AskQuestion() {
@@ -124,12 +124,12 @@ export default function AskQuestion() {
 
                 {/* Body */}
                 <Field label="Body *">
-                    <Textarea
-                        data-testid="ask-body"
+                    <MarkdownEditor
                         value={body}
-                        onChange={(e) => setBody(e.target.value)}
-                        placeholder="Describe your problem clearly. Use ```language ... ``` for code blocks."
-                        className="bg-paper border-rule min-h-[240px] font-body focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                        onChange={setBody}
+                        testId="ask-body"
+                        placeholder="Describe your problem clearly. Use the toolbar for code blocks, formatting, and more."
+                        minHeight="240px"
                     />
                 </Field>
 

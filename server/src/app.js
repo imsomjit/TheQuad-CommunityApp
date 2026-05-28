@@ -19,6 +19,8 @@ const followRoutes = require("./modules/follows/follows.routes");
 const notificationRoutes = require("./modules/notifications/notifications.routes");
 const reportRoutes = require("./modules/reports/reports.routes");
 const githubRoutes = require("./modules/github/github.routes");
+const postRoutes = require("./modules/posts/posts.routes");
+const seriesRoutes = require("./modules/posts/series.routes");
 
 const createApp = () => {
   const app = express();
@@ -67,6 +69,8 @@ const createApp = () => {
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/reports", reportRoutes);
   app.use("/api/github", githubRoutes);
+  app.use("/api/posts", postRoutes);
+  app.use("/api/series", seriesRoutes);
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((req, res) => {

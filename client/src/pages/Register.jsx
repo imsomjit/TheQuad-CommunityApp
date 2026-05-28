@@ -41,9 +41,9 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await register({ name, username, email, password });
-      toast.success("Account created! Welcome to PeerVerse.");
-      navigate("/");
+      const regEmail = await register({ name, username, email, password });
+      toast.success("Verification code sent to your email.");
+      navigate("/verify-email", { state: { email: regEmail } });
     } catch (err) {
       const msg = err.response?.data?.message || "Registration failed";
       toast.error(msg);
@@ -220,7 +220,7 @@ export default function Register() {
                   data-testid="register-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Aarav Mehta"
+                  placeholder="Your Name"
                   autoComplete="name"
                   className="h-11 bg-paper-2/60 border-rule focus-visible:border-accent/60 focus-visible:ring-accent/30"
                 />
@@ -238,7 +238,7 @@ export default function Register() {
                       e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "")
                     )
                   }
-                  placeholder="aarav_dev"
+                  placeholder="user_1234"
                   autoComplete="username"
                   className="h-11 bg-paper-2/60 border-rule focus-visible:border-accent/60 focus-visible:ring-accent/30"
                 />
@@ -254,7 +254,7 @@ export default function Register() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@university.edu"
+                placeholder="you@example.email"
                 autoComplete="email"
                 className="h-11 bg-paper-2/60 border-rule focus-visible:border-accent/60 focus-visible:ring-accent/30"
               />

@@ -31,9 +31,21 @@ const clearRefreshCookie = (res) => {
 
 // POST /api/auth/register
 const register = asyncHandler(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.register(req.body);
+  const { email } = await authService.register(req.body);
+  res.status(201).json({ success: true, message: "OTP sent to email", data: { email } });
+});
+
+// POST /api/auth/verify-otp
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { user, accessToken, refreshToken } = await authService.verifyOtp(req.body);
   setRefreshCookie(res, refreshToken);
-  res.status(201).json({ success: true, data: { user, accessToken } });
+  res.json({ success: true, data: { user, accessToken } });
+});
+
+// POST /api/auth/resend-otp
+const resendOtp = asyncHandler(async (req, res) => {
+  await authService.resendOtp(req.body);
+  res.json({ success: true, message: "New OTP sent to email" });
 });
 
 // POST /api/auth/login
@@ -154,5 +166,5 @@ const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { user } });
 });
 
-module.exports = { register, login, googleRedirect, googleCallback, refresh, logout, me };
+module.exports = { register, verifyOtp, resendOtp, login, googleRedirect, googleCallback, refresh, logout, me };
 

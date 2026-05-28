@@ -135,7 +135,7 @@ export default function Home() {
                             <span className="caret" />
                         </h1>
 
-                        <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
+                        <p className="mt-8 max-w-2xl text-base font-serif leading-relaxed text-ink-2 sm:text-lg">
                             Share annotated notes, debate past-year papers, and grow a
                             public technical profile linked to your GitHub. PeerVerse is
                             built like a developer tool — and reads like a journal you
@@ -197,7 +197,7 @@ export default function Home() {
 
             {/* ── FULL-WIDTH TICKER ─────────────────────────────── */}
             <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] shadow-lg">
-                <div className="flex whitespace-nowrap marquee">
+                <div className="flex w-max whitespace-nowrap marquee">
                     {[...Array(2)].map((_, k) => (
                         <div
                             key={k}

@@ -15,6 +15,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarFallback } from "../utils/fallbacks";
 import NotificationDropdown from "./NotificationDropdown";
 import { Input } from "./ui/input";
 
@@ -66,6 +67,7 @@ export default function Navbar() {
                     <NavItem to="/" index="01" label="Feed" testId="nav-home" linkClass={linkClass} end />
                     <NavItem to="/resources" index="02" label="Library" testId="nav-resources" linkClass={linkClass} />
                     <NavItem to="/questions" index="03" label="Q&A" testId="nav-questions" linkClass={linkClass} />
+                    <NavItem to="/posts" index="04" label="Posts" testId="nav-posts" linkClass={linkClass} />
                 </nav>
 
                 {/* Search */}
@@ -175,7 +177,7 @@ export default function Navbar() {
                                 className="relative"
                             >
                                 <img
-                                    src={currentUser?.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=user`}
+                                    src={currentUser?.avatar || getAvatarFallback(currentUser?.name, currentUser?.username)}
                                     alt={currentUser?.name || ''}
                                     className="h-9 w-9 rounded-sm border border-rule object-cover transition-colors hover:border-accent"
                                 />
@@ -197,6 +199,9 @@ export default function Navbar() {
                 </NavLink>
                 <NavLink to="/questions" className={linkClass}>
                     Q&A
+                </NavLink>
+                <NavLink to="/posts" className={linkClass}>
+                    Posts
                 </NavLink>
             </div>
         </header>

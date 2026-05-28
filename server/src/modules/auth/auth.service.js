@@ -12,15 +12,20 @@ const {
   refreshTokenExpiry,
 } = require("../../utils/jwt");
 const AppError = require("../../utils/AppError");
+const { sendEmail } = require("../../utils/email");
+const notificationService = require("../notifications/notifications.service");
 
 const BCRYPT_ROUNDS = 12;
+
+const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
+const getOtpExpiry = () => new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
 /**
  * Strips sensitive fields before sending user to client.
  * @param {object} user
  */
 const sanitizeUser = (user) => {
-  const { passwordHash, ...safe } = user;
+  const { passwordHash, otp, otpExpiresAt, ...safe } = user;
   return safe;
 };
 
@@ -30,17 +35,94 @@ const sanitizeUser = (user) => {
 const register = async ({ name, username, email, password }) => {
   // Hash password
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  
+  const otp = generateOtp();
+  const otpExpiresAt = getOtpExpiry();
 
   // Insert user — unique constraint on email/username handled by DB + error handler
   const [user] = await db
     .insert(users)
-    .values({ name, username, email, passwordHash, role: "student", authProvider: "local" })
+    .values({ 
+      name, 
+      username, 
+      email, 
+      passwordHash, 
+      role: "student", 
+      authProvider: "local",
+      isVerified: false,
+      otp,
+      otpExpiresAt
+    })
     .returning();
 
-  // Issue tokens
-  const { accessToken, refreshToken } = await issueTokens(user);
+  // Send OTP email
+  await sendEmail({
+    to: email,
+    subject: "Verify your email for PeerVerse",
+    html: `<h2>Welcome to PeerVerse!</h2><p>Your verification code is: <strong>${otp}</strong></p><p>This code expires in 15 minutes.</p>`,
+  });
 
-  return { user: sanitizeUser(user), accessToken, refreshToken };
+  return { success: true, email };
+};
+
+/**
+ * Verify OTP
+ */
+const verifyOtp = async ({ email, otp }) => {
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user) throw new AppError("User not found", 404, "NOT_FOUND");
+  if (user.isVerified) throw new AppError("User is already verified", 400, "ALREADY_VERIFIED");
+
+  if (user.otp !== otp || new Date() > user.otpExpiresAt) {
+    throw new AppError("Invalid or expired OTP", 400, "INVALID_OTP");
+  }
+
+  // Update user
+  const [updated] = await db
+    .update(users)
+    .set({ isVerified: true, otp: null, otpExpiresAt: null, updatedAt: new Date() })
+    .where(eq(users.id, user.id))
+    .returning();
+
+  // Send Welcome email
+  await sendEmail({
+    to: email,
+    subject: "Welcome to PeerVerse!",
+    html: `<h2>Welcome to PeerVerse, ${updated.name}!</h2><p>Your email has been successfully verified. We're thrilled to have you join our community.</p>`,
+  });
+
+  // Create welcome notification
+  await notificationService.create({
+    recipientId: updated.id,
+    actorId: updated.id,
+    type: "system_welcome",
+  });
+
+  const { accessToken, refreshToken } = await issueTokens(updated);
+
+  return { success: true, user: sanitizeUser(updated), accessToken, refreshToken };
+};
+
+/**
+ * Resend OTP
+ */
+const resendOtp = async ({ email }) => {
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user) throw new AppError("User not found", 404, "NOT_FOUND");
+  if (user.isVerified) throw new AppError("User is already verified", 400, "ALREADY_VERIFIED");
+
+  const otp = generateOtp();
+  const otpExpiresAt = getOtpExpiry();
+
+  await db.update(users).set({ otp, otpExpiresAt }).where(eq(users.id, user.id));
+
+  await sendEmail({
+    to: email,
+    subject: "Your new verification code for PeerVerse",
+    html: `<h2>PeerVerse Verification</h2><p>Your new verification code is: <strong>${otp}</strong></p><p>This code expires in 15 minutes.</p>`,
+  });
+
+  return { success: true };
 };
 
 /**
@@ -66,6 +148,10 @@ const login = async ({ email, password }) => {
     throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
   }
 
+  if (!user.isVerified) {
+    throw new AppError("Please verify your email first", 403, "UNVERIFIED_EMAIL");
+  }
+
   // If user registered via Google and never set a password
   if (!user.passwordHash) {
     throw new AppError(
@@ -88,11 +174,6 @@ const login = async ({ email, password }) => {
 
 /**
  * Google OAuth authentication.
- * Handles all edge cases:
- *  1. User exists with same googleId → log them in
- *  2. User exists with same email (registered via email) → link Google, log in
- *  3. No user exists → create account with auto-generated username
- *  4. Banned/suspended users are rejected
  */
 const googleAuth = async ({ googleId, email, name, picture }) => {
   // ── Case 1: Find by Google ID ──────────────────────────────────────────────
@@ -127,6 +208,7 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
       .set({
         googleId,
         avatarUrl: user.avatarUrl || picture || null,
+        isVerified: true,
         updatedAt: new Date(),
       })
       .where(eq(users.id, user.id))
@@ -140,12 +222,11 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
   const baseUsername = email
     .split("@")[0]
     .toLowerCase()
-    .replace(/[^a-z0-9_]/g, "_")   // replace invalid chars with underscore
-    .replace(/_+/g, "_")            // collapse consecutive underscores
-    .replace(/^_|_$/g, "")          // trim leading/trailing underscores
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "")
     .slice(0, 25);
 
-  // Ensure unique username by appending random suffix if needed
   let finalUsername = baseUsername;
   let attempts = 0;
   while (attempts < 10) {
@@ -167,13 +248,28 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
       name: name || email.split("@")[0],
       username: finalUsername,
       email,
-      passwordHash: null, // No password for Google users
+      passwordHash: null,
       role: "student",
       authProvider: "google",
       googleId,
       avatarUrl: picture || null,
+      isVerified: true,
     })
     .returning();
+
+  // Send Welcome Email for new Google user
+  await sendEmail({
+    to: email,
+    subject: "Welcome to PeerVerse!",
+    html: `<h2>Welcome to PeerVerse, ${newUser.name}!</h2><p>We're thrilled to have you join our community.</p>`,
+  });
+
+  // Create welcome notification
+  await notificationService.create({
+    recipientId: newUser.id,
+    actorId: newUser.id,
+    type: "system_welcome",
+  });
 
   const { accessToken, refreshToken } = await issueTokens(newUser);
   return { user: sanitizeUser(newUser), accessToken, refreshToken, created: true };
@@ -181,14 +277,12 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
 
 /**
  * Refresh access token using a valid refresh token cookie.
- * Implements token rotation: old refresh token is revoked, new one issued.
  */
 const refresh = async (rawRefreshToken) => {
   if (!rawRefreshToken) {
     throw new AppError("Refresh token required", 401, "MISSING_REFRESH_TOKEN");
   }
 
-  // Verify JWT signature and expiry
   let payload;
   try {
     payload = verifyRefreshToken(rawRefreshToken);
@@ -198,7 +292,6 @@ const refresh = async (rawRefreshToken) => {
 
   const tokenHash = hashToken(rawRefreshToken);
 
-  // Check DB: token must exist, not revoked
   const [stored] = await db
     .select()
     .from(refreshTokens)
@@ -214,13 +307,11 @@ const refresh = async (rawRefreshToken) => {
     throw new AppError("Refresh token invalid or revoked", 401, "INVALID_REFRESH_TOKEN");
   }
 
-  // Revoke the old token (rotation)
   await db
     .update(refreshTokens)
     .set({ isRevoked: true })
     .where(eq(refreshTokens.id, stored.id));
 
-  // Get user
   const [user] = await db
     .select()
     .from(users)
@@ -231,7 +322,6 @@ const refresh = async (rawRefreshToken) => {
     throw new AppError("Account not accessible", 403, "ACCOUNT_INACCESSIBLE");
   }
 
-  // Issue new tokens
   const { accessToken, refreshToken: newRefreshToken } = await issueTokens(user);
 
   return { user: sanitizeUser(user), accessToken, refreshToken: newRefreshToken };
@@ -241,7 +331,7 @@ const refresh = async (rawRefreshToken) => {
  * Logout — revokes the refresh token.
  */
 const logout = async (rawRefreshToken) => {
-  if (!rawRefreshToken) return; // Already logged out
+  if (!rawRefreshToken) return;
 
   const tokenHash = hashToken(rawRefreshToken);
   await db
@@ -266,9 +356,6 @@ const getMe = async (userId) => {
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
-/**
- * Issues both tokens and stores the refresh token hash in DB.
- */
 const issueTokens = async (user) => {
   const accessToken = signAccessToken({
     id: user.id,
@@ -289,5 +376,4 @@ const issueTokens = async (user) => {
   return { accessToken, refreshToken };
 };
 
-module.exports = { register, login, googleAuth, refresh, logout, getMe };
-
+module.exports = { register, verifyOtp, resendOtp, login, googleAuth, refresh, logout, getMe };

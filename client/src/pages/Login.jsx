@@ -55,6 +55,11 @@ export default function Login() {
       toast.success("Welcome back!");
       navigate("/");
     } catch (err) {
+      if (err.response?.data?.code === "UNVERIFIED_EMAIL") {
+        toast.error("Please verify your email to log in.");
+        navigate("/verify-email", { state: { email } });
+        return;
+      }
       const msg = err.response?.data?.message || "Login failed";
       toast.error(msg);
     } finally {
@@ -205,7 +210,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@university.edu"
+                placeholder="you@example.email"
                 autoComplete="email"
                 className="h-11 bg-paper-2/60 border-rule focus-visible:border-accent/60 focus-visible:ring-accent/30"
               />

@@ -1,7 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function VoteButtons({
     kind,
@@ -12,6 +14,8 @@ export default function VoteButtons({
     size = "md",
 }) {
     const { votes, voteOn } = useApp();
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
     const key = `${kind}_${id}`;
     const myVote = votes[key];
@@ -31,6 +35,10 @@ export default function VoteButtons({
     const handleVote = (direction) => (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (!isAuthenticated) {
+            navigate("/login");
+            return;
+        }
         voteOn(kind, id, direction);
     };
 

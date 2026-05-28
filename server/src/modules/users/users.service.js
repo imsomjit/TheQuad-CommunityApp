@@ -89,12 +89,14 @@ const getPublicProfile = async (username, viewerUserId = null) => {
 };
 
 /**
- * Update own profile (text fields only — avatar handled separately).
+ * Update own profile (text fields only — avatar/banner handled separately).
  */
 const updateProfile = async (userId, patch) => {
   const allowedFields = [
-    "name", "bio", "college", "branch",
-    "graduationYear", "githubUsername", "skills",
+    "name", "bio", "location", "organization", "website",
+    "college", "branch", "graduationYear",
+    "githubUsername", "linkedinUrl", "twitterHandle", "instagramHandle", "leetcodeUsername",
+    "skills",
   ];
   const filtered = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowedFields.includes(k))
@@ -126,4 +128,17 @@ const updateAvatar = async (userId, avatarUrl) => {
   return sanitize(updated);
 };
 
-module.exports = { getPublicProfile, updateProfile, updateAvatar };
+/**
+ * Update banner URL after Cloudinary upload.
+ */
+const updateBanner = async (userId, bannerUrl) => {
+  const [updated] = await db
+    .update(users)
+    .set({ bannerUrl, updatedAt: new Date() })
+    .where(eq(users.id, userId))
+    .returning();
+
+  return sanitize(updated);
+};
+
+module.exports = { getPublicProfile, updateProfile, updateAvatar, updateBanner };

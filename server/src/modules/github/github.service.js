@@ -45,6 +45,12 @@ async function githubFetch(path) {
     "User-Agent": "PeerVerse/1.0",
   };
 
+  // Optional: add PAT for higher rate limit (60 → 5000 req/hr)
+  // Set GITHUB_TOKEN in server .env — no special scopes needed
+  if (process.env.GITHUB_TOKEN) {
+    headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+
   const res = await fetch(url, { headers });
 
   if (res.status === 404) {
@@ -92,9 +98,47 @@ const getProfile = async (githubUsername) => {
 };
 
 /**
- * Fetch a user's public repositories (sorted by stars, top 20).
+ * Fetch a user's public repositories (optionally pinned, or sorted by stars).
  */
-const getRepos = async (githubUsername, { sort = "stars", limit = 20 } = {}) => {
+const getRepos = async (githubUsername, { sort = "stars", limit = 20, pinned = false } = {}) => {
+  if (pinned) {
+    try {
+      const res = await fetch(`https://gh-pinned-repos.egoist.dev/?username=${githubUsername}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          return data.map((r) => {
+            const name = (r.repo || "").trim();
+            let parsedStars = 0;
+            if (r.stars) {
+              const s = String(r.stars).toLowerCase().replace(/,/g, '');
+              parsedStars = s.endsWith('k') ? Math.round(parseFloat(s) * 1000) : (parseInt(s, 10) || 0);
+            }
+            return {
+              id: name,
+              name: name,
+              fullName: `${r.owner}/${name}`,
+              description: r.description,
+              htmlUrl: r.link,
+              homepage: "",
+              language: r.language,
+              stars: parsedStars,
+              forks: r.forks || 0,
+              watchers: parsedStars,
+              openIssues: 0,
+              isForked: false,
+              topics: [],
+              updatedAt: new Date().toISOString(),
+              pushedAt: new Date().toISOString(),
+            };
+          }).slice(0, limit);
+        }
+      }
+    } catch (e) {
+      logger.warn("Failed to fetch pinned repos from egoist dev", { message: e.message });
+    }
+  }
+
   const sortParam = sort === "stars" ? "stargazers_count" : "updated_at";
   const repos = await githubFetch(
     `/users/${githubUsername}/repos?type=owner&sort=${sort === "stars" ? "full_name" : "updated"}&per_page=100`

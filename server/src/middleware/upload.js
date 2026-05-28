@@ -122,4 +122,33 @@ const uploadAvatar = [
   }),
 ];
 
-module.exports = { uploadResourceFile, uploadAvatar, uploadToCloudinary };
+/**
+ * Middleware: upload a banner/cover image.
+ * Attaches { bannerUrl, bannerPublicId } to req.uploadedImage.
+ */
+const uploadBanner = [
+  imageUpload.single("banner"),
+  asyncHandler(async (req, _res, next) => {
+    if (!req.file) {
+      throw new AppError("An image is required", 400, "FILE_REQUIRED");
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer, {
+      folder: "peerverse/banners",
+      resource_type: "image",
+      transformation: [
+        { width: 1500, height: 500, crop: "fill", gravity: "center" },
+        { quality: "auto" },
+      ],
+    });
+
+    req.uploadedImage = {
+      bannerUrl: result.secure_url,
+      bannerPublicId: result.public_id,
+    };
+
+    next();
+  }),
+];
+
+module.exports = { uploadResourceFile, uploadAvatar, uploadBanner, uploadToCloudinary };

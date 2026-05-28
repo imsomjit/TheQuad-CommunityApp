@@ -19,8 +19,14 @@ import AskQuestion from "./pages/AskQuestion";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 import Notifications from "./pages/Notifications";
 import AuthCallback from "./pages/AuthCallback";
+import PostsFeed from "./pages/PostsFeed";
+import PostDetail from "./pages/PostDetail";
+import PostEditor from "./pages/PostEditor";
+import FollowList from "./pages/FollowList";
+import EditProfile from "./pages/EditProfile";
 
 function App() {
   return (
@@ -32,6 +38,7 @@ function App() {
               {/* Public routes (no layout) */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
 
               {/* OAuth callback (within layout for error display) */}
               <Route element={<Layout />}>
@@ -62,8 +69,47 @@ function App() {
                 />
 
                 <Route path="/pv/:username" element={<Profile />} />
+                <Route
+                  path="/settings/profile"
+                  element={<ProtectedRoute><EditProfile /></ProtectedRoute>}
+                />
+                <Route
+                  path="/pv/:username/followers"
+                  element={<ProtectedRoute><FollowList mode="followers" /></ProtectedRoute>}
+                />
+                <Route
+                  path="/pv/:username/following"
+                  element={<ProtectedRoute><FollowList mode="following" /></ProtectedRoute>}
+                />
 
-                <Route path="/notifications" element={<Notifications />} />
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <Notifications />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Posts — Knowledge Publishing */}
+                <Route path="/posts" element={<PostsFeed />} />
+                <Route path="/posts/:slug" element={<PostDetail />} />
+                <Route
+                  path="/posts/new"
+                  element={
+                    <ProtectedRoute>
+                      <PostEditor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/posts/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <PostEditor />
+                    </ProtectedRoute>
+                  }
+                />
               </Route>
             </Routes>
           </BrowserRouter>

@@ -10,10 +10,13 @@ import {
   Loader2,
   Inbox,
   Filter,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { notificationsApi } from "../services/api";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 function formatRel(ts) {
   const diff = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -32,10 +35,12 @@ const iconFor = (type) => {
   if (type?.includes("upvote")) return ArrowUp;
   if (type?.includes("answer")) return MessageSquare;
   if (type === "follow") return UserPlus;
+  if (type === "system_welcome") return Sparkles;
   return Bell;
 };
 
 const linkFor = (notification) => {
+  if (notification.type === "system_welcome") return "/settings/profile";
   if (notification.type === "follow") return `/pv/${notification.actor?.username}`;
   if (notification.targetType === "resource" || notification.type?.includes("resource")) {
     return `/resources/${notification.targetId}`;
@@ -220,7 +225,7 @@ export default function Notifications() {
                 {/* Actor avatar */}
                 <div className="relative shrink-0">
                   <img
-                    src={notification.actor?.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=unknown`}
+                    src={notification.actor?.avatar || getAvatarFallback(notification.actor?.name, notification.actor?.username)}
                     alt={notification.actor?.name || ""}
                     className="h-10 w-10 rounded-sm border border-rule object-cover"
                   />
@@ -232,9 +237,15 @@ export default function Notifications() {
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm leading-snug text-ink-2">
-                    <span className="font-semibold text-ink">
-                      {notification.actor?.name || "Someone"}
-                    </span>{" "}
+                    {notification.type === "system_welcome" ? (
+                      <span className="font-semibold text-accent">
+                        PeerVerse Team
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-ink">
+                        {notification.actor?.name || "Someone"}
+                      </span>
+                    )}{" "}
                     <span>{notification.text}</span>
                   </p>
 

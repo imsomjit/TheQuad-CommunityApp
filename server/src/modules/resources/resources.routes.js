@@ -43,7 +43,7 @@ router.patch(
 // DELETE /api/resources/:id — auth + owner/mod check in service
 router.delete("/:id", auth, resourceWriteLimiter, controller.remove);
 
-// POST /api/resources/:id/download — optionally auth (to track who downloaded)
-router.post("/:id/download", resourceReadLimiter, optionalAuth, controller.download);
+// POST /api/resources/:id/download — auth required (logged-in users only)
+router.post("/:id/download", resourceReadLimiter, auth, controller.download);
 
 module.exports = router;

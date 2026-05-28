@@ -55,6 +55,12 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async ({ name, username, email, password }) => {
     const { data } = await authApi.register({ name, username, email, password });
+    // Registration no longer logs the user in automatically, it just returns email
+    return data.data.email;
+  }, []);
+
+  const verifyOtp = useCallback(async ({ email, otp }) => {
+    const { data } = await authApi.verifyOtp({ email, otp });
     setAccessToken(data.data.accessToken);
     setUser(mapUser(data.data.user));
     return data.data.user;
@@ -78,7 +84,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isAuthenticated, login, register, logout, updateUser }}
+      value={{ user, loading, isAuthenticated, login, register, verifyOtp, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>

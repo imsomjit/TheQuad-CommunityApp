@@ -17,6 +17,13 @@ const {
   reportTargetEnum,
 } = require("./reports");
 const { refreshTokens } = require("./refresh_tokens");
+const {
+  posts,
+  postTags,
+  postCategoryEnum,
+  postStatusEnum,
+} = require("./posts");
+const { series } = require("./series");
 
 module.exports = {
   // Tables
@@ -33,6 +40,9 @@ module.exports = {
   notifications,
   reports,
   refreshTokens,
+  posts,
+  postTags,
+  series,
 
   // Enums
   userRoleEnum,
@@ -45,4 +55,6 @@ module.exports = {
   reportReasonEnum,
   reportStatusEnum,
   reportTargetEnum,
+  postCategoryEnum,
+  postStatusEnum,
 };

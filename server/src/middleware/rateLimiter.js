@@ -190,6 +190,34 @@ const adminLimiter = rateLimit({
   handler: rateLimitResponse,
 });
 
+// ── Posts / Knowledge Publishing ──────────────────────────────────────────────
+// Read: 120/min (same as resources)
+const postReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+// Write: 30/15min
+const postWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+// Autosave: 60/min (frequent but lightweight drafts)
+const autosaveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
 module.exports = {
   authLimiter,
   registerLimiter,
@@ -208,4 +236,8 @@ module.exports = {
   notificationLimiter,
   reportLimiter,
   adminLimiter,
+  postReadLimiter,
+  postWriteLimiter,
+  autosaveLimiter,
+  apiLimiter: postReadLimiter, // alias for github module
 };

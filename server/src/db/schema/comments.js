@@ -37,6 +37,8 @@ const comments = pgTable("comments", {
   targetType: commentTargetEnum("target_type").notNull(),
   targetId: integer("target_id").notNull(),
   body: text("body").notNull(),
+  // Reply threading — null for top-level comments
+  parentId: integer("parent_id"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

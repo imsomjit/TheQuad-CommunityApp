@@ -13,9 +13,12 @@ import {
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
-import { Textarea } from "../components/ui/textarea";
+import MarkdownEditor from "../components/MarkdownEditor";
+import { MarkdownRenderer, CollapsibleContent } from "../components/MarkdownEditor";
+import CommentSection from "../components/CommentSection";
 import { toast } from "sonner";
 
 function timeAgo(ts) {
@@ -26,32 +29,6 @@ function timeAgo(ts) {
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
 
     return `${Math.floor(diff / 86400)}d ago`;
-}
-
-function renderMarkdownLite(body) {
-    const blocks = body.split(/```/);
-
-    return blocks.map((chunk, i) => {
-        if (i % 2 === 1) {
-            return (
-                <pre key={i}>
-                    <code>{chunk.trim()}</code>
-                </pre>
-            );
-        }
-
-        return chunk.split("\n").map((line, j) => {
-            const parts = line.split(/`([^`]+)`/g);
-
-            return (
-                <p key={`${i}-${j}`}>
-                    {parts.map((part, k) =>
-                        k % 2 === 1 ? <code key={k}>{part}</code> : part
-                    )}
-                </p>
-            );
-        });
-    });
 }
 
 export default function QuestionDetail() {
@@ -66,6 +43,7 @@ export default function QuestionDetail() {
         deleteQuestion,
         incrementViews,
     } = useApp();
+    const { isAuthenticated } = useAuth();
 
     const question = questions.find((qq) => qq.id === id);
     const [answerBody, setAnswerBody] = useState("");
@@ -168,6 +146,7 @@ export default function QuestionDetail() {
                 </div>
             </header>
 
+            {/* ── Question body ──────────────────────────────────────── */}
             <article className="flex gap-5 border-b border-rule py-6">
                 <div className="hidden pt-1 sm:block">
                     <VoteButtons
@@ -180,7 +159,8 @@ export default function QuestionDetail() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <div className="prose-dev">{renderMarkdownLite(question.body)}</div>
+                    {/* Markdown-rendered body with syntax highlighting */}
+                    <MarkdownRenderer>{question.body}</MarkdownRenderer>
 
                     <div className="mt-5 flex flex-wrap items-center gap-1.5">
                         {question.tags.map((tag) => (
@@ -218,9 +198,18 @@ export default function QuestionDetail() {
                             </div>
                         </Link>
                     </div>
+
+                    {/* Comments on the question */}
+                    <div className="mt-6 border-t border-rule pt-5">
+                        <CommentSection
+                            targetType="question"
+                            targetId={parseInt(question.id) || question.id}
+                        />
+                    </div>
                 </div>
             </article>
 
+            {/* ── Answers ────────────────────────────────────────────── */}
             <section className="space-y-6 py-8">
                 <h2 className="flex items-center gap-3 font-display text-2xl font-semibold text-ink">
                     {question.answers.length}{" "}
@@ -269,7 +258,10 @@ export default function QuestionDetail() {
                                 </div>
                             )}
 
-                            <div className="prose-dev">{renderMarkdownLite(answer.body)}</div>
+                            {/* Markdown-rendered answer body — collapsible for long content */}
+                            <CollapsibleContent maxHeight="300px">
+                                <MarkdownRenderer>{answer.body}</MarkdownRenderer>
+                            </CollapsibleContent>
 
                             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                                 <div className="flex items-center gap-3">
@@ -316,6 +308,14 @@ export default function QuestionDetail() {
                                     </div>
                                 </Link>
                             </div>
+
+                            {/* Comments on this answer */}
+                            <div className="mt-5 border-t border-rule pt-4">
+                                <CommentSection
+                                    targetType="answer"
+                                    targetId={parseInt(answer.id) || answer.id}
+                                />
+                            </div>
                         </div>
                     </article>
                 ))}
@@ -328,34 +328,43 @@ export default function QuestionDetail() {
                 )}
             </section>
 
+            {/* ── Answer form with MarkdownEditor ─────────────────── */}
             <section className="space-y-3 border-t-2 border-double border-rule pt-6">
                 <h3 className="font-display text-xl font-semibold text-ink">Your answer</h3>
 
-                <form onSubmit={submitAnswer} className="space-y-3">
-                    <Textarea
-                        data-testid="answer-input"
-                        value={answerBody}
-                        onChange={(e) => setAnswerBody(e.target.value)}
-                        placeholder="Share what you know. Wrap code in ```language ... ```."
-                        className="min-h-[160px] rounded-sm border-rule bg-paper font-body text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
-                    />
+                {isAuthenticated ? (
+                    <form onSubmit={submitAnswer} className="space-y-3">
+                        <MarkdownEditor
+                            value={answerBody}
+                            onChange={setAnswerBody}
+                            testId="answer-input"
+                            placeholder="Share what you know. Use the toolbar for code blocks, lists, and formatting."
+                            minHeight="160px"
+                        />
 
-                    <div className="flex items-center justify-between">
-                        <p className="font-mono text-xs text-ink-3">
-                            // tip: backtick `code` inline &middot; ``` for code blocks
+                        <div className="flex items-center justify-between">
+                            <p className="font-mono text-xs text-ink-3">
+                                // tip: use toolbar for bold, code, headings, and more
+                            </p>
+
+                            <button
+                                type="submit"
+                                data-testid="submit-answer-btn"
+                                disabled={!answerBody.trim()}
+                                className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+                            >
+                                <Send className="h-3.5 w-3.5" />
+                                Post answer
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    <div className="rounded-sm border border-dashed border-rule py-8 text-center">
+                        <p className="text-sm text-ink-2">
+                            <Link to="/login" className="text-accent hover:underline">Log in</Link> to post an answer
                         </p>
-
-                        <button
-                            type="submit"
-                            data-testid="submit-answer-btn"
-                            disabled={!answerBody.trim()}
-                            className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
-                        >
-                            <Send className="h-3.5 w-3.5" />
-                            Post answer
-                        </button>
                     </div>
-                </form>
+                )}
             </section>
         </div>
     );

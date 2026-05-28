@@ -34,4 +34,13 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-module.exports = { registerSchema, loginSchema };
+const verifyOtpSchema = z.object({
+  email: z.string().email().toLowerCase().trim(),
+  otp: z.string().length(6, "OTP must be exactly 6 digits").regex(/^\d+$/, "OTP must contain only numbers"),
+});
+
+const resendOtpSchema = z.object({
+  email: z.string().email().toLowerCase().trim(),
+});
+
+module.exports = { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema };

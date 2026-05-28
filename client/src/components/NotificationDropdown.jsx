@@ -15,6 +15,7 @@ import {
 } from "./ui/dropdown-menu";
 
 import { useApp } from "../context/AppContext";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 function formatRel(ts) {
     const diff = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -116,9 +117,9 @@ export default function NotificationDropdown({ children }) {
                             >
                                 <div className="relative shrink-0">
                                     <img
-                                        src={notification.actor.avatar}
-                                        alt={notification.actor.name}
-                                        className="h-9 w-9 rounded-sm border border-rule object-cover"
+                                        src={notification.actor?.avatar || getAvatarFallback(notification.actor?.name, notification.actor?.username)}
+                                        alt={notification.actor?.name || ""}
+                                        className="h-9 w-9 rounded-sm border border-rule object-cover bg-paper"
                                     />
 
                                     <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-paper bg-paper-2">

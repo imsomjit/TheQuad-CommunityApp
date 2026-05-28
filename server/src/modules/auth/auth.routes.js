@@ -4,7 +4,7 @@ const { Router } = require("express");
 const controller = require("./auth.controller");
 const validate = require("../../middleware/validate");
 const { auth } = require("../../middleware/auth");
-const { registerSchema, loginSchema } = require("./auth.schemas");
+const { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema } = require("./auth.schemas");
 const {
   authLimiter,
   registerLimiter,
@@ -19,6 +19,22 @@ router.post(
   registerLimiter,
   validate(registerSchema),
   controller.register
+);
+
+// POST /api/auth/verify-otp
+router.post(
+  "/verify-otp",
+  authLimiter,
+  validate(verifyOtpSchema),
+  controller.verifyOtp
+);
+
+// POST /api/auth/resend-otp
+router.post(
+  "/resend-otp",
+  authLimiter,
+  validate(resendOtpSchema),
+  controller.resendOtp
 );
 
 // POST /api/auth/login

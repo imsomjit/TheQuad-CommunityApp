@@ -20,8 +20,9 @@ const getRepos = asyncHandler(async (req, res) => {
   const { username } = req.params;
   const sort = req.query.sort || "stars";
   const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+  const pinned = req.query.pinned === "true";
 
-  const repos = await githubService.getRepos(username, { sort, limit });
+  const repos = await githubService.getRepos(username, { sort, limit, pinned });
   res.json({ success: true, data: repos });
 });
 

@@ -5,7 +5,6 @@ import {
     Download,
     Bookmark,
     Flag,
-    MessageCircle,
     Edit3,
     Trash2,
     FileText,
@@ -14,14 +13,15 @@ import {
     Sparkles,
     Folder,
     Calendar,
-    Send,
+    Lock,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
 import { RESOURCE_TYPES } from "../data/mockData";
-import { Textarea } from "../components/ui/textarea";
+import CommentSection from "../components/CommentSection";
 import { toast } from "sonner";
 
 const ICONS = { BookOpen, FileText, ClipboardList, Sparkles, Folder };
@@ -61,13 +61,12 @@ export default function ResourceDetail() {
         bookmarks,
         toggleBookmark,
         currentUser,
-        addCommentToResource,
         deleteResource,
         incrementViews,
     } = useApp();
+    const { isAuthenticated } = useAuth();
 
     const resource = resources.find((r) => r.id === id);
-    const [comment, setComment] = useState("");
 
     useEffect(() => {
         if (resource) incrementViews("resource", id);
@@ -93,18 +92,21 @@ export default function ResourceDetail() {
     const isMine = resource.uploader.id === currentUser.id;
     const isBookmarked = bookmarks.has(resource.id);
 
-    const handleComment = (e) => {
-        e.preventDefault();
-
-        if (!comment.trim()) return;
-
-        addCommentToResource(resource.id, comment.trim());
-        setComment("");
-        toast.success("Comment posted");
+    const handleDownload = () => {
+        if (!isAuthenticated) {
+            toast.error("Please log in to download resources");
+            navigate("/login");
+            return;
+        }
+        toast.success("Download started", { description: resource.file.name });
     };
 
-    const handleDownload = () => {
-        toast.success("Download started", { description: resource.file.name });
+    const handleBookmark = () => {
+        if (!isAuthenticated) {
+            navigate("/login");
+            return;
+        }
+        toggleBookmark(resource.id);
     };
 
     const handleDelete = () => {
@@ -175,12 +177,16 @@ export default function ResourceDetail() {
                         data-testid="download-resource-btn"
                         className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-3 py-2 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
                     >
-                        <Download className="h-4 w-4" />
-                        Download
+                        {isAuthenticated ? (
+                            <Download className="h-4 w-4" />
+                        ) : (
+                            <Lock className="h-4 w-4" />
+                        )}
+                        {isAuthenticated ? "Download" : "Login to Download"}
                     </button>
 
                     <button
-                        onClick={() => toggleBookmark(resource.id)}
+                        onClick={handleBookmark}
                         data-testid="bookmark-detail-btn"
                         className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm font-medium transition-colors ${isBookmarked
                                 ? "border-accent bg-accent-soft text-accent"
@@ -294,64 +300,10 @@ export default function ResourceDetail() {
                     </div>
                 </div>
 
-                <section className="space-y-4">
-                    <h2 className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                        <MessageCircle className="h-3.5 w-3.5" />
-                        // comments ({resource.comments?.length || 0})
-                    </h2>
-
-                    <form onSubmit={handleComment} className="flex flex-col gap-2">
-                        <Textarea
-                            data-testid="comment-input"
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            placeholder="Leave a thoughtful comment…"
-                            className="min-h-[80px] rounded-sm border-rule bg-paper text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
-                        />
-
-                        <div className="flex justify-end">
-                            <button
-                                type="submit"
-                                data-testid="post-comment-btn"
-                                disabled={!comment.trim()}
-                                className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                                <Send className="h-3.5 w-3.5" />
-                                Post
-                            </button>
-                        </div>
-                    </form>
-
-                    <ul className="space-y-3">
-                        {(resource.comments || []).map((c) => (
-                            <li
-                                key={c.id}
-                                className="flex gap-3 rounded-sm border border-rule bg-paper-2/40 p-4"
-                            >
-                                <img
-                                    src={c.author.avatar}
-                                    alt=""
-                                    className="h-9 w-9 rounded-sm border border-rule object-cover"
-                                />
-
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <span className="font-semibold text-ink">
-                                            {c.author.name}
-                                        </span>
-                                        <span className="font-mono text-xs text-ink-3">
-                                            · {timeAgo(c.created_at)}
-                                        </span>
-                                    </div>
-
-                                    <p className="mt-1 text-sm leading-relaxed text-ink-2">
-                                        {c.text}
-                                    </p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
+                <CommentSection
+                    targetType="resource"
+                    targetId={parseInt(resource.id) || resource.id}
+                />
             </article>
         </div>
     );
