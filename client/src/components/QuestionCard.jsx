@@ -19,9 +19,9 @@ export default function QuestionCard({ question }) {
     const score = (question.upvotes || 0) - (question.downvotes || 0);
 
     const hasAccepted = question.answers?.some((answer) => answer.accepted);
-    const answerCount = question.answers?.length || 0;
+    const answerCount = question.answers?.length || question.answerCount || 0;
 
-    const previewText = question.body
+    const previewText = (question.body || "")
         .replace(/```[\s\S]*?```/g, "")
         .replace(/\n/g, " ")
         .slice(0, 200);

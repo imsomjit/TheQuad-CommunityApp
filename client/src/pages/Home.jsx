@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import TagBadge from "../components/TagBadge";
@@ -60,6 +61,7 @@ function StatTile({ icon: Icon, label, value, colorKey }) {
 
 export default function Home() {
     const { resources, questions, currentUser } = useApp();
+    const { isAuthenticated } = useAuth();
 
     const trendingResources = useMemo(
         () =>
@@ -185,7 +187,7 @@ export default function Home() {
                             <StatTile
                                 icon={Award}
                                 label="answers"
-                                value={questions.reduce((a, q) => a + q.answers.length, 0)}
+                                value={questions.reduce((a, q) => a + (q.answers?.length || q.answerCount || 0), 0)}
                                 colorKey="answers"
                             />
                         </div>
@@ -301,6 +303,7 @@ export default function Home() {
                     </div>
                     
                     {/* Profile card — index-card style */}
+                    {isAuthenticated && currentUser && (
                     <div className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-5">
                         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // profile card
@@ -328,9 +331,9 @@ export default function Home() {
                         </p>
 
                         <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                            <MiniStat value={currentUser.stats.resources} label="uploads" colorVar="--syntax-mint" />
-                            <MiniStat value={currentUser.stats.answers} label="answers" colorVar="--syntax-cyan" />
-                            <MiniStat value={currentUser.stats.upvotes} label="upvotes" colorVar="--syntax-amber" />
+                            <MiniStat value={currentUser.stats?.resources || 0} label="uploads" colorVar="--syntax-mint" />
+                            <MiniStat value={currentUser.stats?.answers || 0} label="answers" colorVar="--syntax-cyan" />
+                            <MiniStat value={currentUser.stats?.upvotes || 0} label="upvotes" colorVar="--syntax-amber" />
                         </div>
 
                         <Link
@@ -340,6 +343,7 @@ export default function Home() {
                             View full profile →
                         </Link>
                     </div>
+                    )}
                 </aside>
             </div>
 

@@ -9,15 +9,18 @@ import {
     Sun,
     Moon,
     Braces,
+    LogIn,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import NotificationDropdown from "./NotificationDropdown";
 import { Input } from "./ui/input";
 
 export default function Navbar() {
     const { currentUser, unreadCount } = useApp();
+    const { isAuthenticated } = useAuth();
     const { theme, toggle } = useTheme();
 
     const linkClass = ({ isActive }) =>
@@ -85,23 +88,47 @@ export default function Navbar() {
 
                 {/* Right Actions */}
                 <div className="ml-auto flex items-center gap-2">
-                    <Link
-                        to="/upload"
-                        data-testid="nav-upload-btn"
-                        className="hidden h-9 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
-                    >
-                        <Upload className="h-3.5 w-3.5" />
-                        Upload
-                    </Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link
+                                to="/upload"
+                                data-testid="nav-upload-btn"
+                                className="hidden h-9 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
+                            >
+                                <Upload className="h-3.5 w-3.5" />
+                                Upload
+                            </Link>
 
-                    <Link
-                        to="/ask"
-                        data-testid="nav-ask-btn"
-                        className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn"
-                    >
-                        <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                        Ask
-                    </Link>
+                            <Link
+                                to="/ask"
+                                data-testid="nav-ask-btn"
+                                className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn"
+                            >
+                                <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                Ask
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                to="/login"
+                                data-testid="nav-login-btn"
+                                className="hidden h-9 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
+                            >
+                                <LogIn className="h-3.5 w-3.5" />
+                                Sign in
+                            </Link>
+
+                            <Link
+                                to="/register"
+                                data-testid="nav-register-btn"
+                                className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn"
+                            >
+                                <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                Join
+                            </Link>
+                        </>
+                    )}
 
                     {/* Theme toggle */}
                     <button
@@ -119,40 +146,44 @@ export default function Navbar() {
                         )}
                     </button>
 
-                    {/* Notifications */}
-                    <NotificationDropdown>
-                        <button
-                            data-testid="notifications-bell"
-                            aria-label="Notifications"
-                            className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-transparent text-ink-2 transition-colors hover:border-rule hover:bg-paper-2 hover:text-ink"
-                        >
-                            <Bell className="h-4 w-4" />
-
-                            {unreadCount > 0 && (
-                                <span
-                                    data-testid="notifications-unread-badge"
-                                    className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-bold text-paper"
+                    {isAuthenticated && (
+                        <>
+                            {/* Notifications */}
+                            <NotificationDropdown>
+                                <button
+                                    data-testid="notifications-bell"
+                                    aria-label="Notifications"
+                                    className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-transparent text-ink-2 transition-colors hover:border-rule hover:bg-paper-2 hover:text-ink"
                                 >
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </button>
-                    </NotificationDropdown>
+                                    <Bell className="h-4 w-4" />
 
-                    {/* User Avatar */}
-                    <Link
-                        to={`/u/${currentUser.username}`}
-                        data-testid="nav-avatar-link"
-                        className="relative"
-                    >
-                        <img
-                            src={currentUser.avatar}
-                            alt={currentUser.name}
-                            className="h-9 w-9 rounded-sm border border-rule object-cover transition-colors hover:border-accent"
-                        />
+                                    {unreadCount > 0 && (
+                                        <span
+                                            data-testid="notifications-unread-badge"
+                                            className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-bold text-paper"
+                                        >
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+                            </NotificationDropdown>
 
-                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-paper bg-accent-2" />
-                    </Link>
+                            {/* User Avatar */}
+                            <Link
+                                to={`/u/${currentUser?.username || ''}`}
+                                data-testid="nav-avatar-link"
+                                className="relative"
+                            >
+                                <img
+                                    src={currentUser?.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=user`}
+                                    alt={currentUser?.name || ''}
+                                    className="h-9 w-9 rounded-sm border border-rule object-cover transition-colors hover:border-accent"
+                                />
+
+                                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-paper bg-accent-2" />
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
 

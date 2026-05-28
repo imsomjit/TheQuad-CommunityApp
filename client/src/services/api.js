@@ -1,0 +1,342 @@
+/**
+ * PeerVerse API Service
+ *
+ * Centralized Axios wrapper with:
+ * - Access token injection via interceptor
+ * - Silent 401 refresh via refresh-token cookie
+ * - Data transformers that convert API camelCase → frontend snake_case shapes
+ */
+
+import axios from "axios";
+
+// ── Base instance ────────────────────────────────────────────────────────────
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true, // send httpOnly cookie on every request
+  headers: { "Content-Type": "application/json" },
+});
+
+// ── Token management ─────────────────────────────────────────────────────────
+let accessToken = null;
+let refreshPromise = null; // single in-flight refresh to avoid races
+
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
+export const clearAccessToken = () => {
+  accessToken = null;
+};
+
+// ── Request interceptor: inject Bearer token ─────────────────────────────────
+api.interceptors.request.use((config) => {
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+});
+
+// ── Response interceptor: handle 401 → silent refresh ────────────────────────
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config;
+
+    // Only retry once, and only for 401s that aren't the refresh endpoint itself
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      !original.url?.includes("/auth/refresh") &&
+      !original.url?.includes("/auth/login")
+    ) {
+      original._retry = true;
+
+      try {
+        // Deduplicate concurrent refresh attempts
+        if (!refreshPromise) {
+          refreshPromise = api.post("/auth/refresh").finally(() => {
+            refreshPromise = null;
+          });
+        }
+        const { data } = await refreshPromise;
+        setAccessToken(data.data.accessToken);
+        original.headers.Authorization = `Bearer ${data.data.accessToken}`;
+        return api(original);
+      } catch {
+        clearAccessToken();
+        // Redirect to login if refresh fails
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// ── Data Transformers ────────────────────────────────────────────────────────
+// The API returns camelCase, but the frontend components expect snake_case
+// field names from the mock data era. These transforms bridge the gap without
+// touching any UI component code.
+
+/** Map an API user object → frontend user shape */
+const mapUser = (u) => {
+  if (!u) return null;
+  return {
+    id: u.id,
+    name: u.name,
+    username: u.username,
+    avatar: u.avatarUrl || u.avatar || `https://api.dicebear.com/7.x/identicon/svg?seed=${u.username}`,
+    bio: u.bio || "",
+    college: u.college || "",
+    branch: u.branch || "",
+    semester: u.semester || u.graduationYear || null,
+    skills: u.skills || [],
+    github_username: u.githubUsername || "",
+    joined: u.createdAt || u.joined || null,
+    stats: u.stats || { resources: 0, questions: 0, answers: 0, upvotes: 0 },
+  };
+};
+
+/** Map API resource → frontend resource shape */
+const mapResource = (r) => ({
+  id: r.id,
+  title: r.title,
+  description: r.description || "",
+  type: r.type,
+  file: {
+    name: r.fileName || "",
+    size: r.fileSize ? `${(r.fileSize / (1024 * 1024)).toFixed(1)} MB` : "N/A",
+    pages: r.pages || null,
+  },
+  fileUrl: r.fileUrl,
+  college: r.college || "",
+  branch: r.branch || "",
+  semester: r.semester || null,
+  subject: r.subject || "",
+  tags: r.tags || [],
+  uploader: r.uploader
+    ? {
+        id: r.uploader.id || r.uploaderId,
+        name: r.uploader.name || r.uploaderName || "",
+        username: r.uploader.username || r.uploaderUsername || "",
+        avatar: r.uploader.avatarUrl || r.uploader.avatar || r.uploaderAvatarUrl || "",
+      }
+    : { id: r.uploaderId, name: r.uploaderName || "", username: r.uploaderUsername || "", avatar: r.uploaderAvatarUrl || "" },
+  created_at: r.createdAt || r.created_at,
+  updated_at: r.updatedAt || r.updated_at,
+  upvotes: r.upvotes || 0,
+  downvotes: r.downvotes || 0,
+  views: r.views || 0,
+  downloads: r.downloads || 0,
+  bookmarks: r.bookmarksCount || 0,
+  comments: [], // comments are fetched separately
+});
+
+/** Map API question → frontend question shape */
+const mapQuestion = (q) => ({
+  id: q.id,
+  title: q.title,
+  body: q.body || "",
+  tags: q.tags || [],
+  author: q.author
+    ? {
+        id: q.author.id || q.authorId,
+        name: q.author.name || q.authorName || "",
+        username: q.author.username || q.authorUsername || "",
+        avatar: q.author.avatarUrl || q.author.avatar || q.authorAvatarUrl || "",
+      }
+    : { id: q.authorId, name: q.authorName || "", username: q.authorUsername || "", avatar: q.authorAvatarUrl || "" },
+  created_at: q.createdAt || q.created_at,
+  updated_at: q.updatedAt || q.updated_at,
+  upvotes: q.upvotes || 0,
+  downvotes: q.downvotes || 0,
+  views: q.views || 0,
+  answerCount: q.answerCount || 0,
+  answers: (q.answers || []).map(mapAnswer),
+});
+
+/** Map API answer → frontend answer shape */
+const mapAnswer = (a) => ({
+  id: a.id,
+  body: a.body || "",
+  author: a.author
+    ? {
+        id: a.author.id || a.authorId,
+        name: a.author.name || a.authorName || "",
+        username: a.author.username || a.authorUsername || "",
+        avatar: a.author.avatarUrl || a.author.avatar || a.authorAvatarUrl || "",
+      }
+    : { id: a.authorId, name: a.authorName || "", username: a.authorUsername || "", avatar: a.authorAvatarUrl || "" },
+  created_at: a.createdAt || a.created_at,
+  updated_at: a.updatedAt || a.updated_at,
+  upvotes: a.upvotes || 0,
+  downvotes: a.downvotes || 0,
+  accepted: a.isAccepted || a.accepted || false,
+  comments: [],
+});
+
+/** Map API comment → frontend comment shape */
+const mapComment = (c) => ({
+  id: c.id,
+  author: c.author
+    ? {
+        id: c.author.id || c.authorId,
+        name: c.author.name || c.authorName || "",
+        username: c.author.username || c.authorUsername || "",
+        avatar: c.author.avatarUrl || c.author.avatar || c.authorAvatarUrl || "",
+      }
+    : { id: c.authorId, name: "", username: "", avatar: "" },
+  text: c.body || c.text || "",
+  created_at: c.createdAt || c.created_at,
+});
+
+/** Derive readable notification text from type */
+const notifText = (type) => {
+  const map = {
+    comment_on_resource: "commented on your resource",
+    comment_on_question: "commented on your question",
+    comment_on_answer: "commented on your answer",
+    upvote_resource: "upvoted your resource",
+    upvote_question: "upvoted your question",
+    upvote_answer: "upvoted your answer",
+    answer_on_question: "answered your question",
+    follow: "started following you",
+    report_resolved: "your report was resolved",
+    content_removed: "your content was removed",
+  };
+  return map[type] || "interacted with your content";
+};
+
+/** Map API notification → frontend notification shape */
+const mapNotification = (n) => ({
+  id: n.id,
+  type: n.type,
+  actor: n.actor
+    ? {
+        id: n.actor.id || n.actorId,
+        name: n.actor.name || n.actorName || "",
+        username: n.actor.username || n.actorUsername || "",
+        avatar: n.actor.avatarUrl || n.actor.avatar || n.actorAvatarUrl || "",
+      }
+    : { id: n.actorId, name: n.actorName || "", username: n.actorUsername || "", avatar: n.actorAvatarUrl || "" },
+  text: notifText(n.type),
+  target: n.targetTitle || "",
+  targetId: n.targetId,
+  targetType: n.targetType,
+  created_at: n.createdAt || n.created_at,
+  read: n.isRead ?? n.read ?? false,
+});
+
+// ── API Functions ────────────────────────────────────────────────────────────
+
+// Auth
+export const authApi = {
+  register: (data) => api.post("/auth/register", data),
+  login: (data) => api.post("/auth/login", data),
+  refresh: () => api.post("/auth/refresh"),
+  logout: () => api.post("/auth/logout"),
+  me: () => api.get("/auth/me"),
+};
+
+// Resources
+export const resourcesApi = {
+  list: (params) => api.get("/resources", { params }).then((r) => ({
+    data: r.data.data.map(mapResource),
+    pagination: r.data.pagination,
+  })),
+  get: (id) => api.get(`/resources/${id}`).then((r) => mapResource(r.data.data)),
+  create: (formData) =>
+    api.post("/resources", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => mapResource(r.data.data)),
+  update: (id, data) => api.patch(`/resources/${id}`, data).then((r) => mapResource(r.data.data)),
+  delete: (id) => api.delete(`/resources/${id}`),
+  download: (id) => api.post(`/resources/${id}/download`).then((r) => r.data.data.fileUrl),
+};
+
+// Questions
+export const questionsApi = {
+  list: (params) => api.get("/questions", { params }).then((r) => ({
+    data: r.data.data.map(mapQuestion),
+    pagination: r.data.pagination,
+  })),
+  get: (id) => api.get(`/questions/${id}`).then((r) => mapQuestion(r.data.data)),
+  create: (data) => api.post("/questions", data).then((r) => mapQuestion(r.data.data)),
+  update: (id, data) => api.patch(`/questions/${id}`, data).then((r) => mapQuestion(r.data.data)),
+  delete: (id) => api.delete(`/questions/${id}`),
+  // Answers
+  addAnswer: (qId, body) => api.post(`/questions/${qId}/answers`, { body }).then((r) => mapAnswer(r.data.data)),
+  updateAnswer: (qId, aId, body) => api.patch(`/questions/${qId}/answers/${aId}`, { body }).then((r) => mapAnswer(r.data.data)),
+  deleteAnswer: (qId, aId) => api.delete(`/questions/${qId}/answers/${aId}`),
+  acceptAnswer: (qId, aId) => api.post(`/questions/${qId}/answers/${aId}/accept`),
+};
+
+// Comments
+export const commentsApi = {
+  list: (targetType, targetId) =>
+    api.get("/comments", { params: { targetType, targetId } }).then((r) => r.data.data.map(mapComment)),
+  add: (data) => api.post("/comments", data).then((r) => mapComment(r.data.data)),
+  delete: (id) => api.delete(`/comments/${id}`),
+};
+
+// Votes
+export const votesApi = {
+  cast: (data) => api.post("/votes", data).then((r) => r.data.data),
+};
+
+// Bookmarks
+export const bookmarksApi = {
+  toggle: (data) => api.post("/bookmarks", data).then((r) => r.data.data),
+  list: (targetType = "resource") =>
+    api.get("/bookmarks", { params: { targetType } }).then((r) => r.data.data),
+};
+
+// Follows
+export const followsApi = {
+  follow: (username) => api.post(`/follows/${username}`),
+  unfollow: (username) => api.delete(`/follows/${username}`),
+};
+
+// Notifications
+export const notificationsApi = {
+  list: (params) =>
+    api.get("/notifications", { params }).then((r) => ({
+      data: r.data.data.map(mapNotification),
+      unreadCount: r.data.unreadCount,
+      pagination: r.data.pagination,
+    })),
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch("/notifications/read-all"),
+};
+
+// Users
+export const usersApi = {
+  getProfile: (username) => api.get(`/users/${username}`).then((r) => {
+    const u = r.data.data;
+    return {
+      ...mapUser(u),
+      stats: u.stats || {},
+      viewerFollows: u.viewerFollows || false,
+    };
+  }),
+  updateProfile: (data) => api.patch("/users/me", data).then((r) => mapUser(r.data.data)),
+  uploadAvatar: (formData) =>
+    api.patch("/users/me/avatar", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => mapUser(r.data.data)),
+  getFollowers: (username) => api.get(`/users/${username}/followers`).then((r) => r.data.data),
+  getFollowing: (username) => api.get(`/users/${username}/following`).then((r) => r.data.data),
+};
+
+// Reports
+export const reportsApi = {
+  submit: (data) => api.post("/reports", data),
+};
+
+export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification };
+export default api;

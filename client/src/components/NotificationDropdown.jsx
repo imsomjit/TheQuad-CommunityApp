@@ -152,9 +152,9 @@ export default function NotificationDropdown({ children }) {
                 </div>
 
                 <div className="border-t border-rule px-4 py-2 text-center">
-                    <button className="text-xs text-ink-3 transition-colors hover:text-ink">
+                    <Link to="/notifications" className="text-xs text-ink-3 transition-colors hover:text-ink">
                         View all activity
-                    </button>
+                    </Link>
                 </div>
             </DropdownMenuContent>
         </DropdownMenu>
