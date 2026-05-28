@@ -170,7 +170,7 @@ export default function Navbar() {
 
                             {/* User Avatar */}
                             <Link
-                                to={`/u/${currentUser?.username || ''}`}
+                                to={`/pv/${currentUser?.username || ''}`}
                                 data-testid="nav-avatar-link"
                                 className="relative"
                             >

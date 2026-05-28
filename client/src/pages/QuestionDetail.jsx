@@ -199,7 +199,7 @@ export default function QuestionDetail() {
                         </button>
 
                         <Link
-                            to={`/u/${question.author.username}`}
+                            to={`/pv/${question.author.username}`}
                             className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                         >
                             <img
@@ -297,7 +297,7 @@ export default function QuestionDetail() {
                                 </div>
 
                                 <Link
-                                    to={`/u/${answer.author.username}`}
+                                    to={`/pv/${answer.author.username}`}
                                     className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                                 >
                                     <img

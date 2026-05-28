@@ -338,5 +338,19 @@ export const reportsApi = {
   submit: (data) => api.post("/reports", data),
 };
 
+// GitHub (server-side proxy)
+export const githubApi = {
+  getProfile: (username) =>
+    api.get(`/github/${username}`).then((r) => r.data.data),
+  getRepos: (username, params) =>
+    api.get(`/github/${username}/repos`, { params }).then((r) => r.data.data),
+  getLanguages: (username) =>
+    api.get(`/github/${username}/languages`).then((r) => r.data.data),
+  getActivity: (username, params) =>
+    api.get(`/github/${username}/activity`, { params }).then((r) => r.data.data),
+  getContributions: (username) =>
+    api.get(`/github/${username}/contributions`).then((r) => r.data.data),
+};
+
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification };
 export default api;

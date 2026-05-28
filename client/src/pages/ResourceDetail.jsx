@@ -273,7 +273,7 @@ export default function ResourceDetail() {
                 </div>
 
                 <div className="flex items-center gap-3 rounded-sm border border-rule bg-paper-2/40 p-4">
-                    <Link to={`/u/${resource.uploader.username}`}>
+                    <Link to={`/pv/${resource.uploader.username}`}>
                         <img
                             src={resource.uploader.avatar}
                             alt=""
@@ -283,7 +283,7 @@ export default function ResourceDetail() {
 
                     <div className="flex-1">
                         <Link
-                            to={`/u/${resource.uploader.username}`}
+                            to={`/pv/${resource.uploader.username}`}
                             className="font-semibold text-ink transition-colors hover:text-accent"
                         >
                             {resource.uploader.name}

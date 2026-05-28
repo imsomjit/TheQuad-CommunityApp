@@ -337,7 +337,7 @@ export default function Home() {
                         </div>
 
                         <Link
-                            to={`/u/${currentUser.username}`}
+                            to={`/pv/${currentUser.username}`}
                             className="mt-4 block w-full rounded-sm border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                         >
                             View full profile →

@@ -20,6 +20,7 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Notifications from "./pages/Notifications";
+import AuthCallback from "./pages/AuthCallback";
 
 function App() {
   return (
@@ -32,8 +33,10 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Routes with layout */}
+              {/* OAuth callback (within layout for error display) */}
               <Route element={<Layout />}>
+                <Route path="/auth/callback" element={<AuthCallback />} />
+
                 <Route path="/" element={<Home />} />
 
                 <Route path="/resources" element={<Resources />} />
@@ -58,7 +61,7 @@ function App() {
                   }
                 />
 
-                <Route path="/u/:username" element={<Profile />} />
+                <Route path="/pv/:username" element={<Profile />} />
 
                 <Route path="/notifications" element={<Notifications />} />
               </Route>

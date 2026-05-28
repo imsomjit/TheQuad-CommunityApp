@@ -44,6 +44,11 @@ const envSchema = z.object({
   // Gmail SMTP
   GMAIL_USER: z.string().email().optional(),
   GMAIL_APP_PASSWORD: z.string().optional(),
+
+  // Google OAuth
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALLBACK_URL: z.string().url().optional().default("http://localhost:5000/api/auth/google/callback"),
 });
 
 const parsed = envSchema.safeParse(process.env);

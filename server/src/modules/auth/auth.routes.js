@@ -30,6 +30,12 @@ router.post(
   controller.login
 );
 
+// GET /api/auth/google — redirect to Google consent screen
+router.get("/google", controller.googleRedirect);
+
+// GET /api/auth/google/callback — handle Google OAuth callback
+router.get("/google/callback", controller.googleCallback);
+
 // POST /api/auth/refresh
 // Uses httpOnly cookie — no rate limiter needed (automatic browser behavior)
 router.post("/refresh", controller.refresh);
@@ -42,3 +48,4 @@ router.post("/logout", controller.logout);
 router.get("/me", auth, controller.me);
 
 module.exports = router;
+

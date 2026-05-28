@@ -36,7 +36,7 @@ const iconFor = (type) => {
 };
 
 const linkFor = (notification) => {
-  if (notification.type === "follow") return `/u/${notification.actor?.username}`;
+  if (notification.type === "follow") return `/pv/${notification.actor?.username}`;
   if (notification.targetType === "resource" || notification.type?.includes("resource")) {
     return `/resources/${notification.targetId}`;
   }

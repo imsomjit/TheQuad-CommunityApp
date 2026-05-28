@@ -1,0 +1,250 @@
+"use strict";
+
+const asyncHandler = require("../../utils/asyncHandler");
+const AppError = require("../../utils/AppError");
+const { db } = require("../../db/index");
+const { users } = require("../../db/schema/index");
+const { eq } = require("drizzle-orm");
+const logger = require("../../utils/logger");
+
+// ── Cache layer ──────────────────────────────────────────────────────────────
+// GitHub API has a 60 req/hr limit for unauthenticated requests.
+// We cache responses for 10 minutes to avoid hitting limits.
+const cache = new Map();
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+function getCached(key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > CACHE_TTL) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCache(key, data) {
+  cache.set(key, { data, ts: Date.now() });
+  // Prevent unbounded growth
+  if (cache.size > 500) {
+    const oldest = cache.keys().next().value;
+    cache.delete(oldest);
+  }
+}
+
+// ── GitHub API helpers ───────────────────────────────────────────────────────
+const GITHUB_API = "https://api.github.com";
+
+async function githubFetch(path) {
+  const url = `${GITHUB_API}${path}`;
+  const cached = getCached(url);
+  if (cached) return cached;
+
+  const headers = {
+    Accept: "application/vnd.github.v3+json",
+    "User-Agent": "PeerVerse/1.0",
+  };
+
+  const res = await fetch(url, { headers });
+
+  if (res.status === 404) {
+    throw new AppError("GitHub user not found", 404, "GITHUB_NOT_FOUND");
+  }
+  if (res.status === 403) {
+    throw new AppError(
+      "GitHub API rate limit exceeded. Try again later.",
+      429,
+      "GITHUB_RATE_LIMITED"
+    );
+  }
+  if (!res.ok) {
+    throw new AppError("Failed to fetch from GitHub", 502, "GITHUB_API_ERROR");
+  }
+
+  const data = await res.json();
+  setCache(url, data);
+  return data;
+}
+
+// ── Service functions ────────────────────────────────────────────────────────
+
+/**
+ * Fetch a user's GitHub profile summary.
+ */
+const getProfile = async (githubUsername) => {
+  const profile = await githubFetch(`/users/${githubUsername}`);
+
+  return {
+    login: profile.login,
+    name: profile.name,
+    avatar: profile.avatar_url,
+    bio: profile.bio,
+    company: profile.company,
+    location: profile.location,
+    blog: profile.blog,
+    publicRepos: profile.public_repos,
+    publicGists: profile.public_gists,
+    followers: profile.followers,
+    following: profile.following,
+    createdAt: profile.created_at,
+    htmlUrl: profile.html_url,
+  };
+};
+
+/**
+ * Fetch a user's public repositories (sorted by stars, top 20).
+ */
+const getRepos = async (githubUsername, { sort = "stars", limit = 20 } = {}) => {
+  const sortParam = sort === "stars" ? "stargazers_count" : "updated_at";
+  const repos = await githubFetch(
+    `/users/${githubUsername}/repos?type=owner&sort=${sort === "stars" ? "full_name" : "updated"}&per_page=100`
+  );
+
+  // Sort by stargazers client-side (GitHub API sort is limited)
+  const sorted = repos
+    .sort((a, b) => {
+      if (sort === "stars") return b.stargazers_count - a.stargazers_count;
+      return new Date(b.updated_at) - new Date(a.updated_at);
+    })
+    .slice(0, limit);
+
+  return sorted.map((r) => ({
+    id: r.id,
+    name: r.name,
+    fullName: r.full_name,
+    description: r.description,
+    htmlUrl: r.html_url,
+    homepage: r.homepage,
+    language: r.language,
+    stars: r.stargazers_count,
+    forks: r.forks_count,
+    watchers: r.watchers_count,
+    openIssues: r.open_issues_count,
+    isForked: r.fork,
+    topics: r.topics || [],
+    updatedAt: r.updated_at,
+    pushedAt: r.pushed_at,
+  }));
+};
+
+/**
+ * Fetch language breakdown across all repos (aggregated bytes).
+ */
+const getLanguages = async (githubUsername) => {
+  // First get repos
+  const repos = await githubFetch(
+    `/users/${githubUsername}/repos?type=owner&per_page=100`
+  );
+
+  // For performance, limit to top 15 repos by stars
+  const topRepos = repos
+    .filter((r) => !r.fork)
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .slice(0, 15);
+
+  const aggregated = {};
+
+  for (const repo of topRepos) {
+    try {
+      const langs = await githubFetch(`/repos/${repo.full_name}/languages`);
+      for (const [lang, bytes] of Object.entries(langs)) {
+        aggregated[lang] = (aggregated[lang] || 0) + bytes;
+      }
+    } catch {
+      // Skip repos that fail (private, rate limited, etc.)
+    }
+  }
+
+  // Convert to sorted array
+  const total = Object.values(aggregated).reduce((a, b) => a + b, 0) || 1;
+  return Object.entries(aggregated)
+    .map(([name, bytes]) => ({
+      name,
+      bytes,
+      percentage: Math.round((bytes / total) * 1000) / 10,
+    }))
+    .sort((a, b) => b.bytes - a.bytes);
+};
+
+/**
+ * Fetch recent contribution events (public activity).
+ */
+const getActivity = async (githubUsername, { limit = 30 } = {}) => {
+  const events = await githubFetch(
+    `/users/${githubUsername}/events/public?per_page=${Math.min(limit, 100)}`
+  );
+
+  return events.slice(0, limit).map((e) => ({
+    id: e.id,
+    type: e.type,
+    repo: e.repo?.name,
+    createdAt: e.created_at,
+    action: e.payload?.action,
+    // Simplify payload based on type
+    ...(e.type === "PushEvent" && {
+      commits: (e.payload?.commits || []).length,
+      branch: e.payload?.ref?.replace("refs/heads/", ""),
+    }),
+    ...(e.type === "PullRequestEvent" && {
+      title: e.payload?.pull_request?.title,
+    }),
+    ...(e.type === "IssuesEvent" && {
+      title: e.payload?.issue?.title,
+    }),
+    ...(e.type === "CreateEvent" && {
+      refType: e.payload?.ref_type,
+      ref: e.payload?.ref,
+    }),
+  }));
+};
+
+/**
+ * Calculate a contribution "streak" and summary from recent events.
+ */
+const getContributionSummary = async (githubUsername) => {
+  const events = await githubFetch(
+    `/users/${githubUsername}/events/public?per_page=100`
+  );
+
+  const dayMap = {};
+  for (const e of events) {
+    const day = e.created_at.slice(0, 10); // YYYY-MM-DD
+    dayMap[day] = (dayMap[day] || 0) + 1;
+  }
+
+  // Calculate streak
+  const today = new Date();
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    if (dayMap[key]) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+  }
+
+  const pushEvents = events.filter((e) => e.type === "PushEvent");
+  const totalCommits = pushEvents.reduce(
+    (sum, e) => sum + (e.payload?.commits?.length || 0),
+    0
+  );
+
+  return {
+    currentStreak: streak,
+    totalEvents: events.length,
+    totalCommits,
+    activeDays: Object.keys(dayMap).length,
+    contributionsByDay: dayMap,
+  };
+};
+
+module.exports = {
+  getProfile,
+  getRepos,
+  getLanguages,
+  getActivity,
+  getContributionSummary,
+};

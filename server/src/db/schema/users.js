@@ -13,6 +13,7 @@ const {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 const userRoleEnum = pgEnum("user_role", ["student", "moderator", "admin"]);
+const authProviderEnum = pgEnum("auth_provider", ["local", "google"]);
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 const users = pgTable("users", {
@@ -20,8 +21,10 @@ const users = pgTable("users", {
   name: varchar("name", { length: 120 }).notNull(),
   username: varchar("username", { length: 50 }).notNull().unique(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }), // nullable for OAuth users
   role: userRoleEnum("role").default("student").notNull(),
+  authProvider: authProviderEnum("auth_provider").default("local").notNull(),
+  googleId: varchar("google_id", { length: 255 }).unique(),
   avatarUrl: text("avatar_url"),
   bio: text("bio"),
   college: varchar("college", { length: 200 }),
@@ -39,4 +42,5 @@ const users = pgTable("users", {
     .notNull(),
 });
 
-module.exports = { users, userRoleEnum };
+module.exports = { users, userRoleEnum, authProviderEnum };
+
