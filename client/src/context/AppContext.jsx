@@ -50,11 +50,11 @@ export function AppProvider({ children }) {
   // ── Fetch real data when authenticated ─────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated || !getAccessToken()) {
-      setApiLoaded(false);
       setResources(RESOURCES_SEED);
       setQuestions(QUESTIONS_SEED);
       setNotifications(NOTIFICATIONS_SEED);
       setBookmarks(new Set(["r_003"]));
+      setApiLoaded(true); // <--- set to true so UI renders the mock data
       return;
     }
 
@@ -84,6 +84,9 @@ export function AppProvider({ children }) {
         setApiLoaded(true);
       } catch {
         // Fall back to mock data silently
+        setResources(RESOURCES_SEED);
+        setQuestions(QUESTIONS_SEED);
+        setApiLoaded(true);
       }
     };
 

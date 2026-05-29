@@ -9,6 +9,13 @@ import {
   Quote, Table, ImageIcon, Eye, Edit3, Save, Send, ChevronDown,
   X, Plus, Check, Loader2, Upload, ExternalLink,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { postsApi } from "../services/api";
 import { useApp } from "../context/AppContext";
 
@@ -62,17 +69,25 @@ function DsaMetaForm({ meta, onChange }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       <div>
         <label className="label-xs">Platform</label>
-        <select value={meta.platform || ""} onChange={(e) => set("platform", e.target.value)} className="field-sm">
-          <option value="">Select…</option>
-          {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
-        </select>
+        <Select value={meta.platform || ""} onValueChange={(v) => set("platform", v)}>
+          <SelectTrigger className="h-8 w-full border-rule bg-paper-2/40 px-2 text-[0.8125rem]">
+            <SelectValue placeholder="Select…" />
+          </SelectTrigger>
+          <SelectContent>
+            {PLATFORMS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <label className="label-xs">Difficulty</label>
-        <select value={meta.difficulty || ""} onChange={(e) => set("difficulty", e.target.value)} className="field-sm">
-          <option value="">Select…</option>
-          {DIFFICULTIES.map((d) => <option key={d} value={d} className="capitalize">{d}</option>)}
-        </select>
+        <Select value={meta.difficulty || ""} onValueChange={(v) => set("difficulty", v)}>
+          <SelectTrigger className="h-8 w-full border-rule bg-paper-2/40 px-2 text-[0.8125rem] capitalize">
+            <SelectValue placeholder="Select…" />
+          </SelectTrigger>
+          <SelectContent>
+            {DIFFICULTIES.map((d) => <SelectItem key={d} value={d} className="capitalize">{d}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
       <div className="col-span-2 sm:col-span-1">
         <label className="label-xs">Problem Link</label>
@@ -115,17 +130,25 @@ function InterviewMetaForm({ meta, onChange }) {
       </div>
       <div>
         <label className="label-xs">Level</label>
-        <select value={meta.experienceLevel || ""} onChange={(e) => set("experienceLevel", e.target.value)} className="field-sm">
-          <option value="">Select…</option>
-          {EXP_LEVELS.map((l) => <option key={l} value={l} className="capitalize">{l.replace("_", " ")}</option>)}
-        </select>
+        <Select value={meta.experienceLevel || ""} onValueChange={(v) => set("experienceLevel", v)}>
+          <SelectTrigger className="h-8 w-full border-rule bg-paper-2/40 px-2 text-[0.8125rem] capitalize">
+            <SelectValue placeholder="Select…" />
+          </SelectTrigger>
+          <SelectContent>
+            {EXP_LEVELS.map((l) => <SelectItem key={l} value={l} className="capitalize">{l.replace("_", " ")}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <label className="label-xs">Mode</label>
-        <select value={meta.interviewMode || ""} onChange={(e) => set("interviewMode", e.target.value)} className="field-sm">
-          <option value="">Select…</option>
-          {INTERVIEW_MODES.map((m) => <option key={m} value={m} className="capitalize">{m}</option>)}
-        </select>
+        <Select value={meta.interviewMode || ""} onValueChange={(v) => set("interviewMode", v)}>
+          <SelectTrigger className="h-8 w-full border-rule bg-paper-2/40 px-2 text-[0.8125rem] capitalize">
+            <SelectValue placeholder="Select…" />
+          </SelectTrigger>
+          <SelectContent>
+            {INTERVIEW_MODES.map((m) => <SelectItem key={m} value={m} className="capitalize">{m}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <label className="label-xs">Year</label>
@@ -584,15 +607,19 @@ export default function PostEditor() {
             <label className="block font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3 mb-2">
               Category *
             </label>
-            <select
+            <Select
               value={category}
-              onChange={(e) => { setCategory(e.target.value); setCategoryMeta({}); }}
-              className="w-full rounded-sm border border-rule bg-paper-2/40 px-2 py-2 text-sm text-ink focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              onValueChange={(v) => { setCategory(v); setCategoryMeta({}); }}
             >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full border-rule bg-paper-2/40 focus:border-accent/60">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Category metadata */}

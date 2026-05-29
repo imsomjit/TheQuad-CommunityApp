@@ -2,8 +2,10 @@ import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 const ROUTE_LABELS = [
     { match: /^\/$/, label: "feed", section: "§01" },
@@ -31,8 +33,10 @@ function getRouteMeta(pathname) {
 
 export default function Layout() {
     const { theme } = useTheme();
+    const { isAuthenticated } = useAuth();
     const location = useLocation();
     const meta = getRouteMeta(location.pathname);
+    const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
 
     return (
         <div className="relative min-h-screen bg-paper text-ink font-body">
@@ -41,43 +45,52 @@ export default function Layout() {
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                {/* Running header / monospace breadcrumb bar */}
-                <div className="border-b border-rule/60 bg-paper/70 backdrop-blur-md">
-                    <div className="mx-auto flex h-7 w-full items-center justify-between gap-3 px-4 font-mono text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
-                        <span className="flex items-center gap-2">
-                            <span className="text-accent">●</span>
-                            peerverse / vol.01 / a learning notebook
-                        </span>
+                <div className="sticky top-0 z-40 w-full flex flex-col">
+                    {/* Running header / monospace breadcrumb bar */}
+                    <div className="border-b border-rule/60 bg-paper/70 backdrop-blur-md">
+                        <div className="mx-auto flex h-7 w-full items-center justify-between gap-3 px-4 font-mono text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
+                            <span className="flex items-center gap-2">
+                                <span className="text-accent">●</span>
+                                peerverse / vol.01 / a learning notebook
+                            </span>
 
-                        <span className="hidden items-center gap-2 sm:flex">
-                            <span>{meta.section}</span>
-                            <span>·</span>
-                            <span className="text-ink-2">{meta.label}</span>
-                            <span>·</span>
-                            <span>{theme === "light" ? "paper" : "ink"}</span>
-                        </span>
-                    </div>
-                </div>
-
-                <Navbar />
-
-                {/* Main content */}
-                <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-2">
-                    <Outlet />
-                </main>
-
-                {/* Footer / colophon */}
-                <footer className="mt-20 border-t-2 border-double border-rule">
-                    {/* Marquee separator */}
-                    <div className="overflow-hidden border-b border-rule/60 py-2">
-                        <div className="marquee whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3/50">
-                            {Array(4)
-                                .fill(
-                                    "peerverse · share · learn · grow · collaborate · build · ship · "
-                                )
-                                .join("")}
+                            <span className="hidden items-center gap-2 sm:flex">
+                                <span>{meta.section}</span>
+                                <span>·</span>
+                                <span className="text-ink-2">{meta.label}</span>
+                                <span>·</span>
+                                <span>{theme === "light" ? "paper" : "ink"}</span>
+                            </span>
                         </div>
                     </div>
+                    <Navbar />
+                </div>
+                
+                {!hideSidebar && <Sidebar />}
+
+                {/* Main content area offset by sidebar on desktop */}
+                <div className={`${hideSidebar ? "" : "md:pl-64"} flex flex-col min-h-screen`}>
+                    {/* Main content */}
+                    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1">
+                        <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both">
+                            <Outlet />
+                        </div>
+                    </main>
+
+                    {/* Footer / colophon */}
+                    <footer className="mt-10 border-t-2 border-double border-rule">
+                    {/* Marquee separator (hidden when authenticated) */}
+                    {!isAuthenticated && (
+                        <div className="overflow-hidden border-b border-rule/60 py-2">
+                            <div className="marquee whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3/50">
+                                {Array(4)
+                                    .fill(
+                                        "peerverse · share · learn · grow · collaborate · build · ship · "
+                                    )
+                                    .join("")}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="mx-auto max-w-7xl w-full grid grid-cols-2 gap-10 px-4 py-12 sm:grid-cols-4 sm:px-6 lg:px-2">
                         {/* Brand column */}
@@ -218,8 +231,9 @@ export default function Layout() {
                     </div>
                 </footer>
             </div>
-
-            <Toaster position="bottom-right" theme={theme === "light" ? "light" : "dark"} />
         </div>
-    );
+
+        <Toaster position="bottom-right" theme={theme === "light" ? "light" : "dark"} />
+    </div>
+  );
 }

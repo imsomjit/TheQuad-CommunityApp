@@ -18,6 +18,12 @@ import { useTheme } from "../context/ThemeContext";
 import { getAvatarFallback } from "../utils/fallbacks";
 import NotificationDropdown from "./NotificationDropdown";
 import { Input } from "./ui/input";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "./ui/dropdown-menu";
 
 export default function Navbar() {
     const { currentUser, unreadCount } = useApp();
@@ -31,7 +37,7 @@ export default function Navbar() {
     return (
         <header
             data-testid="app-navbar"
-            className="sticky top-0 z-40 border-b border-rule bg-paper/85 backdrop-blur-xl"
+            className="border-b border-rule bg-paper/85 backdrop-blur-xl"
         >
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-5 px-4 sm:px-6 lg:px-2">
                 {/* Logo — bracket mark + serif wordmark */}
@@ -62,13 +68,7 @@ export default function Navbar() {
                     </span>
                 </Link>
 
-                {/* Desktop Nav Links — magazine-style indices */}
-                <nav className="hidden items-center gap-0.5 md:flex">
-                    <NavItem to="/" index="01" label="Feed" testId="nav-home" linkClass={linkClass} end />
-                    <NavItem to="/resources" index="02" label="Library" testId="nav-resources" linkClass={linkClass} />
-                    <NavItem to="/questions" index="03" label="Q&A" testId="nav-questions" linkClass={linkClass} />
-                    <NavItem to="/posts" index="04" label="Posts" testId="nav-posts" linkClass={linkClass} />
-                </nav>
+                {/* Desktop Nav Links (Removed in favor of Sidebar) */}
 
                 {/* Search */}
                 <div className="hidden max-w-md flex-1 sm:block">
@@ -101,10 +101,32 @@ export default function Navbar() {
                                 Upload
                             </Link>
 
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        data-testid="nav-add-dropdown"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-sm bg-accent text-paper glow-btn sm:hidden"
+                                    >
+                                        <Plus className="h-4 w-4" strokeWidth={2.5} />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/ask" className="cursor-pointer">Ask a Question</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/upload" className="cursor-pointer">Upload Resource</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/posts/new" className="cursor-pointer">Write a Post</Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
                             <Link
                                 to="/ask"
                                 data-testid="nav-ask-btn"
-                                className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn"
+                                className="hidden h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn sm:inline-flex"
                             >
                                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                                 Ask
@@ -206,22 +228,4 @@ export default function Navbar() {
             </div>
         </header>
     );
-}
-
-function NavItem({ to, index, label, testId, linkClass, end = false }) {
-    return (
-        <NavLink to={to} end={end} className={linkClass} data-testid={testId}>
-            {({ isActive }) => (
-                <span className="flex items-baseline gap-1.5">
-                    <span
-                        className={`font-mono text-[10px] tracking-wider ${isActive ? "text-accent" : "text-ink-3"
-                            }`}
-                    >
-                        {index}
-                    </span>
-                    <span>{label}</span>
-                </span>
-            )}
-        </NavLink>
-    );
-}
+}

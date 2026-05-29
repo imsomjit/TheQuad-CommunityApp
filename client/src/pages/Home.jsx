@@ -66,15 +66,71 @@ export default function Home() {
     const { isAuthenticated } = useAuth();
 
     const trendingResources = useMemo(() => {
-        return [...resources]
+        const sorted = [...resources]
             .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes))
             .slice(0, 3);
+        
+        if (sorted.length === 0) {
+            return [
+                {
+                    id: "mock1",
+                    title: "Operating Systems Fundamentals",
+                    type: "NOTES",
+                    category: "computer_science",
+                    author: { name: "Alan Turing", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alan" },
+                    upvotes: 42,
+                    downvotes: 1,
+                    tags: ["os", "fundamentals"],
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: "mock2",
+                    title: "Data Structures & Algorithms PYQ 2024",
+                    type: "PYQ",
+                    category: "computer_science",
+                    author: { name: "Grace Hopper", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Grace" },
+                    upvotes: 38,
+                    downvotes: 0,
+                    tags: ["dsa", "pyq"],
+                    created_at: new Date().toISOString()
+                }
+            ];
+        }
+        return sorted;
     }, [resources]);
 
     const recentQuestions = useMemo(() => {
-        return [...questions]
+        const sorted = [...questions]
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             .slice(0, 3);
+            
+        if (sorted.length === 0) {
+            return [
+                {
+                    id: "mock1",
+                    title: "How to implement a LRU Cache?",
+                    body: "I'm having trouble understanding the best data structure to use.",
+                    author: { name: "Ada Lovelace", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ada" },
+                    upvotes: 15,
+                    downvotes: 0,
+                    tags: ["dsa", "cache"],
+                    answers: [{}, {}],
+                    created_at: new Date().toISOString()
+                },
+                {
+                    id: "mock2",
+                    title: "What is the difference between TCP and UDP?",
+                    body: "Can someone explain this with examples?",
+                    author: { name: "Tim Berners-Lee", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tim" },
+                    upvotes: 12,
+                    downvotes: 1,
+                    tags: ["networks"],
+                    answers: [{}],
+                    created_at: new Date().toISOString()
+                }
+            ];
+        }
+        return sorted;
     }, [questions]);
 
     const allTags = useMemo(() => {
@@ -83,7 +139,18 @@ export default function Home() {
         resources.forEach(r => r.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
         questions.forEach(q => q.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
 
-        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        if (sorted.length === 0) {
+            return [
+                ["dsa", 42],
+                ["react", 38],
+                ["operating-systems", 25],
+                ["networks", 18],
+                ["system-design", 15],
+                ["javascript", 12]
+            ];
+        }
+        return sorted;
     }, [resources, questions]);
 
     const activeColleges = useMemo(() => {
@@ -99,7 +166,7 @@ export default function Home() {
             counts[currentUser.college] = (counts[currentUser.college] || 0) + 1;
         }
 
-        return Object.entries(counts)
+        const sorted = Object.entries(counts)
             .sort((a, b) => {
                 if (b[1] !== a[1]) return b[1] - a[1];
                 if (isAuthenticated && currentUser?.college) {
@@ -109,137 +176,152 @@ export default function Home() {
                 return a[0].localeCompare(b[0]);
             })
             .slice(0, 6);
+            
+        if (sorted.length === 0) {
+            return [
+                ["MIT", 124],
+                ["Stanford University", 98],
+                ["Harvard University", 85],
+                ["IIT Bombay", 76],
+                ["CMU", 64]
+            ];
+        }
+        return sorted;
     }, [resources, currentUser, isAuthenticated]);
 
     return (
         <div className="space-y-16 fade-in-up">
-            {/* ── EDITORIAL HERO ─────────────────────────────────── */}
-            <section className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/40 card-elevated">
-                <div className="aurora" />
-                <div className="absolute inset-0 grid-bg opacity-50" />
-                
-                <div className="relative grid grid-cols-12 gap-0">
-                    {/* Left margin like a notebook gutter */}
-                    <aside className="hidden sm:block col-span-12 border-b border-rule px-6 py-4 sm:col-span-2 sm:border-b-0 sm:border-r sm:px-4 sm:py-10">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                            issue
-                        </p>
-                        <p className="mt-1 font-display text-3xl font-bold text-accent">01</p>
+            {!isAuthenticated && (
+                <>
+                    {/* ── EDITORIAL HERO ─────────────────────────────────── */}
+                    <section className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/40 card-elevated">
+                        <div className="aurora" />
+                        <div className="absolute inset-0 grid-bg opacity-50" />
+                        
+                        <div className="relative grid grid-cols-12 gap-0">
+                            {/* Left margin like a notebook gutter */}
+                            <aside className="hidden sm:block col-span-12 border-b border-rule px-6 py-4 sm:col-span-2 sm:border-b-0 sm:border-r sm:px-4 sm:py-10">
+                                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                                    issue
+                                </p>
+                                <p className="mt-1 font-display text-3xl font-bold text-accent">01</p>
 
-                        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                            section
-                        </p>
-                        <p className="mt-1 font-mono text-xs text-ink-2">// feed</p>
+                                <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                                    section
+                                </p>
+                                <p className="mt-1 font-mono text-xs text-ink-2">// feed</p>
 
-                        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                            status
-                        </p>
-                        <p className="mt-1 flex items-center gap-1.5 font-mono text-xs text-ink-2">
-                            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent-2" />
-                            now in beta
-                        </p>
-                    </aside>
+                                <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                                    status
+                                </p>
+                                <p className="mt-1 flex items-center gap-1.5 font-mono text-xs text-ink-2">
+                                    <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent-2" />
+                                    now in beta
+                                </p>
+                            </aside>
 
-                    {/* Hero text */}
-                    <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
-                        <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
-                            <Terminal className="h-3.5 w-3.5 text-accent" />
-                            volume one · summer '26 · for people who code
-                        </p>
+                            {/* Hero text */}
+                            <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
+                                <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
+                                    <Terminal className="h-3.5 w-3.5 text-accent" />
+                                    volume one · summer '26 · for people who code
+                                </p>
 
-                        <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
-                            A <span className="font-display-italic text-accent">learning</span>{" "}
-                            <span className="font-display-italic">notebook</span>
-                            <br />
-                            for <span className="marker">people who code</span>
-                            <span className="caret" />
-                        </h1>
+                                <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
+                                    A <span className="font-display-italic text-accent">learning</span>{" "}
+                                    <span className="font-display-italic">notebook</span>
+                                    <br />
+                                    for <span className="marker">people who code</span>
+                                    <span className="caret" />
+                                </h1>
 
-                        <p className="mt-8 max-w-2xl text-base font-serif leading-relaxed text-ink-2 sm:text-lg">
-                            Share annotated notes, debate past-year papers, and grow a
-                            public technical profile linked to your GitHub. PeerVerse is
-                            built like a developer tool — and reads like a journal you
-                            actually want to open.
-                        </p>
+                                <p className="mt-8 max-w-2xl text-base font-serif leading-relaxed text-ink-2 sm:text-lg">
+                                    Share annotated notes, debate past-year papers, and grow a
+                                    public technical profile linked to your GitHub. PeerVerse is
+                                    built like a developer tool — and reads like a journal you
+                                    actually want to open.
+                                </p>
 
-                        <div className="mt-9 flex flex-wrap items-center gap-4">
-                            <Link
-                                to="/resources"
-                                data-testid="hero-browse-btn"
-                                className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-paper glow-btn shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
-                            >
-                                Open the library <ArrowRight className="h-4 w-4" />
-                            </Link>
+                                <div className="mt-9 flex flex-wrap items-center gap-4">
+                                    <Link
+                                        to="/resources"
+                                        data-testid="hero-browse-btn"
+                                        className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-paper glow-btn shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
+                                    >
+                                        Open the library <ArrowRight className="h-4 w-4" />
+                                    </Link>
 
-                            <Link
-                                to="/ask"
-                                data-testid="hero-ask-btn"
-                                className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
-                            >
-                                Ask a question
-                            </Link>
+                                    <Link
+                                        to="/ask"
+                                        data-testid="hero-ask-btn"
+                                        className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
+                                    >
+                                        Ask a question
+                                    </Link>
 
-                            <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
-                                press <kbd className="font-bold text-ink-2">⌘ K</kbd> to jump anywhere
-                            </span>
+                                    <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
+                                        press <kbd className="font-bold text-ink-2">⌘ K</kbd> to jump anywhere
+                                    </span>
+                                </div>
+
+                                {/* ── STATS SECTION ─────────────────────────────────── */}
+                                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mt-9">
+                                    <StatTile
+                                        icon={BookOpen}
+                                        label="resources"
+                                        value={resources.length.toLocaleString()}
+                                        colorKey="resources"
+                                    />
+                                    <StatTile
+                                        icon={MessageSquare}
+                                        label="questions"
+                                        value={questions.length.toLocaleString()}
+                                        colorKey="questions"
+                                    />
+                                    <StatTile
+                                        icon={Users}
+                                        label="students"
+                                        value="2.4k"
+                                        colorKey="students"
+                                    />
+                                    <StatTile
+                                        icon={Award}
+                                        label="answers"
+                                        value={questions.reduce((a, q) => a + (q.answers?.length || q.answerCount || 0), 0)}
+                                        colorKey="answers"
+                                    />
+                                </div>
+                            </div>
                         </div>
+                    </section>
 
-                        {/* ── STATS SECTION ─────────────────────────────────── */}
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mt-9">
-                            <StatTile
-                                icon={BookOpen}
-                                label="resources"
-                                value={resources.length.toLocaleString()}
-                                colorKey="resources"
-                            />
-                            <StatTile
-                                icon={MessageSquare}
-                                label="questions"
-                                value={questions.length.toLocaleString()}
-                                colorKey="questions"
-                            />
-                            <StatTile
-                                icon={Users}
-                                label="students"
-                                value="2.4k"
-                                colorKey="students"
-                            />
-                            <StatTile
-                                icon={Award}
-                                label="answers"
-                                value={questions.reduce((a, q) => a + (q.answers?.length || q.answerCount || 0), 0)}
-                                colorKey="answers"
-                            />
+                    {/* ── TICKER ─────────────────────────────── */}
+                    <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 shadow-lg w-[100vw] relative left-1/2 -ml-[50vw] md:w-[calc(100vw-16rem)] md:-ml-[calc(50vw-8rem)]">
+                        <div className="flex w-max whitespace-nowrap marquee">
+                            {[...Array(2)].map((_, k) => (
+                                <div
+                                    key={k}
+                                    className="flex shrink-0 items-center gap-12 px-6 font-mono text-[13px] font-bold uppercase tracking-[0.2em] text-paper"
+                                >
+                                    <span>· operating systems</span>
+                                    <span>· data structures</span>
+                                    <span>· system design</span>
+                                    <span>· dbms</span>
+                                    <span>· compilers</span>
+                                    <span>· machine learning</span>
+                                    <span className="text-accent flex items-center gap-2"><Sparkles className="h-4 w-4" /> pyq archive</span>
+                                    <span>· networks</span>
+                                    <span>· algorithms</span>
+                                    <span>· react</span>
+                                    <span>· python</span>
+                                    <span>· rust</span>
+                                    <span>· interview prep</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                </div>
-            </section>
-
-            {/* ── FULL-WIDTH TICKER ─────────────────────────────── */}
-            <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] shadow-lg">
-                <div className="flex w-max whitespace-nowrap marquee">
-                    {[...Array(2)].map((_, k) => (
-                        <div
-                            key={k}
-                            className="flex shrink-0 items-center gap-12 px-6 font-mono text-[13px] font-bold uppercase tracking-[0.2em] text-paper"
-                        >
-                            <span>· operating systems</span>
-                            <span>· data structures</span>
-                            <span>· system design</span>
-                            <span>· dbms</span>
-                            <span>· compilers</span>
-                            <span>· machine learning</span>
-                            <span className="text-accent flex items-center gap-2"><Sparkles className="h-4 w-4" /> pyq archive</span>
-                            <span>· networks</span>
-                            <span>· algorithms</span>
-                            <span>· react</span>
-                            <span>· python</span>
-                            <span>· rust</span>
-                            <span>· interview prep</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                </>
+            )}
 
             {/* ── EDITORIAL DIVIDER ─────────────────────────────── */}
             <div className="flex items-center gap-4">
