@@ -104,7 +104,7 @@ export default function Resources() {
                             &sect;02 &middot; the library
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Notes &amp; <span className="font-display-italic text-accent">papers</span>,
                             <br />
                             curated by students.

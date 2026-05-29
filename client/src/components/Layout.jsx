@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { Braces } from "lucide-react";
 
 const ROUTE_LABELS = [
     { match: /^\/$/, label: "feed", section: "§01" },
@@ -39,19 +40,19 @@ export default function Layout() {
     const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
 
     return (
-        <div className="relative min-h-screen bg-paper text-ink font-body">
+        <div className="relative min-h-screen overflow-x-hidden bg-paper text-ink font-body">
             {/* Backdrop textures (theme-aware) */}
             <div className="dot-bg pointer-events-none fixed inset-0 opacity-40" />
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                <div className="sticky top-0 z-40 w-full flex flex-col">
+                <div className="fixed top-0 z-40 w-full flex flex-col">
                     {/* Running header / monospace breadcrumb bar */}
                     <div className="border-b border-rule/60 bg-paper/70 backdrop-blur-md">
-                        <div className="mx-auto flex h-7 w-full items-center justify-between gap-3 px-4 font-mono text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
+                        <div className="mx-auto flex h-6 sm:h-7 w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                             <span className="flex items-center gap-2">
-                                <span className="text-accent">●</span>
-                                peerverse / vol.01 / a learning notebook
+                                <span className="text-accent animate-pulse">●</span>
+                                peerverse / vol.01 / a learning space
                             </span>
 
                             <span className="hidden items-center gap-2 sm:flex">
@@ -69,9 +70,9 @@ export default function Layout() {
                 {!hideSidebar && <Sidebar />}
 
                 {/* Main content area offset by sidebar on desktop */}
-                <div className={`${hideSidebar ? "" : "md:pl-64"} flex flex-col min-h-screen`}>
+                <div className={`${hideSidebar ? "" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen`}>
                     {/* Main content */}
-                    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1">
+                    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1 mt-12 sm:mt-0">
                         <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both">
                             <Outlet />
                         </div>
@@ -98,9 +99,19 @@ export default function Layout() {
                             <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                                 colophon
                             </p>
-                            <p className="mt-3 font-display text-2xl leading-tight text-ink">
-                                Peer<span className="font-display-italic text-accent">Verse</span>
-                            </p>
+                                <span className="flex items-baseline gap-0.5">
+                                    <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
+                                        Peer
+                                    </span>
+
+                                    <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent">
+                                        Verse
+                                    </span>
+
+                                    <span className="ml-1 font-mono text-[10px] text-ink-3">
+                                        /vol.01
+                                    </span>
+                                </span>
                             <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-2">
                                 A community-driven study notebook for tech
                                 students. Built like a developer tool. Read like

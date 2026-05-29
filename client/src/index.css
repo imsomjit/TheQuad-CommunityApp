@@ -211,8 +211,8 @@ html.light .paper-grain::before {
 .aurora::after {
     content: "";
     position: absolute;
-    width: 400px;
-    height: 400px;
+    width: 500px;
+    height: 500px;
     border-radius: 9999px;
     filter: blur(130px);
     opacity: 0.25;

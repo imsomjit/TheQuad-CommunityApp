@@ -88,7 +88,7 @@ export default function Questions() {
                             &sect;03 &middot; the forum
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Ask. <span className="font-display-italic text-accent">Answer.</span>{" "}
                             Argue.
                         </h1>

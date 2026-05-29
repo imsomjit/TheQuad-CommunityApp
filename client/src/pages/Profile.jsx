@@ -454,7 +454,7 @@ export default function Profile() {
 
                                 {ghRepos.length > 0 && (
                                     <div>
-                                        <h3 className="font-sans text-sm font-bold text-ink mb-4 uppercase tracking-wider">Pinned Repositories</h3>
+                                        <h3 className="font-sans text-sm font-bold text-ink mb-4 uppercase tracking-wider">Featured Repositories</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {ghRepos.map(repo => (
                                                 <a key={repo.id || repo.name} href={repo.htmlUrl} target="_blank" rel="noreferrer"

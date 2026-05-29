@@ -48,21 +48,21 @@ export default function Navbar() {
                 >
                     <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 transition-colors group-hover:border-accent">
                         <Braces
-                            className="h-4 w-4 text-accent"
+                            className="h-5 w-5 text-accent"
                             strokeWidth={2}
                         />
                     </span>
 
                     <span className="flex items-baseline gap-0.5">
-                        <span className="font-display text-2xl font-bold leading-none tracking-tight text-ink">
+                        <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
                             Peer
                         </span>
 
-                        <span className="font-display-italic text-2xl font-bold leading-none tracking-tight text-accent">
+                        <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent">
                             Verse
                         </span>
 
-                        <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">
+                        <span className="ml-1 font-mono text-[10px] text-ink-3">
                             /vol.01
                         </span>
                     </span>
@@ -228,4 +228,4 @@ export default function Navbar() {
             </div>
         </header>
     );
-}
+}

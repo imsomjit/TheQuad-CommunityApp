@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
     Flame,
@@ -58,6 +58,63 @@ function StatTile({ icon: Icon, label, value, colorKey }) {
                 </div>
             </div>
         </div>
+    );
+}
+
+const TYPEWRITER_PHRASES = [
+    "people who code",
+    "curious learners",
+    "ambitious minds",
+    "problem solvers",
+    "knowledge seekers",
+    "lifelong learners",
+    "collaborative learners",
+    "peers helping peers"
+];
+
+function TypewriterEffect() {
+    const [text, setText] = useState(TYPEWRITER_PHRASES[0]);
+    const [phraseIndex, setPhraseIndex] = useState(0);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isPaused, setIsPaused] = useState(true);
+
+    useEffect(() => {
+        const currentPhrase = TYPEWRITER_PHRASES[phraseIndex];
+        const typeSpeed = isDeleting
+            ? Math.random() * 20 + 20
+            : Math.random() * 40 + 40;
+
+        let timer;
+        
+        if (isPaused) {
+            timer = setTimeout(() => {
+                setIsPaused(false);
+                setIsDeleting(true);
+            }, 2500);
+            return () => clearTimeout(timer);
+        }
+
+        timer = setTimeout(() => {
+            if (!isDeleting && text === currentPhrase) {
+                setIsPaused(true);
+            } else if (isDeleting && text === "") {
+                setIsDeleting(false);
+                setPhraseIndex((prev) => (prev + 1) % TYPEWRITER_PHRASES.length);
+            } else {
+                setText(
+                    currentPhrase.substring(0, text.length + (isDeleting ? -1 : 1))
+                );
+            }
+        }, typeSpeed);
+
+        return () => clearTimeout(timer);
+    }, [text, isDeleting, phraseIndex, isPaused]);
+
+    return (
+        <>
+            <span className="marker">{text}</span>
+            <span className="caret" />
+        </>
     );
 }
 
@@ -202,7 +259,7 @@ export default function Home() {
                             {/* Left margin like a notebook gutter */}
                             <aside className="hidden sm:block col-span-12 border-b border-rule px-6 py-4 sm:col-span-2 sm:border-b-0 sm:border-r sm:px-4 sm:py-10">
                                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                                    issue
+                                    chapter
                                 </p>
                                 <p className="mt-1 font-display text-3xl font-bold text-accent">01</p>
 
@@ -227,15 +284,14 @@ export default function Home() {
                                     volume one · summer '26 · for people who code
                                 </p>
 
-                                <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
+                                <h1 className="h-[180px] sm:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
                                     A <span className="font-display-italic text-accent">learning</span>{" "}
-                                    <span className="font-display-italic">notebook</span>
+                                    <span className="font-display-italic">space</span>
                                     <br />
-                                    for <span className="marker">people who code</span>
-                                    <span className="caret" />
+                                    for <TypewriterEffect />
                                 </h1>
 
-                                <p className="mt-8 max-w-2xl text-base font-serif leading-relaxed text-ink-2 sm:text-lg">
+                                <p className="-mt-2 sm:mt-8 max-w-2xl text-base  leading-relaxed text-ink-2 sm:text-lg">
                                     Share annotated notes, debate past-year papers, and grow a
                                     public technical profile linked to your GitHub. PeerVerse is
                                     built like a developer tool — and reads like a journal you

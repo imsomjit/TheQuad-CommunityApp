@@ -1,9 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { PenLine, Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { PenLine, Search, SlidersHorizontal, X, ArrowDownUp } from "lucide-react";
 import { postsApi } from "../services/api";
 import PostCard, { CATEGORY_META } from "../components/PostCard";
 import { useApp } from "../context/AppContext";
+
+import { Input } from "../components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../components/ui/select";
 
 const SORT_OPTIONS = [
   { value: "latest", label: "Latest" },
@@ -88,146 +97,138 @@ export default function PostsFeed() {
   const hasActiveFilters = category || tag || q;
 
   return (
-    <div className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-2">
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-            §05 · knowledge
-          </p>
-          <h1 className="mt-1 font-display text-4xl leading-tight text-ink">
-            Published <span className="font-display-italic text-accent">Posts</span>
-          </h1>
-          <p className="mt-2 text-sm text-ink-2">
-            DSA editorials, interview experiences, learning journals, and project breakdowns
-          </p>
+    <div className="space-y-10 fade-in-up">
+      {/* Editorial header */}
+      <header className="border-b-2 border-double border-rule pb-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+              &sect;05 &middot; knowledge
+            </p>
+
+            <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+              Published <span className="font-display-italic text-accent">Posts</span>,
+              <br />
+              shared by peers.
+            </h1>
+
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+              DSA editorials, interview experiences, learning journals, and project breakdowns.
+            </p>
+          </div>
+
+          {currentUser && (
+            <Link
+              to="/posts/new"
+              className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+            >
+              <PenLine className="h-4 w-4" />
+              Write a post
+            </Link>
+          )}
+        </div>
+      </header>
+
+      {/* Filter bar */}
+      <div className="space-y-4 rounded-sm border border-rule bg-paper-2/40 p-5">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
+
+            <Input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearch(e);
+                }
+              }}
+              placeholder="Search by title, description or tag (press Enter)..."
+              className="h-10 rounded-sm border-rule bg-paper pl-9 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+            />
+          </div>
+
+          <div className="hidden items-center gap-2 font-mono text-xs text-ink-3 sm:flex">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            filters
+          </div>
         </div>
 
-        {currentUser && (
-          <Link
-            to="/posts/new"
-            className="flex shrink-0 items-center gap-2 rounded-sm bg-ink px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink/80"
-          >
-            <PenLine className="h-4 w-4" />
-            Write
-          </Link>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+          <FilterSelect
+            testId="filter-category"
+            placeholder="Category"
+            value={category || "__all__"}
+            setValue={(v) => {
+              if (v === "__all__") setParam("category", "");
+              else setParam("category", v);
+            }}
+            options={[
+              { value: "__all__", label: "All categories" },
+              ...CATEGORY_TABS.slice(1).map(c => ({ value: c.value, label: c.label }))
+            ]}
+          />
+
+          <div className="relative">
+            <Input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value.toLowerCase().replace(/\s/g, "-"))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearch(e);
+                }
+              }}
+              placeholder="Filter by tag (press Enter)..."
+              className="h-10 w-full rounded-sm border-rule bg-paper px-3 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+            />
+          </div>
+
+          <FilterSelect
+            testId="filter-sort"
+            placeholder="Sort"
+            value={sort}
+            setValue={(v) => setParam("sort", v)}
+            icon={ArrowDownUp}
+            options={SORT_OPTIONS}
+          />
+        </div>
+
+        {hasActiveFilters && (
+          <div className="flex flex-wrap items-center gap-3 border-t border-rule pt-3">
+            <span className="font-mono text-xs text-ink-3">// active filters:</span>
+
+            <div className="flex flex-wrap gap-1.5">
+              {category && (
+                <Chip onRemove={() => setParam("category", "")}>
+                  {CATEGORY_META[category]?.label || category}
+                </Chip>
+              )}
+              {tag && (
+                <Chip onRemove={() => { setTagInput(""); setParam("tag", ""); }}>
+                  #{tag}
+                </Chip>
+              )}
+              {q && (
+                <Chip onRemove={() => { setSearchInput(""); setParam("q", ""); }}>
+                  "{q}"
+                </Chip>
+              )}
+            </div>
+
+            <button
+              onClick={clearFilters}
+              className="ml-auto text-xs text-ink-2 transition-colors hover:text-syntax-rose"
+            >
+              clear all
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Category tabs */}
-      <div className="mt-8 flex items-center gap-0 overflow-x-auto border-b border-rule pb-0 scrollbar-none">
-        {CATEGORY_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setParam("category", tab.value)}
-            className={`relative shrink-0 px-4 py-3 text-sm font-medium transition-colors
-              ${category === tab.value
-                ? "text-ink after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-accent"
-                : "text-ink-2 hover:text-ink"
-              }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Toolbar: search + sort + filters */}
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <form onSubmit={handleSearch} className="flex flex-1 gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
-            <input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search posts…"
-              className="h-9 w-full rounded-sm border border-rule bg-paper-2/40 pl-9 pr-3 text-sm text-ink placeholder:text-ink-3 focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/30"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex h-9 items-center gap-1.5 rounded-sm border px-3 text-sm transition-colors
-              ${showFilters ? "border-accent/60 bg-accent/5 text-accent" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Filters
-          </button>
-          <button
-            type="submit"
-            className="h-9 rounded-sm bg-ink px-4 text-sm font-medium text-paper hover:bg-ink/80"
-          >
-            Search
-          </button>
-        </form>
-
-        {/* Sort dropdown */}
-        <div className="relative flex shrink-0 items-center gap-2">
-          <span className="font-mono text-[10px] text-ink-3">Sort:</span>
-          <select
-            value={sort}
-            onChange={(e) => setParam("sort", e.target.value)}
-            className="h-9 rounded-sm border border-rule bg-paper-2/40 px-2 pr-7 text-sm text-ink focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/30"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Extended filters panel */}
-      {showFilters && (
-        <div className="mt-3 rounded-sm border border-rule bg-paper-2/40 p-4">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="font-mono text-[10px] uppercase text-ink-3">Tag</label>
-              <input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value.toLowerCase().replace(/\s/g, "-"))}
-                placeholder="e.g. dynamic-programming"
-                className="h-8 w-48 rounded-sm border border-rule bg-paper px-2 text-sm text-ink placeholder:text-ink-3 focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/30"
-              />
-            </div>
-          </div>
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              onClick={handleSearch}
-              className="rounded-sm bg-ink px-3 py-1.5 text-xs font-medium text-paper hover:bg-ink/80"
-            >
-              Apply
-            </button>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="flex items-center gap-1 text-xs text-ink-3 hover:text-ink"
-              >
-                <X className="h-3 w-3" />
-                Clear all
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Active filter chips */}
-      {hasActiveFilters && (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[10px] text-ink-3">Active:</span>
-          {category && (
-            <FilterChip
-              label={CATEGORY_META[category]?.label || category}
-              onRemove={() => setParam("category", "")}
-            />
-          )}
-          {tag && <FilterChip label={`#${tag}`} onRemove={() => setParam("tag", "")} />}
-          {q && <FilterChip label={`"${q}"`} onRemove={() => { setSearchInput(""); setParam("q", ""); }} />}
-        </div>
-      )}
-
       {/* Content */}
-      <div className="mt-8">
+      <div className="mt-2">
         {loading ? (
           <PostsGrid>
             {Array(6).fill(0).map((_, i) => (
@@ -293,12 +294,36 @@ function PostsGrid({ children }) {
   );
 }
 
-function FilterChip({ label, onRemove }) {
+function FilterSelect({ value, setValue, options, placeholder, testId, icon: Icon }) {
   return (
-    <span className="flex items-center gap-1 rounded-sm border border-rule bg-paper-2 px-2 py-0.5 font-mono text-[10px] text-ink-2">
-      {label}
-      <button onClick={onRemove} className="ml-0.5 text-ink-3 hover:text-ink">
-        <X className="h-2.5 w-2.5" />
+    <Select value={value} onValueChange={setValue}>
+      <SelectTrigger
+        data-testid={testId}
+        className="h-10 rounded-sm border-rule bg-paper text-sm text-ink hover:border-ink-3"
+      >
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="h-3.5 w-3.5 text-ink-3" />}
+          <SelectValue placeholder={placeholder} />
+        </div>
+      </SelectTrigger>
+
+      <SelectContent className="max-h-[300px] border-rule bg-paper text-ink">
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value} className="text-sm">
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function Chip({ children, onRemove }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-sm border border-accent bg-accent-soft px-2 py-1 font-mono text-xs text-accent">
+      {children}
+      <button onClick={onRemove} className="transition-colors hover:text-syntax-rose">
+        <X className="h-3 w-3" />
       </button>
     </span>
   );
