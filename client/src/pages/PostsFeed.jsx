@@ -102,8 +102,8 @@ export default function PostsFeed() {
       <header className="border-b-2 border-double border-rule pb-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-              &sect;05 &middot; knowledge
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-violet">
+              &sect;04 &middot; the editorial
             </p>
 
             <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">

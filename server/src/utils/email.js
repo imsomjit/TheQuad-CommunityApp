@@ -37,7 +37,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
 
   try {
     await transporter.sendMail({
-      from: `"PeerVerse" <${env.GMAIL_USER}>`,
+      from: `"PeerVerse Community" <${env.GMAIL_USER}>`,
       to,
       subject,
       html,

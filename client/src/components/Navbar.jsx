@@ -25,40 +25,40 @@ import {
     DropdownMenuItem,
 } from "./ui/dropdown-menu";
 
-export default function Navbar() {
+export default function Navbar({ scrolled }) {
     const { currentUser, unreadCount } = useApp();
     const { isAuthenticated } = useAuth();
     const { theme, toggle } = useTheme();
 
-    const linkClass = ({ isActive }) =>
-        `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? "text-ink" : "text-ink-2 hover:text-ink"
-        }`;
-
     return (
         <header
             data-testid="app-navbar"
-            className="border-b border-rule bg-paper/85 backdrop-blur-xl"
+            className={`border-b border-rule bg-paper/85 backdrop-blur-xl transition-all duration-300 ${
+                scrolled ? "h-14 shadow-sm" : "h-16"
+            }`}
         >
-            <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-5 px-4 sm:px-6 lg:px-2">
+            <div className="mx-auto flex h-full w-full max-w-7xl items-center gap-5 px-4 sm:px-6 lg:px-2">
                 {/* Logo — bracket mark + serif wordmark */}
                 <Link
                     to="/"
                     data-testid="nav-logo"
-                    className="group flex items-baseline gap-2"
+                    className={`group flex items-baseline gap-2 transition-transform duration-300 origin-left ${
+                        scrolled ? "scale-90" : "scale-100"
+                    }`}
                 >
                     <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 transition-colors group-hover:border-accent">
                         <Braces
-                            className="h-5 w-5 text-accent"
+                            className="h-4 w-4 text-accent"
                             strokeWidth={2}
                         />
                     </span>
 
                     <span className="flex items-baseline gap-0.5">
-                        <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
+                        <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink">
                             Peer
                         </span>
 
-                        <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent">
+                        <span className="font-display-italic text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent">
                             Verse
                         </span>
 
@@ -78,7 +78,7 @@ export default function Navbar() {
                         <Input
                             data-testid="navbar-search-input"
                             placeholder="search notes, papers, questions…"
-                            className="h-9 rounded-sm border-rule bg-paper-2/60 pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+                            className="h-9 rounded-sm border-rule rounded-md bg-paper-2/60 pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                         />
 
                         <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 lg:flex">
@@ -89,13 +89,13 @@ export default function Navbar() {
                 </div>
 
                 {/* Right Actions */}
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ml-auto flex items-center gap-2.5">
                     {isAuthenticated ? (
                         <>
                             <Link
                                 to="/upload"
                                 data-testid="nav-upload-btn"
-                                className="hidden h-9 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
+                                className="hidden h-9 items-center gap-1.5 rounded-md border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
                             >
                                 <Upload className="h-3.5 w-3.5" />
                                 Upload
@@ -105,7 +105,7 @@ export default function Navbar() {
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         data-testid="nav-add-dropdown"
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-sm bg-accent text-paper glow-btn sm:hidden"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-accent text-paper glow-btn sm:hidden"
                                     >
                                         <Plus className="h-4 w-4" strokeWidth={2.5} />
                                     </button>
@@ -137,7 +137,7 @@ export default function Navbar() {
                             <Link
                                 to="/login"
                                 data-testid="nav-login-btn"
-                                className="hidden h-9 items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
+                                className="hidden h-9 items-center gap-1.5 rounded-md border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
                             >
                                 <LogIn className="h-3.5 w-3.5" />
                                 Sign in
@@ -146,7 +146,7 @@ export default function Navbar() {
                             <Link
                                 to="/register"
                                 data-testid="nav-register-btn"
-                                className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn"
+                                className="inline-flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper glow-btn"
                             >
                                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                                 Join
@@ -161,7 +161,7 @@ export default function Navbar() {
                         data-testid="theme-toggle"
                         aria-label="Toggle theme"
                         title={theme === "light" ? "Switch to ink (dark)" : "Switch to paper (light)"}
-                        className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                        className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
                     >
                         {theme === "light" ? (
                             <Moon className="h-4 w-4" />
@@ -211,21 +211,6 @@ export default function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Nav */}
-            <div className="flex gap-1 overflow-x-auto border-t border-rule/60 px-4 py-2 md:hidden">
-                <NavLink to="/" end className={linkClass}>
-                    Feed
-                </NavLink>
-                <NavLink to="/resources" className={linkClass}>
-                    Library
-                </NavLink>
-                <NavLink to="/questions" className={linkClass}>
-                    Q&A
-                </NavLink>
-                <NavLink to="/posts" className={linkClass}>
-                    Posts
-                </NavLink>
-            </div>
         </header>
     );
 }

@@ -10,6 +10,7 @@ import {
     Users,
     Award,
     Terminal,
+    Search,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
@@ -121,6 +122,11 @@ function TypewriterEffect() {
 export default function Home() {
     const { resources, questions, currentUser, apiLoaded } = useApp();
     const { isAuthenticated } = useAuth();
+
+    const hour = new Date().getHours();
+    let greeting = "Good evening";
+    if (hour >= 5 && hour < 12) greeting = "Good morning";
+    else if (hour >= 12 && hour < 17) greeting = "Good afternoon";
 
     const trendingResources = useMemo(() => {
         const sorted = [...resources]
@@ -352,7 +358,7 @@ export default function Home() {
                     </section>
 
                     {/* ── TICKER ─────────────────────────────── */}
-                    <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 shadow-lg w-[100vw] relative left-1/2 -ml-[50vw] md:w-[calc(100vw-16rem)] md:-ml-[calc(50vw-8rem)]">
+                    <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 shadow-lg w-[100vw] relative left-1/2 -ml-[50vw] md:w-[calc(100vw-var(--sidebar-width,16rem))] md:-ml-[calc(50vw-calc(var(--sidebar-width,16rem)/2))] transition-all duration-300 ease-in-out">
                         <div className="flex w-max whitespace-nowrap marquee">
                             {[...Array(2)].map((_, k) => (
                                 <div
@@ -379,6 +385,45 @@ export default function Home() {
                 </>
             )}
 
+            {isAuthenticated && (
+                <header className="">
+                    <div className="flex flex-wrap items-end justify-between gap-4">
+                        <div>
+                            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+                                &sect;01 &middot; The feed
+                            </p>
+
+                            <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                                {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br className="hidden sm:inline" /><span className="hidden sm:inline">what are we <span className="marker">learning today?</span></span><span className="inline sm:hidden">ready to <span className="marker">explore?</span></span> 
+                            </h1>
+
+                            <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-2">
+                                Welcome to your learning space. Discover curated resources, engage in meaningful discussions, showcase your work, and stay connected with a community that believes knowledge grows when it's shared.
+                            </p>
+                        </div>
+                        
+                        <div className="flex items-center mt-2 gap-3">
+                            <Link to="/ask" className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
+                                <MessageSquare className="h-4 w-4" /> Ask Question
+                            </Link>
+                            <Link to="/upload" className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2 px-4 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper active:scale-95">
+                                <BookOpen className="h-4 w-4" /> Share Note
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Mobile Search Bar */}
+                    <div className="mt-8 sm:hidden relative">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
+                        <input
+                            type="text"
+                            placeholder="Search notes, papers, questions…"
+                            className="w-full h-10 rounded-sm border border-rule bg-paper-2/60 pl-9 pr-4 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30"
+                        />
+                    </div>
+                </header>
+            )}
+
             {/* ── EDITORIAL DIVIDER ─────────────────────────────── */}
             <div className="flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
@@ -401,8 +446,8 @@ export default function Home() {
                             <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                                 trending this week
                             </p>
-                            <h2 className="mt-1 flex items-center gap-2 font-display text-3xl font-semibold tracking-tight text-ink">
-                                <Flame className="h-6 w-6 text-accent" />
+                            <h2 className="mt-1 flex items-center gap-2 font-display text-4xl font-semibold tracking-tight text-ink">
+                                <Flame className="h-7 w-7 text-accent" />
                                 Most read
                             </h2>
                         </div>
@@ -559,8 +604,8 @@ export default function Home() {
                     <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                         fresh from the community
                     </p>
-                    <h2 className="mt-1 flex items-center gap-2 font-display text-3xl font-semibold tracking-tight text-ink">
-                        <MessageSquare className="h-6 w-6 text-syntax-cyan" />
+                    <h2 className="mt-1 flex items-center gap-2 font-display text-4xl font-semibold tracking-tight text-ink">
+                        <MessageSquare className="h-7 w-7 text-syntax-cyan" />
                         Recently asked
                     </h2>
                 </header>

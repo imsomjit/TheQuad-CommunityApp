@@ -73,7 +73,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-paper flex">
+    <div className="min-h-[100vw] sm:min-h-screen bg-paper flex">
       {/* Backdrop textures */}
       <div className="dot-bg pointer-events-none fixed inset-0 opacity-40" />
       <div className="paper-grain pointer-events-none fixed inset-0" />
@@ -107,9 +107,7 @@ export default function Login() {
             <h1 className="font-display text-5xl font-bold leading-[1.05] tracking-tight text-ink xl:text-6xl">
               Your{" "}
               <span className="font-display-italic text-accent">learning</span>{" "}
-              notebook
-              <br />
-              awaits
+              notebook awaits
               <span className="caret" />
             </h1>
 
@@ -150,25 +148,14 @@ export default function Login() {
       {/* ──── RIGHT PANEL — Form ─────────────────────────────────────── */}
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-16 xl:px-24">
         <div className="w-full max-w-md space-y-8 fade-in-up">
-          {/* Mobile logo (hidden on desktop since left panel has it) */}
-          <div className="text-center lg:hidden">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
-              <span className="flex h-10 w-10 items-center justify-center rounded-sm border border-rule bg-paper-2 transition-colors group-hover:border-accent">
-                <Braces className="h-5 w-5 text-accent" strokeWidth={2} />
-              </span>
-              <span className="font-display text-2xl font-bold text-ink">
-                Peer<span className="font-display-italic text-accent">Verse</span>
-              </span>
-            </Link>
-          </div>
 
           {/* Header */}
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent mb-3">
               // sign in
             </p>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-ink">
-              Welcome back
+            <h2 className="font-display text-5xl font-bold tracking-tight text-ink">
+              Welcome <span className="text-accent">Back.</span>
             </h2>
             <p className="mt-2 text-sm text-ink-2">
               Pick up right where you left off.

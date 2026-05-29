@@ -533,7 +533,7 @@ export default function PostEditor() {
           </div>
 
           {/* Markdown toolbar + mode toggle */}
-          <div className="flex items-center justify-between rounded-sm border border-rule bg-paper-2/40 px-2 py-1">
+          <div className="flex flex-wrap items-center justify-between rounded-sm border border-rule bg-paper-2/40 px-2 py-1">
             <div className="flex items-center gap-0.5">
               {toolbarActions.map(({ icon, title: t, action }) => (
                 <ToolbarButton key={t} icon={icon} title={t} onClick={action} />

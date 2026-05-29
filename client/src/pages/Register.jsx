@@ -72,7 +72,7 @@ export default function Register() {
   })();
 
   return (
-    <div className="min-h-screen bg-paper flex">
+    <div className="min-h-[100vw] sm:min-h-screen bg-paper flex">
       {/* Backdrop textures */}
       <div className="dot-bg pointer-events-none fixed inset-0 opacity-40" />
       <div className="paper-grain pointer-events-none fixed inset-0" />
@@ -160,25 +160,14 @@ export default function Register() {
       {/* ──── RIGHT PANEL — Form ─────────────────────────────────────── */}
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-10 lg:w-1/2 lg:px-16 xl:px-24">
         <div className="w-full max-w-md space-y-6 fade-in-up">
-          {/* Mobile logo */}
-          <div className="text-center lg:hidden">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
-              <span className="flex h-10 w-10 items-center justify-center rounded-sm border border-rule bg-paper-2 transition-colors group-hover:border-accent">
-                <Braces className="h-5 w-5 text-accent" strokeWidth={2} />
-              </span>
-              <span className="font-display text-2xl font-bold text-ink">
-                Peer<span className="font-display-italic text-accent">Verse</span>
-              </span>
-            </Link>
-          </div>
 
           {/* Header */}
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent mb-3">
               // create account
             </p>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-ink">
-              Join the community
+            <h2 className="font-display text-5xl font-bold tracking-tight text-ink">
+              Join the <span className="text-accent">Community.</span>
             </h2>
             <p className="mt-2 text-sm text-ink-2">
               Create your PeerVerse profile and start contributing.

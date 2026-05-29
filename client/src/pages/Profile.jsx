@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus,
+    Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -29,7 +29,7 @@ export default function Profile() {
     const { username } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useApp();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, logout } = useAuth();
 
     // Profile state
     const [profile, setProfile] = useState(null);
@@ -181,13 +181,13 @@ export default function Profile() {
 
                 {/* Header */}
                 <div className="relative px-4 sm:px-6 border border-t-0 border-rule rounded-b-sm bg-paper-2/20 pb-5">
-                    <div className="flex justify-between items-end mb-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4 mb-4">
                         {/* Avatar */}
-                        <div className="-mt-14 sm:-mt-16 relative group">
+                        <div className="-mt-14 sm:-mt-16 relative group self-start shrink-0">
                             <img
                                 src={profile.avatar}
                                 alt={profile.name}
-                                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-paper shadow-md object-cover bg-paper"
+                                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-paper shadow-md object-cover bg-paper"
                             />
                             {isOwnProfile && (
                                 <button
@@ -202,19 +202,27 @@ export default function Profile() {
                         </div>
 
                         {/* Action buttons */}
-                        <div className="flex gap-2 pb-2 flex-wrap justify-end">
+                        <div className="flex gap-2 pb-2 flex-wrap sm:justify-end self-start sm:self-auto w-full sm:w-auto">
                             {isOwnProfile ? (
-                                <Link
-                                    to="/settings/profile"
-                                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-sm text-sm font-medium text-ink bg-paper border border-rule hover:border-ink-3 transition-colors"
-                                >
-                                    <Edit3 className="w-3.5 h-3.5" /> Edit profile
-                                </Link>
+                                <>
+                                    <Link
+                                        to="/settings/profile"
+                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-ink bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
+                                    >
+                                        <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit profile</span><span className="sm:hidden">Edit</span>
+                                    </Link>
+                                    <button
+                                        onClick={() => logout()}
+                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-red-500 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors shrink-0"
+                                    >
+                                        <LogOut className="w-3.5 h-3.5" /><span className="hidden sm:inline">Logout</span>
+                                    </button>
+                                </>
                             ) : (
                                 <button
                                     onClick={handleFollow}
                                     disabled={followLoading}
-                                    className={`inline-flex items-center gap-1.5 h-9 px-4 rounded-sm text-sm font-semibold transition-all ${
+                                    className={`inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-semibold transition-all shrink-0 ${
                                         following
                                             ? "text-ink bg-paper border border-rule hover:border-red-300 hover:text-red-400"
                                             : "text-paper bg-accent glow-btn hover:brightness-110"
@@ -229,16 +237,6 @@ export default function Profile() {
                                     )}
                                 </button>
                             )}
-
-                            {profile.githubUsername && (
-                                <a
-                                    href={`https://github.com/${profile.githubUsername}`}
-                                    target="_blank" rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-sm text-sm font-medium text-ink bg-paper border border-rule hover:border-ink-3 transition-colors"
-                                >
-                                    <Github className="w-4 h-4" /> GitHub
-                                </a>
-                            )}
                         </div>
                     </div>
 
@@ -248,13 +246,13 @@ export default function Profile() {
                             {profile.name}
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper border border-rule text-sm font-medium text-ink-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper border border-rule text-xs sm:text-sm font-medium text-ink-2">
                                 @{profile.username}
                             </span>
                             {profile.githubUsername && (
                                 <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper border border-rule text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors">
-                                    <Github className="w-4 h-4" /> {profile.githubUsername}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper border border-rule text-xs sm:text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors truncate max-w-[150px] sm:max-w-none">
+                                    <Github className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{profile.githubUsername}</span>
                                 </a>
                             )}
                         </div>
@@ -383,18 +381,13 @@ export default function Profile() {
             {/* ── GitHub bento ────────────────────────────────────────────────── */}
             {profile.githubUsername ? (
                 <section className="border border-rule rounded-xl bg-paper overflow-hidden card-elevated mt-8">
-                    <header className="flex items-center justify-between px-6 py-5 border-b border-rule bg-paper-2/20">
-                        <div className="flex items-center gap-3">
-                            <Github className="w-6 h-6 text-ink" />
-                            <h2 className="font-sans text-xl font-bold text-ink tracking-tight">GitHub Overview</h2>
-                            {ghProfile && (
-                                <span className="px-2.5 py-0.5 rounded-full bg-paper border border-rule text-xs font-mono font-medium text-ink-2">
-                                    @{ghProfile.login}
-                                </span>
-                            )}
+                    <header className="flex flex-row sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b border-rule bg-paper-2/20">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <Github className="w-5 h-5 sm:w-6 sm:h-6 text-ink shrink-0" />
+                            <h2 className="font-sans text-lg sm:text-xl font-bold text-ink tracking-tight"><span className="hidden sm:inline">GitHub Overview</span> <span className="inline sm:hidden">Github Stats</span></h2>
                         </div>
                         <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-xs font-bold text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider">
+                            className="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-[10px] sm:text-xs font-bold text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider shrink-0">
                             visit profile <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                     </header>
@@ -569,14 +562,14 @@ function ActivityTabs({ profile }) {
 function StatTile({ icon: Icon, label, value, colorVar }) {
     const c = `var(${colorVar})`;
     return (
-        <div className="relative overflow-hidden p-6 border border-rule rounded-xl bg-paper-2/40 card-elevated group transition-all duration-300 hover:border-ink-3 hover:-translate-y-1 hover:shadow-lg">
+        <div className="relative overflow-hidden p-4 sm:p-6 border border-rule rounded-xl bg-paper-2/40 card-elevated group transition-all duration-300 hover:border-ink-3 hover:-translate-y-1 hover:shadow-lg">
             <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20 transition-opacity group-hover:opacity-40" style={{ backgroundColor: c }} />
             <div className="relative z-10">
-                <div className="w-10 h-10 rounded-lg border flex items-center justify-center mb-4 transition-colors" style={{ borderColor: c, color: c, backgroundColor: `color-mix(in srgb, ${c} 10%, transparent)` }}>
-                    <Icon className="w-5 h-5" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center mb-3 sm:mb-4 transition-colors" style={{ borderColor: c, color: c, backgroundColor: `color-mix(in srgb, ${c} 10%, transparent)` }}>
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div className="font-sans text-4xl font-extrabold text-ink tabular-nums tracking-tight">{value.toLocaleString()}</div>
-                <div className="font-mono text-xs uppercase tracking-wider text-ink-3 mt-2 group-hover:text-ink-2 transition-colors">{label}</div>
+                <div className="font-sans text-2xl sm:text-4xl font-extrabold text-ink tabular-nums tracking-tight">{value.toLocaleString()}</div>
+                <div className="font-mono text-[10px] sm:text-xs uppercase tracking-wider text-ink-3 mt-1 sm:mt-2 group-hover:text-ink-2 transition-colors">{label}</div>
             </div>
         </div>
     );

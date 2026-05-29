@@ -202,8 +202,8 @@ export default function MarkdownEditor({
   return (
     <div className={`rounded-sm border border-rule ${className}`}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-rule bg-paper-2/40 px-2 py-1">
-        <div className="flex items-center gap-0.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule bg-paper-2/40 px-2 py-1">
+        <div className="flex flex-wrap items-center gap-0.5">
           {ACTIONS.map(({ icon: Icon, title, action }) => (
             <button
               key={title}

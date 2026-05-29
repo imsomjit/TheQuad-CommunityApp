@@ -1,8 +1,9 @@
-import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Outlet, useLocation, Link } from "react-router-dom";
 
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import MobileNav from "./MobileNav";
 import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -39,6 +40,17 @@ export default function Layout() {
     const meta = getRouteMeta(location.pathname);
     const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
 
+    const [scrolled, setScrolled] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
     return (
         <div className="relative min-h-screen overflow-x-hidden bg-paper text-ink font-body">
             {/* Backdrop textures (theme-aware) */}
@@ -46,13 +58,17 @@ export default function Layout() {
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                <div className="fixed top-0 z-40 w-full flex flex-col">
+                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300">
                     {/* Running header / monospace breadcrumb bar */}
-                    <div className="border-b border-rule/60 bg-paper/70 backdrop-blur-md">
-                        <div className="mx-auto flex h-6 sm:h-7 w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
+                    <div 
+                        className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md transition-all duration-300 overflow-hidden ${
+                            scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
+                        }`}
+                    >
+                        <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                             <span className="flex items-center gap-2">
                                 <span className="text-accent animate-pulse">●</span>
-                                peerverse / vol.01 / a learning space
+                                the peerverse / vol.01 / a learning space
                             </span>
 
                             <span className="hidden items-center gap-2 sm:flex">
@@ -64,15 +80,27 @@ export default function Layout() {
                             </span>
                         </div>
                     </div>
-                    <Navbar />
+                    <Navbar scrolled={scrolled} />
                 </div>
                 
-                {!hideSidebar && <Sidebar />}
+                {!hideSidebar && (
+                    <>
+                        <Sidebar 
+                            isCollapsed={isSidebarCollapsed} 
+                            onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+                            scrolled={scrolled}
+                        />
+                        <MobileNav />
+                    </>
+                )}
 
                 {/* Main content area offset by sidebar on desktop */}
-                <div className={`${hideSidebar ? "" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen`}>
+                <div 
+                    className={`${hideSidebar ? "" : isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
+                    style={{ "--sidebar-width": hideSidebar ? "0px" : isSidebarCollapsed ? "80px" : "16rem" }}
+                >
                     {/* Main content */}
-                    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1 mt-12 sm:mt-0">
+                    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1 -mt-4 sm:-mt-2">
                         <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both">
                             <Outlet />
                         </div>

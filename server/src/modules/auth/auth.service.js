@@ -13,6 +13,7 @@ const {
 } = require("../../utils/jwt");
 const AppError = require("../../utils/AppError");
 const { sendEmail } = require("../../utils/email");
+const { getOtpEmailTemplate, getResendOtpEmailTemplate, getWelcomeEmailTemplate } = require("../../utils/emailTemplates");
 const notificationService = require("../notifications/notifications.service");
 
 const BCRYPT_ROUNDS = 12;
@@ -59,7 +60,7 @@ const register = async ({ name, username, email, password }) => {
   await sendEmail({
     to: email,
     subject: "Verify your email for PeerVerse",
-    html: `<h2>Welcome to PeerVerse!</h2><p>Your verification code is: <strong>${otp}</strong></p><p>This code expires in 15 minutes.</p>`,
+    html: getOtpEmailTemplate(otp),
   });
 
   return { success: true, email };
@@ -88,7 +89,7 @@ const verifyOtp = async ({ email, otp }) => {
   await sendEmail({
     to: email,
     subject: "Welcome to PeerVerse!",
-    html: `<h2>Welcome to PeerVerse, ${updated.name}!</h2><p>Your email has been successfully verified. We're thrilled to have you join our community.</p>`,
+    html: getWelcomeEmailTemplate(updated.name),
   });
 
   // Create welcome notification
@@ -119,7 +120,7 @@ const resendOtp = async ({ email }) => {
   await sendEmail({
     to: email,
     subject: "Your new verification code for PeerVerse",
-    html: `<h2>PeerVerse Verification</h2><p>Your new verification code is: <strong>${otp}</strong></p><p>This code expires in 15 minutes.</p>`,
+    html: getResendOtpEmailTemplate(otp),
   });
 
   return { success: true };
