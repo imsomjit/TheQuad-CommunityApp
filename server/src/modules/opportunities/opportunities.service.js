@@ -9,12 +9,12 @@ const { eq, and, or, ilike, desc, asc, sql } = require("drizzle-orm");
 const AppError = require("../../utils/AppError");
 
 const listOpportunities = async (filters) => {
-  const { source, type, status, q, sort = "newest", page = 1, limit = 10 } = filters;
+  const { organizer, type, status, q, sort = "newest", page = 1, limit = 10 } = filters;
   const offset = (page - 1) * limit;
 
   let queryConditions = [];
 
-  if (source) queryConditions.push(eq(opportunities.source, source));
+  if (organizer) queryConditions.push(eq(opportunities.organizer, organizer));
   if (type) queryConditions.push(eq(opportunities.type, type));
   if (status) queryConditions.push(eq(opportunities.status, status));
 

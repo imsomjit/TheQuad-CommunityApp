@@ -783,3 +783,10 @@ html.light .ring-glow:focus-visible {
         pointer-events: none;
     }
 }
+
+/* ─────────────────────────────────────────────────────────
+   Radix UI Scroll Lock Fix
+   ───────────────────────────────────────────────────────── */
+body[data-scroll-locked] .fixed.top-0 {
+    padding-right: var(--removed-body-scroll-bar-size, 0px);
+}

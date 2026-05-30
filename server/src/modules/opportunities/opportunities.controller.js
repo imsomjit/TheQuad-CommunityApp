@@ -5,7 +5,7 @@ const opportunitiesService = require("./opportunities.service");
 
 const listOpportunities = asyncHandler(async (req, res) => {
   const filters = {
-    source: req.query.source,
+    organizer: req.query.organizer,
     type: req.query.type,
     status: req.query.status,
     q: req.query.q,

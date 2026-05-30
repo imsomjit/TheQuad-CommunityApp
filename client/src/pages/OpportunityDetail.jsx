@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ExternalLink, Target, Bookmark, BookmarkCheck, Calendar, Clock, Trophy, ArrowLeft, Share2 } from "lucide-react";
+import { ExternalLink, Target, Bookmark, BookmarkCheck, Calendar, Clock, Trophy, ArrowLeft, GraduationCap, CodeXml } from "lucide-react";
 import { opportunitiesApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
@@ -85,13 +85,13 @@ export default function OpportunityDetail() {
             <div className="border border-rule rounded-2xl bg-paper card-elevated overflow-hidden">
                 <header className="p-6 md:p-8 border-b border-rule bg-paper-2/20">
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                        <div className={`px-3 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border ${getStatusColor(opp.status)}`}>
+                        <div className={`px-3 py-1 rounded-md text-[10px] font-mono tracking-wider uppercase border ${getStatusColor(opp.status)}`}>
                             {opp.status}
                         </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={handleBookmark}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-colors ${opp.isBookmarked
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${opp.isBookmarked
                                         ? "bg-accent/10 border-accent/20 text-accent"
                                         : "bg-paper-2 border-rule text-ink-2 hover:text-ink"
                                     }`}
@@ -103,7 +103,7 @@ export default function OpportunityDetail() {
                                 href={opp.officialUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-accent text-paper text-sm font-semibold hover:scale-105 transition-transform"
+                                className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-accent text-paper text-sm hover:scale-105 transition-transform"
                             >
                                 <span className="hidden sm:inline">View Official</span> <ExternalLink className="w-4 h-4" />
                             </a>
@@ -116,13 +116,25 @@ export default function OpportunityDetail() {
 
                     <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-ink-2">
                         <div className="flex items-center gap-1.5">
-                            {opp.source === "CODEFORCES" ? <span className="font-bold text-red-500">CF</span> : <span className="font-bold text-sky-500">K</span>}
-                            <span className="text-ink">{opp.source === "CODEFORCES" ? "Codeforces" : "Kaggle"}</span>
+                            {(() => {
+                                const s = opp.organizer || "";
+                                const name = s.toLowerCase();
+                                if (name.includes("codeforces")) return <span className="font-bold text-syntax-rose">CF</span>;
+                                if (name.includes("kaggle")) return <span className="font-bold text-syntax-cyan">K</span>;
+                                if (name.includes("leetcode")) return <span className="font-bold text-accent">LC</span>;
+                                if (name.includes("codechef")) return <span className="font-bold text-syntax-violet">CC</span>;
+                                if (name.includes("atcoder")) return <span className="font-bold text-syntax-mint">AC</span>;
+                                if (name.includes("naukri")) return <span className="font-bold text-syntax-magenta">N</span>;
+                                if (name.includes("google")) return <span className="font-bold text-syntax-red-500">G</span>;
+                                if (name.includes("hackerrank")) return <span className="font-bold text-syntax-blue-500">H</span>;
+                                return <CodeXml className="w-4 h-4" />;
+                            })()}
+                            <span className="text-ink">{opp.organizer || "Unknown"}</span>
                         </div>
                         <span>•</span>
                         <div className="flex items-center gap-1.5">
-                            <Trophy className="w-4 h-4" />
-                            <span>{opp.type === "CODING_CONTEST" ? "Coding Contest" : "Data Science Competition"}</span>
+                            <Trophy className="w-4 h-4" fill="var(--accent)" />
+                            <span className="capitalize">{opp.type?.toLowerCase().replace(/_/g, " ")}</span>
                         </div>
                     </div>
                 </header>
@@ -131,9 +143,26 @@ export default function OpportunityDetail() {
                     <div className="col-span-2 p-6 md:p-8">
                         <h3 className="font-sans font-bold text-lg mb-4">About this opportunity</h3>
                         <div className="prose prose-invert max-w-none prose-p:text-ink-2">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {opp.description || "No description provided."}
-                            </ReactMarkdown>
+                            {opp.description ? (
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {opp.description}
+                                </ReactMarkdown>
+                            ) : (
+                                <div className="p-8 rounded-2xl border border-dashed border-rule/70 bg-paper-2/40 text-center flex flex-col items-center gap-3 my-2">
+                                    <GraduationCap className="w-10 h-10 text-ink-3 opacity-60 mb-1" />
+                                    <p className="text-ink-2 font-medium">
+                                        The organizer hasn't provided a detailed description for this event yet.
+                                    </p>
+                                    <a
+                                        href={opp.officialUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-accent hover:underline text-sm font-semibold inline-flex items-center gap-1 mt-2"
+                                    >
+                                        Check the official page for more details <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                </div>
+                            )}
                         </div>
 
                         {opp.tags && opp.tags.length > 0 && (
@@ -192,7 +221,7 @@ export default function OpportunityDetail() {
 
                         <div className="pt-6 border-t border-rule">
                             <p className="text-xs text-ink-3 leading-relaxed">
-                                This opportunity is imported from <strong className="text-ink-2">{opp.source === "CODEFORCES" ? "Codeforces" : "Kaggle"}</strong>. We sync periodically, but times and details might change on the official platform.
+                                This opportunity is imported from <strong className="text-ink-2">{opp.source === "CLIST" ? "CLIST" : "Kaggle"}</strong>. We sync periodically, but times and details might change on the official platform.
                             </p>
                         </div>
                     </div>

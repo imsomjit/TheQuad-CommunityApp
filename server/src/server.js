@@ -5,7 +5,7 @@ const env = require("./config/env");
 const createApp = require("./app");
 const { pool } = require("./db/index");
 const logger = require("./utils/logger");
-const { startSyncJobs } = require("./modules/opportunities/opportunities.sync");
+const { startSyncJobs } = require("./modules/opportunities/sync/sync.service");
 
 const start = async () => {
   try {

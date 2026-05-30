@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Target, Filter, ChevronRight, Bookmark, BookmarkCheck, Calendar, Clock, Trophy, ArrowDownUp } from "lucide-react";
+import { Search, Target, Bookmark, Calendar, Clock, Trophy, ServerCrash, OctagonAlert, CodeXml } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -24,7 +24,7 @@ export default function Opportunities() {
     
     // Filters
     const [search, setSearch] = useState("");
-    const [source, setSource] = useState("ALL");
+    const [organizer, setOrganizer] = useState("ALL");
     const [status, setStatus] = useState("UPCOMING"); // Default to upcoming
     const [type, setType] = useState("ALL");
     const [page, setPage] = useState(1);
@@ -37,7 +37,7 @@ export default function Opportunities() {
                 page: currentPage,
                 limit: 12,
                 q: search,
-                source: source === "ALL" ? "" : source,
+                organizer: organizer === "ALL" ? "" : organizer,
                 status: status === "ALL" ? "" : status,
                 type: type === "ALL" ? "" : type,
                 sort: status === "ENDED" ? "newest" : "start_date"
@@ -60,7 +60,7 @@ export default function Opportunities() {
     useEffect(() => {
         loadOpportunities(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [source, status, type]);
+    }, [organizer, status, type]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -97,9 +97,17 @@ export default function Opportunities() {
     };
 
     const getSourceLogo = (s) => {
-        if (s === "CODEFORCES") return <span className="font-bold text-red-500">CF</span>;
-        if (s === "KAGGLE") return <span className="font-bold text-sky-500">K</span>;
-        return <Target className="w-4 h-4" />;
+        if (!s) return <Target className="w-4 h-4" />;
+        const sourceName = s.toLowerCase();
+        if (sourceName.includes("codeforces")) return <span className="font-bold text-syntax-rose">CF</span>;
+        if (sourceName.includes("kaggle")) return <span className="font-bold text-syntax-cyan">K</span>;
+        if (sourceName.includes("leetcode")) return <span className="font-bold text-accent">LC</span>;
+        if (sourceName.includes("codechef")) return <span className="font-bold text-syntax-violet">CC</span>;
+        if (sourceName.includes("atcoder")) return <span className="font-bold text-syntax-mint">AC</span>;
+        if (sourceName.includes("naukri")) return <span className="font-bold text-syntax-magenta">N</span>;
+        if (sourceName.includes("google")) return <span className="font-bold text-syntax-red-500">G</span>;
+        if (sourceName.includes("hackerrank")) return <span className="font-bold text-syntax-blue-500">H</span>;
+        return <CodeXml className="w-4 h-4" />;
     };
 
     return (
@@ -149,14 +157,23 @@ export default function Opportunities() {
                         </SelectContent>
                     </Select>
 
-                    <Select value={source} onValueChange={setSource}>
+                    <Select value={organizer} onValueChange={setOrganizer}>
                         <SelectTrigger className="h-10 w-[150px] rounded-md border-rule bg-paper text-sm text-ink focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0">
-                            <SelectValue placeholder="All Sources" />
+                            <SelectValue placeholder="All Platforms" />
                         </SelectTrigger>
                         <SelectContent className="border-rule bg-paper text-ink">
-                            <SelectItem value="ALL">All Sources</SelectItem>
-                            <SelectItem value="CODEFORCES">Codeforces</SelectItem>
-                            <SelectItem value="KAGGLE">Kaggle</SelectItem>
+                            <SelectItem value="ALL">All Platforms</SelectItem>
+                            <SelectItem value="Codeforces">Codeforces</SelectItem>
+                            <SelectItem value="LeetCode">LeetCode</SelectItem>
+                            <SelectItem value="Kaggle">Kaggle</SelectItem>
+                            <SelectItem value="GeeksforGeeks">GeeksForGeeks</SelectItem>
+                            <SelectItem value="Code360 (Naukri)">Code360 (Naukri)</SelectItem>
+                            <SelectItem value="AtCoder">AtCoder</SelectItem>
+                            <SelectItem value="CodeChef">CodeChef</SelectItem>
+                            <SelectItem value="HackerRank">HackerRank</SelectItem>
+                            <SelectItem value="HackerEarth">HackerEarth</SelectItem>
+                            <SelectItem value="TopCoder">TopCoder</SelectItem>
+                            <SelectItem value="Google Coding Competitions">Google Coding Competitions</SelectItem>
                         </SelectContent>
                     </Select>
 
@@ -179,22 +196,53 @@ export default function Opportunities() {
                     <Loader text="Loading opportunities..." />
                 </div>
             ) : error ? (
-                <div className="py-20 text-center text-red-500">{error}</div>
-            ) : opportunities.length === 0 ? (
-                <div className="py-20 text-center flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-full bg-paper-2 flex items-center justify-center mb-4 text-ink-3">
-                        <Target className="w-8 h-8 opacity-50" />
+                <div className="py-24 w-full flex justify-center px-4">
+                    <div className="w-full max-w-lg p-8 rounded-3xl border border-dashed border-red-500/30 bg-red-500/5 text-center flex flex-col items-center">
+                        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 text-red-500">
+                            <ServerCrash className="w-8 h-8" />
+                        </div>
+                        <h3 className="font-display font-semibold text-2xl text-ink mb-2">Oops! Something went wrong</h3>
+                        <p className="text-ink-2 text-sm max-w-sm mb-6 leading-relaxed">
+                            {error || "We couldn't connect to the server to load the opportunities. Please try again later."}
+                        </p>
+                        <button 
+                            onClick={() => loadOpportunities(true)}
+                            className="px-6 py-2.5 rounded-full bg-red-500 text-white font-semibold text-sm hover:bg-red-600 transition-colors shadow-sm"
+                        >
+                            Try Again
+                        </button>
                     </div>
-                    <h3 className="font-semibold text-lg text-ink mb-1">No opportunities found</h3>
-                    <p className="text-ink-2 text-sm max-w-sm">We couldn't find any opportunities matching your filters. Try adjusting your search criteria.</p>
+                </div>
+            ) : opportunities.length === 0 ? (
+                <div className="py-24 w-full flex justify-center px-4">
+                    <div className="w-full max-w-lg p-8 rounded-3xl border border-dashed border-rule bg-paper text-center flex flex-col items-center">
+                        <div className="w-16 h-16 rounded-full bg-paper border border-rule flex items-center justify-center mb-5 text-syntax-rose shadow-sm">
+                            <OctagonAlert className="w-8 h-8 opacity-60" />
+                        </div>
+                        <h3 className="font-display font-semibold text-2xl text-ink mb-2">No opportunities found</h3>
+                        <p className="text-ink-2 text-sm max-w-sm mb-6 leading-relaxed">
+                            We couldn't find any active challenges matching your current filters. Try adjusting your search criteria or clearing the filters!
+                        </p>
+                        <button 
+                            onClick={() => {
+                                setSearch("");
+                                setOrganizer("ALL");
+                                setStatus("ALL");
+                                setType("ALL");
+                            }}
+                            className="px-6 py-2.5 rounded-full border border-rule bg-paper text-accent font-semibold text-sm hover:bg-paper-2 transition-colors shadow-sm"
+                        >
+                            Clear All Filters
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {opportunities.map(opp => (
-                            <Link key={opp.id} to={`/opportunities/${opp.id}`} className="group flex flex-col p-5 rounded-2xl border border-rule bg-paper card-elevated">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className={`px-2 py-1 rounded-md text-[10px] font-bold tracking-wider uppercase border ${getStatusColor(opp.status)}`}>
+                            <Link key={opp.id} to={`/opportunities/${opp.id}`} className="group flex flex-col p-6 rounded-2xl border border-rule bg-paper hover:bg-paper-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wide uppercase border ${getStatusColor(opp.status)}`}>
                                         {opp.status}
                                     </div>
                                     <button 
@@ -205,31 +253,35 @@ export default function Opportunities() {
                                     </button>
                                 </div>
                                 
-                                <h3 className="font-sans font-bold text-ink text-lg leading-snug mb-2 group-hover:text-accent transition-colors line-clamp-2">
+                                <h3 className="font-display font-semibold text-ink text-2xl leading-tight mb-3 group-hover:text-accent transition-colors line-clamp-2">
                                     {opp.title}
                                 </h3>
                                 
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex items-center gap-1.5 text-xs font-semibold px-2 py-1 bg-paper-2 rounded-md border border-rule">
-                                        {getSourceLogo(opp.source)}
-                                        <span className="text-ink">{opp.source === "CODEFORCES" ? "Codeforces" : "Kaggle"}</span>
+                                <div className="flex flex-wrap items-center gap-2 mb-4">
+                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
+                                        {getSourceLogo(opp.organizer)}
+                                        <span className="text-ink">{opp.organizer || "Unknown"}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-ink-2 px-2 py-1 bg-paper-2 rounded-md border border-rule">
-                                        <Trophy className="w-3.5 h-3.5" />
+                                    <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-ink-2 px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
+                                        <Trophy className="w-3.5 h-3.5" fill="var(--accent)" />
                                         <span>{opp.type === "CODING_CONTEST" ? "Contest" : "Competition"}</span>
                                     </div>
                                 </div>
 
-                                <div className="mt-auto pt-4 border-t border-rule/50 flex flex-col gap-2 text-xs text-ink-2">
+                                <p className="text-sm text-ink-2 line-clamp-2 mb-6 leading-relaxed">
+                                    {opp.description || "Gear up and prepare to showcase your problem-solving skills! Join fellow developers in this exciting challenge and climb the leaderboard."}
+                                </p>
+
+                                <div className="mt-auto pt-4 border-t border-rule flex flex-col gap-2.5 text-xs font-medium text-ink-3">
                                     {opp.startTime && (
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="w-3.5 h-3.5" />
+                                        <div className="flex items-center gap-2.5">
+                                            <Calendar className="w-4 h-4 text-ink-2" />
                                             <span>Starts: {format(new Date(opp.startTime), "MMM d, yyyy h:mm a")}</span>
                                         </div>
                                     )}
                                     {opp.deadline && (
-                                        <div className="flex items-center gap-2">
-                                            <Clock className="w-3.5 h-3.5" />
+                                        <div className="flex items-center gap-2.5">
+                                            <Clock className="w-4 h-4 text-ink-2" />
                                             <span>Deadline: {format(new Date(opp.deadline), "MMM d, yyyy h:mm a")}</span>
                                         </div>
                                     )}
