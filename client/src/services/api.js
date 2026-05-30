@@ -474,5 +474,11 @@ export const seriesApi = {
     api.delete(`/series/posts/${postId}`),
 };
 
+// LeetCode
+export const leetcodeApi = {
+  getProfileStats: (username) =>
+    api.get(`/leetcode/${username}`).then((r) => r.data.data),
+};
+
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };
 export default api;

@@ -4,11 +4,11 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut
+    Trophy, PieChart, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { usersApi, githubApi } from "../services/api";
+import { usersApi, githubApi, leetcodeApi } from "../services/api";
 import ContributionGraph from "../components/ContributionGraph";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
@@ -48,6 +48,8 @@ export default function Profile() {
     const [followLoading, setFollowLoading] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [bannerUploading, setBannerUploading] = useState(false);
+    const [leetcodeStats, setLeetcodeStats] = useState(null);
+    const [leetcodeLoading, setLeetcodeLoading] = useState(false);
     const avatarInputRef = useRef(null);
     const bannerInputRef = useRef(null);
 
@@ -75,7 +77,7 @@ export default function Profile() {
         setGhLoading(true);
         Promise.all([
             githubApi.getProfile(gh).catch(() => null),
-            githubApi.getRepos(gh, { limit: 4, pinned: true }).catch(() => []),
+            githubApi.getRepos(gh, { limit: 2, sort: 'updated' }).catch(() => []),
             githubApi.getLanguages(gh).catch(() => []),
             githubApi.getContributions(gh).catch(() => null),
         ]).then(([prof, repos, langs, contribs]) => {
@@ -85,6 +87,16 @@ export default function Profile() {
             setGhContribs(contribs);
         }).finally(() => setGhLoading(false));
     }, [profile?.githubUsername]);
+
+    // ── Load LeetCode data when leetcodeUsername is set ────────────────────────
+    useEffect(() => {
+        if (!profile?.leetcodeUsername) return;
+        setLeetcodeLoading(true);
+        leetcodeApi.getProfileStats(profile.leetcodeUsername)
+            .then(setLeetcodeStats)
+            .catch(() => setLeetcodeStats(null))
+            .finally(() => setLeetcodeLoading(false));
+    }, [profile?.leetcodeUsername]);
 
     // ── Follow / Unfollow ────────────────────────────────────────────────────────
     const handleFollow = async () => {
@@ -378,6 +390,86 @@ export default function Profile() {
                 <StatTile icon={Sparkles} colorVar="--syntax-amber" label="total upvotes" value={profile.stats?.totalUpvotes || 0} />
             </div>
 
+            {/* ── LeetCode bento ──────────────────────────────────────────────── */}
+            {profile.leetcodeUsername && (
+                <section className="border border-rule rounded-xl bg-paper overflow-hidden card-elevated mt-8">
+                    <header className="flex flex-row sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b border-rule bg-paper-2/20">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <Code2 className="w-5 h-5 sm:w-6 sm:h-6 text-ink shrink-0" />
+                            <h2 className="font-sans text-lg sm:text-xl font-bold text-ink tracking-tight">LeetCode Stats</h2>
+                        </div>
+                        <a href={`https://leetcode.com/u/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer"
+                            className="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-[10px] sm:text-xs font-bold text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider shrink-0">
+                            visit profile <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                    </header>
+
+                    {leetcodeLoading ? (
+                        <div className="flex items-center justify-center py-16">
+                            <Loader text="fetching leetcode..." size="sm" />
+                        </div>
+                    ) : leetcodeStats ? (
+                        <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+                            {/* Left: Stats */}
+                            <div className="flex flex-col justify-center gap-4">
+                                <div className="p-5 border border-rule rounded-lg bg-paper-2/40 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                                            <Trophy className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-ink-2 uppercase tracking-wider mb-1">Contest Rating</p>
+                                            <p className="font-display text-2xl font-bold text-ink leading-none">
+                                                {leetcodeStats.contest?.rating || "N/A"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-semibold text-ink-2 uppercase tracking-wider mb-1">Global Rank</p>
+                                        <p className="font-display text-xl font-bold text-ink leading-none">
+                                            {leetcodeStats.contest?.globalRanking ? `#${leetcodeStats.contest.globalRanking.toLocaleString()}` : "N/A"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 text-center mt-2">
+                                    <div className="bg-paper border border-rule rounded-md p-3">
+                                            <p className="text-[10px] uppercase font-bold text-[#0d8336ff] mb-1">Easy</p>
+                                        <p className="text-lg font-bold text-ink">{leetcodeStats.solved.easy}</p>
+                                    </div>
+                                    <div className="bg-paper border border-rule rounded-md p-3">
+                                        <p className="text-[10px] uppercase font-bold text-[#ffc01e] mb-1">Medium</p>
+                                        <p className="text-lg font-bold text-ink">{leetcodeStats.solved.medium}</p>
+                                    </div>
+                                    <div className="bg-paper border border-rule rounded-md p-3">
+                                        <p className="text-[10px] uppercase font-bold text-[#ff375f] mb-1">Hard</p>
+                                        <p className="text-lg font-bold text-ink">{leetcodeStats.solved.hard}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Right: Pie Chart */}
+                            <div className="flex flex-col items-center justify-center">
+                                <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full flex items-center justify-center shadow-lg"
+                                    style={{
+                                        background: `conic-gradient(
+                                            #0d8336ff 0% ${(leetcodeStats.solved.easy / (leetcodeStats.solved.all || 1)) * 100}%,
+                                            #ffc01e ${(leetcodeStats.solved.easy / (leetcodeStats.solved.all || 1)) * 100}% ${((leetcodeStats.solved.easy + leetcodeStats.solved.medium) / (leetcodeStats.solved.all || 1)) * 100}%,
+                                            #ff375f ${((leetcodeStats.solved.easy + leetcodeStats.solved.medium) / (leetcodeStats.solved.all || 1)) * 100}% 100%
+                                        )`
+                                    }}>
+                                    {/* Inner circle to make it a doughnut chart */}
+                                    <div className="absolute inset-2 sm:inset-3 rounded-full bg-paper flex flex-col items-center justify-center">
+                                        <span className="text-[10px] sm:text-xs font-semibold text-ink-2 uppercase tracking-wider mb-0.5">Solved</span>
+                                        <span className="font-display text-2xl sm:text-3xl font-bold text-ink leading-none">{leetcodeStats.solved.all}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="p-8 text-center text-sm text-ink-3">Failed to load LeetCode stats.</div>
+                    )}
+                </section>
+            )}
+
             {/* ── GitHub bento ────────────────────────────────────────────────── */}
             {profile.githubUsername ? (
                 <section className="border border-rule rounded-xl bg-paper overflow-hidden card-elevated mt-8">
@@ -447,7 +539,7 @@ export default function Profile() {
 
                                 {ghRepos.length > 0 && (
                                     <div>
-                                        <h3 className="font-sans text-sm font-bold text-ink mb-4 uppercase tracking-wider">Featured Repositories</h3>
+                                        <h3 className="font-sans text-sm font-bold text-ink mb-4 uppercase tracking-wider">Recent Repositories</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {ghRepos.map(repo => (
                                                 <a key={repo.id || repo.name} href={repo.htmlUrl} target="_blank" rel="noreferrer"

@@ -101,7 +101,7 @@ export default function Navbar({ scrolled }) {
                                 Upload
                             </Link>
 
-                            <DropdownMenu>
+                            <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         data-testid="nav-add-dropdown"
@@ -177,14 +177,14 @@ export default function Navbar({ scrolled }) {
                                 <button
                                     data-testid="notifications-bell"
                                     aria-label="Notifications"
-                                    className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-transparent text-ink-2 transition-colors hover:border-rule hover:bg-paper-2 hover:text-ink"
+                                    className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
                                 >
                                     <Bell className="h-4 w-4" />
 
                                     {unreadCount > 0 && (
                                         <span
                                             data-testid="notifications-unread-badge"
-                                            className="absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-bold text-paper"
+                                            className="absolute right-0 top-0 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px]  text-paper"
                                         >
                                             {unreadCount}
                                         </span>

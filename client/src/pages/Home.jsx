@@ -541,7 +541,7 @@ export default function Home() {
                     
                     {/* Profile card — index-card style */}
                     {isAuthenticated && currentUser && (
-                    <div className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-5">
+                    <div className="hidden sm:inline relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-5">
                         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // profile card
                         </p>

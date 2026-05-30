@@ -98,61 +98,14 @@ const getProfile = async (githubUsername) => {
 };
 
 /**
- * Fetch a user's public repositories (optionally pinned, or sorted by stars).
+ * Fetch a user's recent public repositories.
  */
-const getRepos = async (githubUsername, { sort = "stars", limit = 20, pinned = false } = {}) => {
-  if (pinned) {
-    try {
-      const res = await fetch(`https://gh-pinned-repos.egoist.dev/?username=${githubUsername}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          return data.map((r) => {
-            const name = (r.repo || "").trim();
-            let parsedStars = 0;
-            if (r.stars) {
-              const s = String(r.stars).toLowerCase().replace(/,/g, '');
-              parsedStars = s.endsWith('k') ? Math.round(parseFloat(s) * 1000) : (parseInt(s, 10) || 0);
-            }
-            return {
-              id: name,
-              name: name,
-              fullName: `${r.owner}/${name}`,
-              description: r.description,
-              htmlUrl: r.link,
-              homepage: "",
-              language: r.language,
-              stars: parsedStars,
-              forks: r.forks || 0,
-              watchers: parsedStars,
-              openIssues: 0,
-              isForked: false,
-              topics: [],
-              updatedAt: new Date().toISOString(),
-              pushedAt: new Date().toISOString(),
-            };
-          }).slice(0, limit);
-        }
-      }
-    } catch (e) {
-      logger.warn("Failed to fetch pinned repos from egoist dev", { message: e.message });
-    }
-  }
-
-  const sortParam = sort === "stars" ? "stargazers_count" : "updated_at";
+const getRepos = async (githubUsername, { limit = 20 } = {}) => {
   const repos = await githubFetch(
-    `/users/${githubUsername}/repos?type=owner&sort=${sort === "stars" ? "full_name" : "updated"}&per_page=100`
+    `/users/${githubUsername}/repos?type=owner&sort=updated&per_page=${limit}`
   );
 
-  // Sort by stargazers client-side (GitHub API sort is limited)
-  const sorted = repos
-    .sort((a, b) => {
-      if (sort === "stars") return b.stargazers_count - a.stargazers_count;
-      return new Date(b.updated_at) - new Date(a.updated_at);
-    })
-    .slice(0, limit);
-
-  return sorted.map((r) => ({
+  return repos.map((r) => ({
     id: r.id,
     name: r.name,
     fullName: r.full_name,

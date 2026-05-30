@@ -232,7 +232,7 @@ export default function EditProfile() {
                             <Field label="College / University">
                                 <div className="field-icon-wrap">
                                     <BookOpen className="field-icon" />
-                                    <input value={form.college} onChange={set("college")} maxLength={200} className="field-input pl-8" placeholder="e.g. IIT Bombay" />
+                                    <input value={form.college} onChange={set("college")} maxLength={200} className="field-input pl-8" placeholder="in short e.g. MCET or IIT Bombay" />
                                 </div>
                             </Field>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -21,6 +21,7 @@ const reportRoutes = require("./modules/reports/reports.routes");
 const githubRoutes = require("./modules/github/github.routes");
 const postRoutes = require("./modules/posts/posts.routes");
 const seriesRoutes = require("./modules/posts/series.routes");
+const leetcodeRoutes = require("./modules/leetcode/leetcode.routes");
 
 const createApp = () => {
   const app = express();
@@ -71,6 +72,7 @@ const createApp = () => {
   app.use("/api/github", githubRoutes);
   app.use("/api/posts", postRoutes);
   app.use("/api/series", seriesRoutes);
+  app.use("/api/leetcode", leetcodeRoutes);
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((req, res) => {

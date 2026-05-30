@@ -63,7 +63,7 @@ export default function NotificationDropdown({ children }) {
     } = useApp();
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
 
             <DropdownMenuContent
