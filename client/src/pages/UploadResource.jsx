@@ -118,12 +118,12 @@ export default function UploadResource() {
 
             {/* Header */}
             <header className="mb-8">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-2">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-syntax-rose mb-2">
           // new resource
                 </p>
 
                 <h1 className="font-display text-4xl font-bold tracking-tighter text-ink">
-                    Share something useful.
+                    <span className="italic">Share</span> <span className="marker">something useful.</span>
                 </h1>
 
                 <p className="mt-2 text-ink-2">
@@ -343,7 +343,7 @@ export default function UploadResource() {
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-rule">
                     <p className="font-mono text-xs text-ink-3">
-            // frontend preview · saved to local mock store
+            // share and learn together
                     </p>
 
                     <button

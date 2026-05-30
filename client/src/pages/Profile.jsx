@@ -399,7 +399,7 @@ export default function Profile() {
                             <h2 className="font-sans text-lg sm:text-xl font-bold text-ink tracking-tight">LeetCode Stats</h2>
                         </div>
                         <a href={`https://leetcode.com/u/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer"
-                            className="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-[10px] sm:text-xs font-bold text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider shrink-0">
+                            className="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-[10px] sm:text-xs font-bold font-mono text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider shrink-0">
                             visit profile <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                     </header>
@@ -476,10 +476,10 @@ export default function Profile() {
                     <header className="flex flex-row sm:items-center justify-between gap-4 px-4 sm:px-6 py-4 sm:py-5 border-b border-rule bg-paper-2/20">
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <Github className="w-5 h-5 sm:w-6 sm:h-6 text-ink shrink-0" />
-                            <h2 className="font-sans text-lg sm:text-xl font-bold text-ink tracking-tight"><span className="hidden sm:inline">GitHub Overview</span> <span className="inline sm:hidden">Github Stats</span></h2>
+                            <h2 className="text-lg sm:text-xl font-bold text-ink tracking-tight"><span className="hidden sm:inline">GitHub Overview</span> <span className="inline sm:hidden">Github Stats</span></h2>
                         </div>
                         <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer"
-                            className="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-[10px] sm:text-xs font-bold text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider shrink-0">
+                            className="inline-flex self-start sm:self-auto items-center gap-1.5 px-3 py-1.5 rounded-full bg-paper border border-rule text-[10px] sm:text-xs font-bold font-mono text-ink-2 hover:text-ink hover:border-ink-3 transition-colors uppercase tracking-wider shrink-0">
                             visit profile <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                     </header>

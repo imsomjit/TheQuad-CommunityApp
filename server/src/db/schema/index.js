@@ -24,6 +24,13 @@ const {
   postStatusEnum,
 } = require("./posts");
 const { series } = require("./series");
+const {
+  opportunities,
+  opportunityBookmarks,
+  opportunitySourceEnum,
+  opportunityTypeEnum,
+  opportunityStatusEnum,
+} = require("./opportunities");
 
 module.exports = {
   // Tables
@@ -43,6 +50,8 @@ module.exports = {
   posts,
   postTags,
   series,
+  opportunities,
+  opportunityBookmarks,
 
   // Enums
   userRoleEnum,
@@ -57,4 +66,7 @@ module.exports = {
   reportTargetEnum,
   postCategoryEnum,
   postStatusEnum,
+  opportunitySourceEnum,
+  opportunityTypeEnum,
+  opportunityStatusEnum,
 };

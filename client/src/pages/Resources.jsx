@@ -100,7 +100,7 @@ export default function Resources() {
             <header className="border-b-2 border-double border-rule pb-8">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-rose">
                             &sect;02 &middot; the library
                         </p>
 

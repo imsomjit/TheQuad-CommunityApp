@@ -478,8 +478,8 @@ export default function PostEditor() {
       {/* Top bar */}
       <div className="flex items-center justify-between gap-4 border-b border-rule pb-4">
         <div className="flex items-center gap-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-            {postId ? "editing draft" : "new post"}
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-syntax-violet">
+            {postId ? "// editing draft" : "// new post"}
           </p>
           {lastSaved && (
             <span className="flex items-center gap-1 font-mono text-[10px] text-ink-3">
@@ -496,7 +496,7 @@ export default function PostEditor() {
             className="flex items-center gap-1.5 rounded-sm border border-rule px-3 py-2 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink disabled:opacity-40"
           >
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            Save draft
+            <span className="hidden sm:inline">Save draft</span><span className="inline sm:hidden">Draft</span>
           </button>
           <button
             type="button"

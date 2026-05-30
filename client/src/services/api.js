@@ -480,5 +480,23 @@ export const leetcodeApi = {
     api.get(`/leetcode/${username}`).then((r) => r.data.data),
 };
 
+// Opportunities
+export const opportunitiesApi = {
+  list: (params) =>
+    api.get("/opportunities", { params }).then((r) => ({
+      data: r.data.data.data, // Data is in r.data.data.data and pagination in r.data.data.pagination based on standard setup
+      pagination: r.data.data.pagination,
+    })),
+  getBookmarked: (params) =>
+    api.get("/opportunities/bookmarked", { params }).then((r) => ({
+      data: r.data.data.data,
+      pagination: r.data.data.pagination,
+    })),
+  getById: (id) =>
+    api.get(`/opportunities/${id}`).then((r) => r.data.data),
+  toggleBookmark: (id) =>
+    api.post(`/opportunities/${id}/bookmark`).then((r) => r.data.data),
+};
+
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };
 export default api;

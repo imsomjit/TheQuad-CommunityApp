@@ -124,7 +124,7 @@ export default function Notifications() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto fade-in-up">
+    <div className="max-w-5xl mx-auto fade-in-up">
       {/* Header */}
       <header className="mb-8">
         <div className="flex items-center justify-between">
@@ -132,9 +132,9 @@ export default function Notifications() {
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent mb-2">
               // notifications
             </p>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-ink flex items-center gap-3">
-              <Bell className="h-8 w-8 text-accent" />
-              Activity
+            <h1 className="font-display text-5xl font-bold tracking-tight text-ink flex items-center gap-3">
+              <Bell className="h-8 w-8 text-accent-2" />
+              Recent <span className="font-display-italic text-accent">Activities</span>,
               {unreadCount > 0 && (
                 <span className="font-mono text-sm font-normal text-accent bg-accent-soft px-2.5 py-1 rounded-sm">
                   {unreadCount} new

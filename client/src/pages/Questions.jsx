@@ -121,7 +121,7 @@ export default function Questions() {
                                 value={q}
                                 onChange={(e) => setQ(e.target.value)}
                                 placeholder="Search questions…"
-                                className="h-10 rounded-sm border-rule bg-paper-2/60 pl-9 text-ink focus-visible:border-accent/60 focus-visible:ring-accent/30"
+                                className="h-10 rounded-sm border-rule bg-paper pl-9 text-ink focus-visible:border-accent/60 focus-visible:ring-accent/30"
                             />
                         </div>
 

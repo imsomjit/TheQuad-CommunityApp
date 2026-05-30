@@ -46,7 +46,7 @@ export default function Navbar({ scrolled }) {
                         scrolled ? "scale-90" : "scale-100"
                     }`}
                 >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 transition-colors group-hover:border-accent">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 transition-colors group-hover:border-accent">
                         <Braces
                             className="h-4 w-4 text-accent"
                             strokeWidth={2}
@@ -126,7 +126,7 @@ export default function Navbar({ scrolled }) {
                             <Link
                                 to="/ask"
                                 data-testid="nav-ask-btn"
-                                className="hidden h-9 items-center gap-1.5 rounded-sm bg-accent px-3 text-sm font-semibold text-paper glow-btn sm:inline-flex"
+                                className="hidden h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper glow-btn sm:inline-flex"
                             >
                                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                                 Ask
@@ -177,7 +177,7 @@ export default function Navbar({ scrolled }) {
                                 <button
                                     data-testid="notifications-bell"
                                     aria-label="Notifications"
-                                    className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                                    className="relative flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
                                 >
                                     <Bell className="h-4 w-4" />
 
@@ -201,7 +201,7 @@ export default function Navbar({ scrolled }) {
                                 <img
                                     src={currentUser?.avatar || getAvatarFallback(currentUser?.name, currentUser?.username)}
                                     alt={currentUser?.name || ''}
-                                    className="h-9 w-9 rounded-sm border border-rule object-cover transition-colors hover:border-accent"
+                                    className="h-9 w-9 rounded-md border border-rule object-cover transition-colors hover:border-accent"
                                 />
 
                                 <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-paper bg-accent-2" />

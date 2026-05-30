@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, BookOpen, MessageSquare, FileText, Bell, LogOut, PanelLeftClose } from "lucide-react";
+import { Home, BookOpen, MessageSquare, FileText, Bell, LogOut, PanelLeftClose, Target } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,10 +9,10 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
     const { isAuthenticated, logout } = useAuth();
 
     const linkClass = ({ isActive }) => {
-        const base = "group flex items-center rounded-xl py-2.5 text-sm font-medium transition-all duration-200";
+        const base = "group flex items-center rounded-xl py-2.5 text-sm transition-all duration-200";
         const state = isActive 
-            ? "bg-paper-2 text-accent font-serif font-semibold ring-1 ring-accent-soft" 
-            : "text-ink-2 hover:bg-paper-2 font-serif hover:text-ink";
+            ? "bg-paper-2 text-accent font-semibold ring-1 ring-accent-soft" 
+            : "text-ink-2 hover:bg-paper-2 hover:text-ink";
         const layout = isCollapsed 
             ? "justify-center w-12 mx-auto px-0" 
             : "gap-3 px-4 w-full";
@@ -39,6 +39,9 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
                 </NavLink>
                 <NavLink to="/posts" className={linkClass} title="Posts">
                     <FileText className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Posts</span>}
+                </NavLink>
+                <NavLink to="/opportunities" className={linkClass} title="Opportunities">
+                    <Target className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Opportunities</span>}
                 </NavLink>
                 
                 {isAuthenticated && (

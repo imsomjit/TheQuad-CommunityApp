@@ -73,7 +73,7 @@ export default function AskQuestion() {
                 </p>
 
                 <h1 className="font-display text-4xl font-bold tracking-tighter text-ink">
-                    Ask the community.
+                    <span className="italic">Ask</span> <span className="marker">the community.</span>
                 </h1>
 
                 <p className="mt-2 text-ink-2">

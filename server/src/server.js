@@ -5,6 +5,7 @@ const env = require("./config/env");
 const createApp = require("./app");
 const { pool } = require("./db/index");
 const logger = require("./utils/logger");
+const { startSyncJobs } = require("./modules/opportunities/opportunities.sync");
 
 const start = async () => {
   try {
@@ -21,6 +22,10 @@ const start = async () => {
     const server = app.listen(PORT, () => {
       logger.info(`🚀  PeerVerse API running on http://localhost:${PORT}`);
       logger.info(`📦  Environment: ${env.NODE_ENV}`);
+      
+      // Start background sync jobs
+      startSyncJobs();
+      logger.info(`🔄  Background sync jobs started`);
     });
 
     // ── Graceful shutdown ────────────────────────────────────────────────────

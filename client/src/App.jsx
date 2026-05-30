@@ -30,6 +30,8 @@ const PostDetail = lazy(() => import("./pages/PostDetail"));
 const PostEditor = lazy(() => import("./pages/PostEditor"));
 const FollowList = lazy(() => import("./pages/FollowList"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
+const Opportunities = lazy(() => import("./pages/Opportunities"));
+const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 
 function App() {
   return (
@@ -98,6 +100,10 @@ function App() {
 
                   {/* Posts — Knowledge Publishing */}
                   <Route path="/posts" element={<PostsFeed />} />
+
+                  {/* Opportunities */}
+                  <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                   <Route path="/posts/:slug" element={<PostDetail />} />
                   <Route
                     path="/posts/new"
