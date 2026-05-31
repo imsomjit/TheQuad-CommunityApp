@@ -66,6 +66,17 @@ export function AuthProvider({ children }) {
     return data.data.user;
   }, []);
 
+  const fetchMe = useCallback(async () => {
+    try {
+      const { data } = await authApi.me();
+      setUser(mapUser(data.data.user));
+    } catch {
+      // If fetching fails, clear everything
+      clearAccessToken();
+      setUser(null);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
@@ -84,7 +95,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isAuthenticated, login, register, verifyOtp, logout, updateUser }}
+      value={{ user, loading, isAuthenticated, login, register, verifyOtp, logout, updateUser, fetchMe }}
     >
       {children}
     </AuthContext.Provider>

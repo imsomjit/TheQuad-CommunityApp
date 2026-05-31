@@ -21,6 +21,7 @@ export default function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState(null);
+  const { fetchMe } = useAuth();
 
   useEffect(() => {
     // Check for error query params (from failed OAuth)
@@ -49,12 +50,14 @@ export default function AuthCallback() {
       // Clean the URL
       window.history.replaceState(null, "", "/auth/callback");
 
-      toast.success("Signed in with Google!");
-      navigate("/", { replace: true });
+      fetchMe().then(() => {
+        toast.success("Signed in with Google!");
+        navigate("/", { replace: true });
+      });
     } else {
       setError("No authentication token received. Please try signing in again.");
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, fetchMe]);
 
   if (error) {
     return (
