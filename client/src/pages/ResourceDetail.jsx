@@ -20,7 +20,13 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
-import { RESOURCE_TYPES } from "../data/mockData";
+const RESOURCE_TYPES = [
+  { key: "notes", label: "Notes", icon: "BookOpen" },
+  { key: "pyq", label: "PYQ", icon: "FileText" },
+  { key: "assignment", label: "Assignment", icon: "ClipboardList" },
+  { key: "cheatsheet", label: "Cheat Sheet", icon: "Sparkles" },
+  { key: "other", label: "Other", icon: "Folder" },
+];
 import CommentSection from "../components/CommentSection";
 import { toast } from "sonner";
 

@@ -13,7 +13,7 @@ const {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 const userRoleEnum = pgEnum("user_role", ["student", "moderator", "admin"]);
-const authProviderEnum = pgEnum("auth_provider", ["local", "google"]);
+const authProviderEnum = pgEnum("auth_provider", ["local", "google", "both"]);
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 const users = pgTable("users", {

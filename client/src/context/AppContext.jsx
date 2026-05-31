@@ -16,12 +16,7 @@ import {
   notificationsApi,
   getAccessToken,
 } from "../services/api";
-import {
-  CURRENT_USER,
-  RESOURCES_SEED,
-  QUESTIONS_SEED,
-  NOTIFICATIONS_SEED,
-} from "../data/mockData";
+
 
 const AppContext = createContext(null);
 
@@ -44,48 +39,45 @@ export function AppProvider({ children }) {
   const [votes, setVotes] = useState({});
   const [apiLoaded, setApiLoaded] = useState(false);
 
-  // Use auth user when logged in, fall back to mock user
-  const currentUser = isAuthenticated ? authUser : CURRENT_USER;
+  const currentUser = authUser;
 
-  // ── Fetch real data when authenticated ─────────────────────────────────────
+  // ── Fetch real data ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isAuthenticated || !getAccessToken()) {
-      setResources(RESOURCES_SEED);
-      setQuestions(QUESTIONS_SEED);
-      setNotifications(NOTIFICATIONS_SEED);
-      setBookmarks(new Set(["r_003"]));
-      setApiLoaded(true); // <--- set to true so UI renders the mock data
-      return;
-    }
-
     const load = async () => {
       try {
-        const [resResult, qResult, notifResult, bookmarkIds] = await Promise.allSettled([
+        const promises = [
           resourcesApi.list({ sort: "newest", limit: 50 }),
-          questionsApi.list({ sort: "newest", limit: 50 }),
-          notificationsApi.list({ page: 1, limit: 20 }),
-          bookmarksApi.list("resource"),
-        ]);
+          questionsApi.list({ sort: "newest", limit: 50 })
+        ];
 
-        if (resResult.status === "fulfilled") {
-          const fetchedResources = resResult.value.data;
-          setResources(fetchedResources.length > 0 ? fetchedResources : RESOURCES_SEED);
+        if (isAuthenticated && getAccessToken()) {
+          promises.push(notificationsApi.list({ page: 1, limit: 20 }));
+          promises.push(bookmarksApi.list("resource"));
         }
-        if (qResult.status === "fulfilled") {
-          const fetchedQuestions = qResult.value.data;
-          setQuestions(fetchedQuestions.length > 0 ? fetchedQuestions : QUESTIONS_SEED);
+
+        const results = await Promise.allSettled(promises);
+
+        if (results[0].status === "fulfilled") {
+          setResources(results[0].value.data);
         }
-        if (notifResult.status === "fulfilled") {
-          setNotifications(notifResult.value.data);
+        if (results[1].status === "fulfilled") {
+          setQuestions(results[1].value.data);
         }
-        if (bookmarkIds.status === "fulfilled") {
-          setBookmarks(new Set(bookmarkIds.value));
+        
+        if (isAuthenticated && getAccessToken()) {
+          if (results[2] && results[2].status === "fulfilled") {
+            setNotifications(results[2].value.data);
+          }
+          if (results[3] && results[3].status === "fulfilled") {
+            setBookmarks(new Set(results[3].value));
+          }
         }
+        
         setApiLoaded(true);
-      } catch {
-        // Fall back to mock data silently
-        setResources(RESOURCES_SEED);
-        setQuestions(QUESTIONS_SEED);
+      } catch (error) {
+        console.error("Failed to load app data", error);
+        setResources([]);
+        setQuestions([]);
         setApiLoaded(true);
       }
     };
@@ -209,24 +201,7 @@ export function AppProvider({ children }) {
         return resource;
       }
 
-      // Fallback mock
-      const id = `r_${Date.now()}`;
-      const now = new Date().toISOString();
-      const newResource = {
-        id,
-        ...data,
-        uploader: currentUser,
-        created_at: now,
-        updated_at: now,
-        upvotes: 0,
-        downvotes: 0,
-        views: 0,
-        downloads: 0,
-        bookmarks: 0,
-        comments: [],
-      };
-      setResources((rs) => [newResource, ...rs]);
-      return newResource;
+      return null;
     },
     [currentUser, isAuthenticated]
   );

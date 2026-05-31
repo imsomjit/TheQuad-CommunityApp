@@ -348,7 +348,7 @@ function PostSkeleton() {
 function EmptyState({ category, currentUser }) {
   const cat = CATEGORY_META[category];
   return (
-    <div className="flex flex-col items-center justify-center rounded-sm border border-rule border-dashed bg-paper py-20 text-center">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-rule border-dashed bg-paper py-20 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-sm border border-rule bg-paper-2">
         <PenLine className="h-6 w-6 text-ink-3" />
       </div>

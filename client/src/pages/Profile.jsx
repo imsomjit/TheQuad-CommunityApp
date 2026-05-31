@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, PieChart, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -199,7 +199,7 @@ export default function Profile() {
                             <img
                                 src={profile.avatar}
                                 alt={profile.name}
-                                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-paper shadow-md object-cover bg-paper"
+                                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-accent shadow-md object-cover bg-paper"
                             />
                             {isOwnProfile && (
                                 <button
@@ -219,13 +219,13 @@ export default function Profile() {
                                 <>
                                     <Link
                                         to="/settings/profile"
-                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-ink bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
+                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
                                     >
                                         <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit profile</span><span className="sm:hidden">Edit</span>
                                     </Link>
                                     <button
                                         onClick={() => logout()}
-                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-red-500 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors shrink-0"
+                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-red-500 font-mono bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors shrink-0"
                                     >
                                         <LogOut className="w-3.5 h-3.5" /><span className="hidden sm:inline">Logout</span>
                                     </button>
@@ -255,16 +255,16 @@ export default function Profile() {
                     {/* Name & tags */}
                     <div className="flex flex-col gap-3 mt-2">
                         <h1 className="font-display text-4xl sm:text-5xl font-extrabold text-ink tracking-tight leading-none">
-                            {profile.name}
+                            <span className="marker">{profile.name}</span>
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
                             <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper border border-rule text-xs sm:text-sm font-medium text-ink-2">
                                 @{profile.username}
                             </span>
-                            {profile.githubUsername && (
-                                <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer"
+                            {profile.website && (
+                                <a href={profile.website} target="_blank" rel="noreferrer"
                                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper border border-rule text-xs sm:text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors truncate max-w-[150px] sm:max-w-none">
-                                    <Github className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{profile.githubUsername}</span>
+                                    <Globe className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//, "")}</span>
                                 </a>
                             )}
                         </div>
@@ -277,16 +277,16 @@ export default function Profile() {
 
                     {/* Metadata Grid */}
                     <div className="mt-6 flex flex-wrap gap-4 text-sm text-ink-2">
-                        {profile.location && (
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-md bg-paper border border-rule"><MapPin className="w-4 h-4 text-ink-3" /></div>
-                                <span>{profile.location}</span>
-                            </div>
-                        )}
                         {profile.organization && (
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 rounded-md bg-paper border border-rule"><Building2 className="w-4 h-4 text-ink-3" /></div>
                                 <span>{profile.organization}</span>
+                            </div>
+                        )}
+                        {profile.location && (
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-md bg-paper border border-rule"><MapPin className="w-4 h-4 text-ink-3" /></div>
+                                <span>{profile.location}</span>
                             </div>
                         )}
                         {profile.college && (
@@ -301,13 +301,6 @@ export default function Profile() {
                                 </span>
                             </div>
                         )}
-                        {profile.website && (
-                            <a href={profile.website} target="_blank" rel="noreferrer"
-                                className="flex items-center gap-2 hover:text-accent transition-colors">
-                                <div className="p-1.5 rounded-md bg-paper border border-rule"><Globe className="w-4 h-4 text-ink-3" /></div>
-                                <span>{profile.website.replace(/^https?:\/\//, "")}</span>
-                            </a>
-                        )}
                         {profile.joined && (
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 rounded-md bg-paper border border-rule"><Calendar className="w-4 h-4 text-ink-3" /></div>
@@ -318,26 +311,26 @@ export default function Profile() {
 
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-rule pt-5">
                         {/* Follower / Following counts */}
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-3 sm:gap-6">
                             {isOwnProfile ? (
                                 <>
-                                    <Link to={`/pv/${username}/followers`} className="group flex items-baseline gap-1.5">
-                                        <span className="font-sans text-xl font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.followers || 0).toLocaleString()}</span>
+                                    <Link to={`/pv/${username}/followers`} className="group flex items-baseline font-mono gap-1">
+                                        <span className="font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.followers || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">followers</span>
                                     </Link>
-                                    <Link to={`/pv/${username}/following`} className="group flex items-baseline gap-1.5">
-                                        <span className="font-sans text-xl font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.following || 0).toLocaleString()}</span>
+                                    <Link to={`/pv/${username}/following`} className="group flex items-baseline font-mono gap-1">
+                                        <span className="font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.following || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">following</span>
                                     </Link>
                                 </>
                             ) : (
                                 <>
-                                    <div className="flex items-baseline gap-1.5">
-                                        <span className="font-sans text-xl font-bold text-ink">{(profile.stats?.followers || 0).toLocaleString()}</span>
+                                    <div className="flex items-baseline font-mono gap-1.5">
+                                        <span className="font-sans font-bold text-ink">{(profile.stats?.followers || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium">followers</span>
                                     </div>
                                     <div className="flex items-baseline gap-1.5">
-                                        <span className="font-sans text-xl font-bold text-ink">{(profile.stats?.following || 0).toLocaleString()}</span>
+                                        <span className="font-sans font-bold text-ink">{(profile.stats?.following || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium">following</span>
                                     </div>
                                 </>
@@ -346,16 +339,22 @@ export default function Profile() {
 
                         {/* Social links row */}
                         <div className="flex items-center gap-2">
-                            {profile.linkedinUrl && (
-                                <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" title="LinkedIn"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-[#0077B5] hover:border-[#0077B5] transition-all">
-                                    <Linkedin className="w-4 h-4" />
+                            {profile.githubUsername && (
+                                <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" title="GitHub"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-black hover:border-black transition-all">
+                                    <Github className="w-4 h-4" />
                                 </a>
                             )}
-                            {profile.twitterHandle && (
-                                <a href={`https://x.com/${profile.twitterHandle}`} target="_blank" rel="noreferrer" title="X / Twitter"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-black hover:border-black transition-all">
-                                    <Twitter className="w-4 h-4" />
+                            {profile.leetcodeUsername && (
+                                <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" title="LeetCode"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-black hover:bg-[#FFA116] hover:border-[#FFA116] transition-all flex items-center justify-center font-mono font-bold text-xs" style={{ width: 34, height: 34 }}>
+                                    LC
+                                </a>
+                            )}
+                            {profile.linkedinUrl && (
+                                <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" title="LinkedIn"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-blue-600 hover:border-blue-600 transition-all">
+                                    <Linkedin className="w-4 h-4" />
                                 </a>
                             )}
                             {profile.instagramHandle && (
@@ -364,10 +363,10 @@ export default function Profile() {
                                     <Instagram className="w-4 h-4" />
                                 </a>
                             )}
-                            {profile.leetcodeUsername && (
-                                <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" title="LeetCode"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-[#111] hover:bg-[#FFA116] hover:border-[#FFA116] transition-all flex items-center justify-center font-mono font-bold text-xs" style={{ width: 34, height: 34 }}>
-                                    LC
+                            {profile.twitterHandle && (
+                                <a href={`https://x.com/${profile.twitterHandle}`} target="_blank" rel="noreferrer" title="X / Twitter"
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-blue-400 hover:border-blue-400 transition-all">
+                                    <Twitter className="w-4 h-4" />
                                 </a>
                             )}
                         </div>

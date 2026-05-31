@@ -15,7 +15,7 @@ const pool = new Pool({
   connectionString: env.DATABASE_URL,
   max: 10,
   idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 5_000,
+  connectionTimeoutMillis: 30_000, // Increased to 30s for neon DB wake-ups
 });
 
 pool.on("error", (err) => {

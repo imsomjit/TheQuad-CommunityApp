@@ -18,13 +18,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../components/ui/select";
-import {
-    RESOURCE_TYPES,
-    COLLEGES,
-    BRANCHES,
-    SEMESTERS,
-    SUBJECTS,
-} from "../data/mockData";
+const RESOURCE_TYPES = [
+  { key: "notes", label: "Notes" },
+  { key: "pyq", label: "PYQ" },
+  { key: "assignment", label: "Assignment" },
+  { key: "cheatsheet", label: "Cheat Sheet" },
+  { key: "other", label: "Other" },
+];
+
+const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 import { toast } from "sonner";
 
 export default function UploadResource() {
@@ -34,10 +36,10 @@ export default function UploadResource() {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [type, setType] = useState("notes");
-    const [college, setCollege] = useState("IIT Bombay");
-    const [branch, setBranch] = useState("Computer Science");
+    const [college, setCollege] = useState("");
+    const [branch, setBranch] = useState("");
     const [semester, setSemester] = useState("5");
-    const [subject, setSubject] = useState("Operating Systems");
+    const [subject, setSubject] = useState("");
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState("");
     const [file, setFile] = useState(null);
@@ -219,41 +221,23 @@ export default function UploadResource() {
                     </Field>
 
                     <Field label="College">
-                        <Select value={college} onValueChange={setCollege}>
-                            <SelectTrigger
-                                data-testid="upload-college"
-                                className="bg-paper border-rule h-11"
-                            >
-                                <SelectValue />
-                            </SelectTrigger>
-
-                            <SelectContent className="bg-paper border-rule text-ink">
-                                {COLLEGES.map((item) => (
-                                    <SelectItem key={item} value={item}>
-                                        {item}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            data-testid="upload-college"
+                            value={college}
+                            onChange={(e) => setCollege(e.target.value)}
+                            placeholder="e.g. IIT Bombay"
+                            className="bg-paper border-rule h-11 focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                        />
                     </Field>
 
                     <Field label="Branch">
-                        <Select value={branch} onValueChange={setBranch}>
-                            <SelectTrigger
-                                data-testid="upload-branch"
-                                className="bg-paper border-rule h-11"
-                            >
-                                <SelectValue />
-                            </SelectTrigger>
-
-                            <SelectContent className="bg-paper border-rule text-ink">
-                                {BRANCHES.map((item) => (
-                                    <SelectItem key={item} value={item}>
-                                        {item}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            data-testid="upload-branch"
+                            value={branch}
+                            onChange={(e) => setBranch(e.target.value)}
+                            placeholder="e.g. Computer Science"
+                            className="bg-paper border-rule h-11 focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                        />
                     </Field>
 
                     <Field label="Semester">
@@ -276,22 +260,13 @@ export default function UploadResource() {
                     </Field>
 
                     <Field label="Subject" className="md:col-span-2">
-                        <Select value={subject} onValueChange={setSubject}>
-                            <SelectTrigger
-                                data-testid="upload-subject"
-                                className="bg-paper border-rule h-11"
-                            >
-                                <SelectValue />
-                            </SelectTrigger>
-
-                            <SelectContent className="bg-paper border-rule text-ink">
-                                {SUBJECTS.map((item) => (
-                                    <SelectItem key={item} value={item}>
-                                        {item}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            data-testid="upload-subject"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            placeholder="e.g. Operating Systems"
+                            className="bg-paper border-rule h-11 focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                        />
                     </Field>
                 </div>
 

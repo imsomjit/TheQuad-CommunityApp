@@ -20,7 +20,7 @@ import QuestionCard from "../components/QuestionCard";
 import TagBadge from "../components/TagBadge";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton } from "../components/Skeletons";
-import { COLLEGES } from "../data/mockData";
+
 
 const STAT_COLOR = {
     resources: "--syntax-mint",
@@ -129,71 +129,15 @@ export default function Home() {
     else if (hour >= 12 && hour < 17) greeting = "Good afternoon";
 
     const trendingResources = useMemo(() => {
-        const sorted = [...resources]
+        return [...resources]
             .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes))
             .slice(0, 3);
-        
-        if (sorted.length === 0) {
-            return [
-                {
-                    id: "mock1",
-                    title: "Operating Systems Fundamentals",
-                    type: "NOTES",
-                    category: "computer_science",
-                    author: { name: "Alan Turing", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alan" },
-                    upvotes: 42,
-                    downvotes: 1,
-                    tags: ["os", "fundamentals"],
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: "mock2",
-                    title: "Data Structures & Algorithms PYQ 2024",
-                    type: "PYQ",
-                    category: "computer_science",
-                    author: { name: "Grace Hopper", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Grace" },
-                    upvotes: 38,
-                    downvotes: 0,
-                    tags: ["dsa", "pyq"],
-                    created_at: new Date().toISOString()
-                }
-            ];
-        }
-        return sorted;
     }, [resources]);
 
     const recentQuestions = useMemo(() => {
-        const sorted = [...questions]
+        return [...questions]
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
             .slice(0, 3);
-            
-        if (sorted.length === 0) {
-            return [
-                {
-                    id: "mock1",
-                    title: "How to implement a LRU Cache?",
-                    body: "I'm having trouble understanding the best data structure to use.",
-                    author: { name: "Ada Lovelace", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ada" },
-                    upvotes: 15,
-                    downvotes: 0,
-                    tags: ["dsa", "cache"],
-                    answers: [{}, {}],
-                    created_at: new Date().toISOString()
-                },
-                {
-                    id: "mock2",
-                    title: "What is the difference between TCP and UDP?",
-                    body: "Can someone explain this with examples?",
-                    author: { name: "Tim Berners-Lee", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tim" },
-                    upvotes: 12,
-                    downvotes: 1,
-                    tags: ["networks"],
-                    answers: [{}],
-                    created_at: new Date().toISOString()
-                }
-            ];
-        }
-        return sorted;
     }, [questions]);
 
     const allTags = useMemo(() => {
@@ -202,18 +146,7 @@ export default function Home() {
         resources.forEach(r => r.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
         questions.forEach(q => q.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
 
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-        if (sorted.length === 0) {
-            return [
-                ["dsa", 42],
-                ["react", 38],
-                ["operating-systems", 25],
-                ["networks", 18],
-                ["system-design", 15],
-                ["javascript", 12]
-            ];
-        }
-        return sorted;
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
     }, [resources, questions]);
 
     const activeColleges = useMemo(() => {
@@ -229,7 +162,7 @@ export default function Home() {
             counts[currentUser.college] = (counts[currentUser.college] || 0) + 1;
         }
 
-        const sorted = Object.entries(counts)
+        return Object.entries(counts)
             .sort((a, b) => {
                 if (b[1] !== a[1]) return b[1] - a[1];
                 if (isAuthenticated && currentUser?.college) {
@@ -239,17 +172,6 @@ export default function Home() {
                 return a[0].localeCompare(b[0]);
             })
             .slice(0, 6);
-            
-        if (sorted.length === 0) {
-            return [
-                ["MIT", 124],
-                ["Stanford University", 98],
-                ["Harvard University", 85],
-                ["IIT Bombay", 76],
-                ["CMU", 64]
-            ];
-        }
-        return sorted;
     }, [resources, currentUser, isAuthenticated]);
 
     return (
@@ -394,7 +316,7 @@ export default function Home() {
                             </p>
 
                             <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-                                {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br className="hidden sm:inline" /><span className="hidden sm:inline">what are we <span className="marker">learning today?</span></span><span className="inline sm:hidden">ready to <span className="marker">explore?</span></span> 
+                                {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br className="hidden sm:inline" /><span className="hidden sm:inline">what are you <span className="marker">learning today?</span></span><span className="inline sm:hidden">ready to <span className="marker">explore?</span></span> 
                             </h1>
 
                             <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-2">

@@ -34,6 +34,12 @@ const sanitizeUser = (user) => {
  * Register a new student account (email + password).
  */
 const register = async ({ name, username, email, password }) => {
+  // Check if email already exists
+  const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+  if (existingUser) {
+    throw new AppError("This email is already registered. Please log in.", 400, "ACCOUNT_EXISTS");
+  }
+
   // Hash password
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   
@@ -156,7 +162,7 @@ const login = async ({ email, password }) => {
   // If user registered via Google and never set a password
   if (!user.passwordHash) {
     throw new AppError(
-      "This account uses Google sign-in. Please use the Google button to log in.",
+      "This account uses Google Sign-In. Please continue with Google.",
       400,
       "GOOGLE_AUTH_REQUIRED"
     );
@@ -209,6 +215,7 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
       .set({
         googleId,
         avatarUrl: user.avatarUrl || picture || null,
+        authProvider: "both",
         isVerified: true,
         updatedAt: new Date(),
       })

@@ -15,7 +15,13 @@ import {
 import VoteButtons from "./VoteButtons";
 import TagBadge from "./TagBadge";
 import { useApp } from "../context/AppContext";
-import { RESOURCE_TYPES } from "../data/mockData";
+const RESOURCE_TYPES = [
+  { key: "notes", label: "Notes", icon: "BookOpen" },
+  { key: "pyq", label: "PYQ", icon: "FileText" },
+  { key: "assignment", label: "Assignment", icon: "ClipboardList" },
+  { key: "cheatsheet", label: "Cheat Sheet", icon: "Sparkles" },
+  { key: "other", label: "Other", icon: "Folder" },
+];
 
 const ICONS = {
     BookOpen,

@@ -4,13 +4,7 @@ import { Search, SlidersHorizontal, X, Upload, ArrowDownUp } from "lucide-react"
 
 import { useApp } from "../context/AppContext";
 import ResourceCard from "../components/ResourceCard";
-import {
-    RESOURCE_TYPES,
-    COLLEGES,
-    BRANCHES,
-    SEMESTERS,
-    SUBJECTS,
-} from "../data/mockData";
+
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 import { ResourceCardSkeleton } from "../components/Skeletons";
 
@@ -23,10 +17,21 @@ import {
     SelectValue,
 } from "../components/ui/select";
 
+const RESOURCE_TYPES = [
+    { key: "notes", label: "Notes" },
+    { key: "pyq", label: "PYQ" },
+    { key: "assignment", label: "Assignment" },
+    { key: "cheatsheet", label: "Cheat Sheet" },
+    { key: "other", label: "Other" },
+];
+
+const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+
 const SORTS = [
     { key: "newest", label: "Newest" },
     { key: "top", label: "Top voted" },
-    { key: "downloads", label: "Most downloaded" },
+    { key: "most_downloaded", label: "Most downloaded" },
+    { key: "oldest", label: "Oldest" },
 ];
 
 const ALL = "__all__";
@@ -34,6 +39,11 @@ const ALL = "__all__";
 export default function Resources() {
     const { resources, apiLoaded } = useApp();
     const [params, setParams] = useSearchParams();
+
+    // Dynamically compute filters from available resources
+    const activeColleges = useMemo(() => Array.from(new Set(resources.map(r => r.college).filter(Boolean))).sort(), [resources]);
+    const activeBranches = useMemo(() => Array.from(new Set(resources.map(r => r.branch).filter(Boolean))).sort(), [resources]);
+    const activeSubjects = useMemo(() => Array.from(new Set(resources.map(r => r.subject).filter(Boolean))).sort(), [resources]);
 
     const [q, setQ] = useState("");
     const [type, setType] = useState(ALL);
@@ -67,8 +77,10 @@ export default function Resources() {
             list = list.sort(
                 (a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes)
             );
-        } else if (sort === "downloads") {
+        } else if (sort === "most_downloaded") {
             list = list.sort((a, b) => b.downloads - a.downloads);
+        } else if (sort === "oldest") {
+            list = list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         }
 
         return list;
@@ -168,7 +180,7 @@ export default function Resources() {
                         setValue={setCollege}
                         options={[
                             { value: ALL, label: "All colleges" },
-                            ...COLLEGES.map((c) => ({ value: c, label: c })),
+                            ...activeColleges.map((c) => ({ value: c, label: c })),
                         ]}
                     />
 
@@ -179,7 +191,7 @@ export default function Resources() {
                         setValue={setBranch}
                         options={[
                             { value: ALL, label: "All branches" },
-                            ...BRANCHES.map((b) => ({ value: b, label: b })),
+                            ...activeBranches.map((b) => ({ value: b, label: b })),
                         ]}
                     />
 
@@ -201,7 +213,7 @@ export default function Resources() {
                         setValue={setSubject}
                         options={[
                             { value: ALL, label: "All subjects" },
-                            ...SUBJECTS.map((s) => ({ value: s, label: s })),
+                            ...activeSubjects.map((s) => ({ value: s, label: s })),
                         ]}
                     />
 

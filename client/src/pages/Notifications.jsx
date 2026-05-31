@@ -16,6 +16,7 @@ import { useAuth } from "../context/AuthContext";
 import { notificationsApi } from "../services/api";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import Loader from "../components/Loader";
 import { getAvatarFallback } from "../utils/fallbacks";
 
 function formatRel(ts) {
@@ -134,7 +135,7 @@ export default function Notifications() {
             </p>
             <h1 className="font-display text-5xl font-bold tracking-tight text-ink flex items-center gap-3">
               <Bell className="h-8 w-8 text-accent-2" />
-              Recent <span className="font-display-italic text-accent">Activities</span>,
+              Recent <span className="font-display-italic text-accent">Activities</span>
               {unreadCount > 0 && (
                 <span className="font-mono text-sm font-normal text-accent bg-accent-soft px-2.5 py-1 rounded-sm">
                   {unreadCount} new
@@ -188,8 +189,8 @@ export default function Notifications() {
 
       {/* List */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
+        <div className="py-5 flex justify-center">
+            <Loader text="Loading activities..." />
         </div>
       ) : displayed.length === 0 ? (
         <div className="flex flex-col items-center py-20 text-center">

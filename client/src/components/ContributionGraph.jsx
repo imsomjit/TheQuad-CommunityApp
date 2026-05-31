@@ -1,6 +1,4 @@
 import React from "react";
-import { GITHUB_MOCK } from "../data/mockData";
-
 // 5 contribution levels
 const LEVEL_BG = [
     "var(--paper-2)",
@@ -11,7 +9,7 @@ const LEVEL_BG = [
 ];
 
 export default function ContributionGraph({
-    contributions = GITHUB_MOCK.contributions,
+    contributions = [],
 }) {
     const cols = 52;
     const rows = 7;
