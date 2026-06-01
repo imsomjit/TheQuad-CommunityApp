@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -182,12 +182,20 @@ export default function Profile() {
                         <button
                             onClick={() => bannerInputRef.current?.click()}
                             disabled={bannerUploading}
-                            className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-rule/60 bg-paper/80 px-3 py-1.5 text-xs font-mono text-ink backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-paper"
+                            className="absolute top-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-rule/60 bg-paper/80 px-3 py-1.5 text-xs font-mono text-ink backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-paper"
                         >
                             {bannerUploading ? <Loader inline size="sm" /> : <Camera className="h-3 w-3" />}
                             {bannerUploading ? "Uploading…" : "Change banner"}
                         </button>
                     )}
+                    
+                    {isOwnProfile && (profile.role === 'admin' || profile.role === 'moderator') && (
+                        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-accent/30 bg-accent/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-paper backdrop-blur-md shadow-md" title={`${profile.role} Console Access`}>
+                            <ShieldAlert className="h-3.5 w-3.5" />
+                            {profile.role}
+                        </div>
+                    )}
+
                     <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
                 </div>
 

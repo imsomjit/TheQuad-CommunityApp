@@ -64,8 +64,8 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
                 )}
                 
                 {isAuthenticated && currentUser && (currentUser.role === 'admin' || currentUser.role === 'moderator') && (
-                    <NavLink to="/admin/reports" className={linkClass} title="Admin Console">
-                        <ShieldAlert className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Admin Console</span>}
+                    <NavLink to="/admin/reports" className={linkClass} title={currentUser.role === 'admin' ? "Admin Console" : "Moderator Console"}>
+                        <ShieldAlert className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>{currentUser.role === 'admin' ? "Admin Console" : "Moderator Console"}</span>}
                     </NavLink>
                 )}
             </nav>

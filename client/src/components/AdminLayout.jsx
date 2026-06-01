@@ -67,7 +67,7 @@ export default function AdminLayout() {
                         <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                             <span className="flex items-center gap-2">
                                 <span className="text-red-500 animate-pulse">●</span>
-                                the peerverse / admin console
+                                the peerverse / {user?.role === 'admin' ? 'admin' : 'moderator'} console
                             </span>
                             <span className="hidden items-center gap-2 sm:flex">
                                 <span>§admin</span>
@@ -101,7 +101,7 @@ export default function AdminLayout() {
                     <footer className="mt-10 border-t border-rule/60 py-6">
                         <div className="mx-auto max-w-6xl w-full flex flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6 lg:px-2">
                             <p className="font-mono text-[10px] text-ink-3">
-                                © {new Date().getFullYear()} PeerVerse Admin. Restricted Access.
+                                © {new Date().getFullYear()} PeerVerse {user?.role === 'admin' ? 'Admin' : 'Moderator'}. Restricted Access.
                             </p>
                             <p className="font-mono text-[10px] text-ink-3">
                                 Logged in as <span className="text-accent">{user?.username}</span>
