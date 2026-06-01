@@ -9,11 +9,13 @@ const {
   timestamp,
   pgEnum,
   integer,
+  date
 } = require("drizzle-orm/pg-core");
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 const userRoleEnum = pgEnum("user_role", ["student", "moderator", "admin"]);
 const authProviderEnum = pgEnum("auth_provider", ["local", "google", "both"]);
+const genderEnum = pgEnum("gender", ["male", "female", "other"]);
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 const users = pgTable("users", {
@@ -25,6 +27,8 @@ const users = pgTable("users", {
   role: userRoleEnum("role").default("student").notNull(),
   authProvider: authProviderEnum("auth_provider").default("local").notNull(),
   googleId: varchar("google_id", { length: 255 }).unique(),
+  gender: genderEnum("gender").default("other").notNull(),
+  dateOfBirth: date("date_of_birth").default("2000-01-01").notNull(),
 
   // ─── Authentication & Verification ──────────────────────────────────────────
   isVerified: boolean("is_verified").default(false).notNull(),
@@ -63,5 +67,5 @@ const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-module.exports = { users, userRoleEnum, authProviderEnum };
+module.exports = { users, userRoleEnum, authProviderEnum, genderEnum };
 

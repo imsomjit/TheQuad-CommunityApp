@@ -27,6 +27,12 @@ const registerSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password too long"),
+  gender: z.enum(["male", "female", "other"], {
+    errorMap: () => ({ message: "Please select a valid gender" }),
+  }),
+  dateOfBirth: z
+    .string()
+    .date("Must be a valid date in YYYY-MM-DD format"),
 });
 
 const loginSchema = z.object({

@@ -30,6 +30,16 @@ const updateProfileSchema = z.object({
 
 const router = Router();
 
+// GET /api/users/top-contributors  — get top monthly contributors
+router.get(
+  "/top-contributors",
+  userReadLimiter,
+  asyncHandler(async (req, res) => {
+    const data = await userService.getTopContributors();
+    res.json({ success: true, data });
+  })
+);
+
 // GET /api/users/:username  — public profile
 router.get(
   "/:username",

@@ -47,6 +47,10 @@ const iconFor = (type) => {
 };
 
 const linkFor = (notification) => {
+    if (!notification.type) return "#";
+    if (notification.type === "system_broadcast" || notification.type === "system_welcome" || notification.type === "follow") {
+        return "#"; // Or could link to a dedicated page
+    }
     if (notification.type.includes("resource")) {
         return `/resources/${notification.targetId}`;
     }
@@ -129,9 +133,15 @@ export default function NotificationDropdown({ children }) {
 
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm leading-snug text-ink-2">
-                                        <span className="font-semibold text-ink">
-                                            {notification.actor.name}
-                                        </span>{" "}
+                                        {notification.titleOverride ? (
+                                            <span className="font-semibold text-accent">
+                                                {notification.titleOverride}
+                                            </span>
+                                        ) : (
+                                            <span className="font-semibold text-ink">
+                                                {notification.actor?.name || "Someone"}
+                                            </span>
+                                        )}{" "}
                                         <span>{notification.text}</span>
                                     </p>
 

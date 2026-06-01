@@ -23,6 +23,7 @@ const notificationTypeEnum = pgEnum("notification_type", [
   "like_blog",
   "comment_on_blog",
   "system_welcome",
+  "system_broadcast",
 ]);
 
 const notifications = pgTable("notifications", {

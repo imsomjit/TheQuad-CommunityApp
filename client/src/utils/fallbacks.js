@@ -21,9 +21,17 @@ const softGradients = [
 /**
  * Generates an SVG data URI with initials for user avatars.
  */
-export function getAvatarFallback(name, username) {
+export function getAvatarFallback(name, username, gender) {
     const seed = encodeURIComponent(username || name || "default");
-    return `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`;
+    
+    let traits = "";
+    if (gender === "male") {
+        traits = "&top=shortHair,shortHairShortFlat,shortHairShortRound,shortHairShortWaved,shortHairSides,shortHairTheCaesar,shortHairTheCaesarSidePart&facialHair=beardLight,beardMajestic,beardMedium,blank";
+    } else if (gender === "female") {
+        traits = "&top=longHair,longHairBigHair,longHairBob,longHairBun,longHairCurly,longHairCurvy,longHairDreads,longHairFrida,longHairFro,longHairFroBand,longHairMiaWallace,longHairNotTooLong,longHairShavedSides,longHairStraight,longHairStraight2,longHairStraightStrand";
+    }
+
+    return `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc${traits}`;
 }
 
 /**

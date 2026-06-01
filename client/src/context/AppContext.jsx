@@ -13,6 +13,8 @@ import {
   commentsApi,
   votesApi,
   notificationsApi,
+  bookmarksApi,
+  settingsApi,
   getAccessToken,
 } from "../services/api";
 import ReportModal from "../components/ReportModal";
@@ -37,6 +39,7 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [bookmarks, setBookmarks] = useState(new Set());
   const [votes, setVotes] = useState({});
+  const [siteSettings, setSiteSettings] = useState(null);
   const [apiLoaded, setApiLoaded] = useState(false);
 
   // Global report modal state
@@ -55,7 +58,8 @@ export function AppProvider({ children }) {
       try {
         const promises = [
           resourcesApi.list({ sort: "newest", limit: 50 }),
-          questionsApi.list({ sort: "newest", limit: 50 })
+          questionsApi.list({ sort: "newest", limit: 50 }),
+          settingsApi.get()
         ];
 
         if (isAuthenticated && getAccessToken()) {
@@ -71,13 +75,16 @@ export function AppProvider({ children }) {
         if (results[1].status === "fulfilled") {
           setQuestions(results[1].value.data);
         }
+        if (results[2].status === "fulfilled") {
+          setSiteSettings(results[2].value);
+        }
         
         if (isAuthenticated && getAccessToken()) {
-          if (results[2] && results[2].status === "fulfilled") {
-            setNotifications(results[2].value.data);
-          }
           if (results[3] && results[3].status === "fulfilled") {
-            setBookmarks(new Set(results[3].value));
+            setNotifications(results[3].value.data);
+          }
+          if (results[4] && results[4].status === "fulfilled") {
+            setBookmarks(new Set(results[4].value));
           }
         }
         
@@ -396,6 +403,8 @@ export function AppProvider({ children }) {
       notifications,
       bookmarks,
       votes,
+      siteSettings,
+      setSiteSettings,
       unreadCount,
       apiLoaded,
       voteOn,
@@ -421,6 +430,8 @@ export function AppProvider({ children }) {
       notifications,
       bookmarks,
       votes,
+      siteSettings,
+      setSiteSettings,
       unreadCount,
       apiLoaded,
       voteOn,

@@ -15,6 +15,7 @@ const AppError = require("../../utils/AppError");
 const { sendEmail } = require("../../utils/email");
 const { getOtpEmailTemplate, getResendOtpEmailTemplate, getWelcomeEmailTemplate } = require("../../utils/emailTemplates");
 const notificationService = require("../notifications/notifications.service");
+const settingsService = require("../settings/settings.service");
 
 const BCRYPT_ROUNDS = 12;
 
@@ -33,7 +34,12 @@ const sanitizeUser = (user) => {
 /**
  * Register a new student account (email + password).
  */
-const register = async ({ name, username, email, password }) => {
+const register = async ({ name, username, email, password, gender, dateOfBirth }) => {
+  const settings = await settingsService.getSettings();
+  if (!settings.registrationEnabled) {
+    throw new AppError("Registration is currently disabled by the administrator.", 403, "REGISTRATION_DISABLED");
+  }
+
   // Check if email already exists
   const [existingUser] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
   if (existingUser) {
@@ -54,6 +60,8 @@ const register = async ({ name, username, email, password }) => {
       username, 
       email, 
       passwordHash, 
+      gender,
+      dateOfBirth,
       role: "student", 
       authProvider: "local",
       isVerified: false,
@@ -227,6 +235,11 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
   }
 
   // ── Case 3: New user → auto-create ─────────────────────────────────────────
+  const settings = await settingsService.getSettings();
+  if (!settings.registrationEnabled) {
+    throw new AppError("Registration is currently disabled by the administrator.", 403, "REGISTRATION_DISABLED");
+  }
+
   const baseUsername = email
     .split("@")[0]
     .toLowerCase()

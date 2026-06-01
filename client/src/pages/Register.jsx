@@ -11,19 +11,32 @@ import {
   MessageSquare,
   Award,
   Terminal,
+  ChevronDown,
+  ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useApp } from "../context/AppContext";
 import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { toast } from "sonner";
 
 export default function Register() {
   const { register } = useAuth();
+  const { siteSettings } = useApp();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [gender, setGender] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [accountExistsError, setAccountExistsError] = useState(false);
@@ -31,7 +44,7 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !username || !email || !password) {
+    if (!name || !username || !email || !password || !gender || !dateOfBirth) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -42,7 +55,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const regEmail = await register({ name, username, email, password });
+      const regEmail = await register({ name, username, email, password, gender, dateOfBirth });
       toast.success("Verification code sent to your email.");
       navigate("/verify-email", { state: { email: regEmail } });
     } catch (err) {
@@ -179,9 +192,27 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Google OAuth */}
-          <button
-            type="button"
+          {siteSettings && siteSettings.registrationEnabled === false ? (
+            <div className="rounded-sm border border-orange-500/30 bg-orange-500/10 p-8 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
+                <ShieldAlert className="h-6 w-6 text-orange-500" />
+              </div>
+              <h3 className="mb-2 text-lg font-bold text-ink">Registration Disabled</h3>
+              <p className="text-sm text-ink-2 mb-6">
+                New user registrations are currently disabled by the administrator. Please check back later.
+              </p>
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center gap-2 rounded-sm bg-accent px-6 py-2.5 text-sm font-semibold text-paper glow-btn hover:scale-[1.01] transition-all"
+              >
+                Go to Sign In
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Google OAuth */}
+              <button
+                type="button"
             onClick={handleGoogleRegister}
             className="flex w-full items-center justify-center gap-3 rounded-sm border border-rule bg-paper-2/60 py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:bg-paper-2 hover:shadow-lg"
           >
@@ -265,6 +296,36 @@ export default function Register() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">
+                    Gender
+                  </label>
+                  <Select value={gender || undefined} onValueChange={setGender}>
+                    <SelectTrigger className={`h-11 bg-paper-2 border-rule focus:border-accent/60 focus:ring-accent/30 ${!gender ? "text-ink-3" : "text-ink"}`}>
+                      <SelectValue placeholder="Select Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">
+                    Date of Birth
+                  </label>
+                  <Input
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className={`h-11 bg-paper-2 border-rule focus-visible:border-accent/60 focus-visible:ring-accent/30 [color-scheme:light] ${dateOfBirth ? "text-ink" : "text-ink-3"}`}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">
                   Email
@@ -341,6 +402,8 @@ export default function Register() {
                 )}
               </button>
             </form>
+          )}
+            </>
           )}
 
           {/* Footer */}

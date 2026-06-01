@@ -190,7 +190,7 @@ export default function Profile() {
                     )}
                     
                     {isOwnProfile && (profile.role === 'admin' || profile.role === 'moderator') && (
-                        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-accent/30 bg-accent/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-paper backdrop-blur-md shadow-md" title={`${profile.role} Console Access`}>
+                        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-accent-soft bg-accent px-3 py-1 text-xs font-medium font-mono uppercase tracking-wider text-paper backdrop-blur-md shadow-md" title={`${profile.role} Console Access`}>
                             <ShieldAlert className="h-3.5 w-3.5" />
                             {profile.role}
                         </div>

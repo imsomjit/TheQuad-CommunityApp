@@ -7,7 +7,6 @@ import {
   ArrowUp,
   MessageSquare,
   UserPlus,
-  Loader2,
   Inbox,
   Filter,
   Sparkles,
@@ -15,7 +14,6 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { notificationsApi } from "../services/api";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 import Loader from "../components/Loader";
 import { getAvatarFallback } from "../utils/fallbacks";
 
@@ -136,11 +134,6 @@ export default function Notifications() {
             <h1 className="font-display text-5xl font-bold tracking-tight text-ink flex items-center gap-3">
               <Bell className="h-8 w-8 text-accent-2" />
               Recent <span className="font-display-italic text-accent">Activities</span>
-              {unreadCount > 0 && (
-                <span className="font-mono text-sm font-normal text-accent bg-accent-soft px-2.5 py-1 rounded-sm">
-                  {unreadCount} new
-                </span>
-              )}
             </h1>
           </div>
 
@@ -238,9 +231,9 @@ export default function Notifications() {
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm leading-snug text-ink-2">
-                    {notification.type === "system_welcome" ? (
+                    {notification.titleOverride ? (
                       <span className="font-semibold text-accent">
-                        PeerVerse Team
+                        {notification.titleOverride}
                       </span>
                     ) : (
                       <span className="font-semibold text-ink">

@@ -240,29 +240,50 @@ const notifText = (type) => {
     like_blog: "liked your post",
     comment_on_blog: "commented on your post",
     system_welcome: "Welcome to PeerVerse! Please take a moment to set up your profile.",
+    system_broadcast: "sent a notification",
   };
   return map[type] || "interacted with your content";
 };
 
 /** Map API notification → frontend notification shape */
-const mapNotification = (n) => ({
-  id: n.id,
-  type: n.type,
-  actor: n.actor
-    ? {
-        id: n.actor.id || n.actorId,
-        name: n.actor.name || n.actorName || "",
-        username: n.actor.username || n.actorUsername || "",
-        avatar: n.actor.avatarUrl || n.actor.avatar || n.actorAvatarUrl || "",
-      }
-    : { id: n.actorId, name: n.actorName || "", username: n.actorUsername || "", avatar: n.actorAvatarUrl || "" },
-  text: notifText(n.type),
-  target: n.targetTitle || "",
-  targetId: n.targetId,
-  targetType: n.targetType,
-  created_at: n.createdAt || n.created_at,
-  read: n.isRead ?? n.read ?? false,
-});
+const mapNotification = (n) => {
+  let titleOverride = null;
+  let text = notifText(n.type);
+  let target = n.targetTitle || "";
+
+  if (n.type === "system_broadcast") {
+    const match = (n.targetTitle || "").match(/^\[(.*?)\] (.*?):\s*(.*)$/);
+    if (match) {
+      titleOverride = `[${match[1]}] Admin`;
+      target = `${match[2]}: ${match[3]}`;
+    } else {
+      titleOverride = "System Broadcast";
+      target = n.targetTitle || "";
+    }
+  } else if (n.type === "system_welcome") {
+    titleOverride = "PeerVerse Team";
+  }
+
+  return {
+    id: n.id,
+    type: n.type,
+    actor: n.actor
+      ? {
+          id: n.actor.id || n.actorId,
+          name: n.actor.name || n.actorName || "",
+          username: n.actor.username || n.actorUsername || "",
+          avatar: n.actor.avatarUrl || n.actor.avatar || n.actorAvatarUrl || "",
+        }
+      : { id: n.actorId, name: n.actorName || "", username: n.actorUsername || "", avatar: n.actorAvatarUrl || "" },
+    text,
+    target,
+    titleOverride,
+    targetId: n.targetId,
+    targetType: n.targetType,
+    created_at: n.createdAt || n.created_at,
+    read: n.isRead ?? n.read ?? false,
+  };
+};
 
 // ── API Functions ────────────────────────────────────────────────────────────
 
@@ -354,6 +375,10 @@ export const usersApi = {
       viewerFollows: u.viewerFollows || false,
     };
   }),
+  getTopContributors: async () => {
+    const { data } = await api.get('/users/top-contributors');
+    return data.data;
+  },
   updateProfile: (data) => api.patch("/users/me", data).then((r) => mapUser(r.data.data)),
   uploadAvatar: (formData) =>
     api.patch("/users/me/avatar", formData, {
@@ -515,6 +540,19 @@ export const adminApi = {
   createOpportunity: (data) => api.post("/moderation/opportunities", data).then((r) => r.data.data),
   updateOpportunity: (id, data) => api.patch(`/moderation/opportunities/${id}`, data).then((r) => r.data.data),
   deleteOpportunity: (id) => api.delete(`/moderation/opportunities/${id}`).then((r) => r.data.data),
+};
+
+// Settings
+export const settingsApi = {
+  get: () => api.get("/settings").then((r) => r.data),
+  update: (data) => api.put("/settings", data).then((r) => r.data),
+};
+
+// Broadcasts
+export const broadcastsApi = {
+  list: () => api.get("/broadcasts").then((r) => r.data),
+  schedule: (data) => api.post("/broadcasts", data).then((r) => r.data),
+  delete: (id) => api.delete(`/broadcasts/${id}`).then((r) => r.data),
 };
 
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };

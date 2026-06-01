@@ -15,6 +15,7 @@ import {
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
+import { usersApi } from "../services/api";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import TagBadge from "../components/TagBadge";
@@ -127,6 +128,23 @@ export default function Home() {
     if (hour >= 5 && hour < 12) greeting = "Good morning";
     else if (hour >= 12 && hour < 17) greeting = "Good afternoon";
 
+    const [topContributors, setTopContributors] = useState([]);
+    const [contributorsLoading, setContributorsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchContributors = async () => {
+            try {
+                const data = await usersApi.getTopContributors();
+                setTopContributors(data);
+            } catch (err) {
+                console.error("Failed to fetch top contributors", err);
+            } finally {
+                setContributorsLoading(false);
+            }
+        };
+        fetchContributors();
+    }, []);
+
     const trendingResources = useMemo(() => {
         return [...resources]
             .sort((a, b) => b.upvotes - b.downvotes - (a.upvotes - a.downvotes))
@@ -147,31 +165,6 @@ export default function Home() {
 
         return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
     }, [resources, questions]);
-
-    const activeColleges = useMemo(() => {
-        const counts = {};
-        
-        // Count colleges from resources
-        resources.forEach(r => {
-            if (r.college) counts[r.college] = (counts[r.college] || 0) + 1;
-        });
-
-        // Add current user's college if they are logged in
-        if (isAuthenticated && currentUser?.college) {
-            counts[currentUser.college] = (counts[currentUser.college] || 0) + 1;
-        }
-
-        return Object.entries(counts)
-            .sort((a, b) => {
-                if (b[1] !== a[1]) return b[1] - a[1];
-                if (isAuthenticated && currentUser?.college) {
-                    if (a[0] === currentUser.college) return -1;
-                    if (b[0] === currentUser.college) return 1;
-                }
-                return a[0].localeCompare(b[0]);
-            })
-            .slice(0, 6);
-    }, [resources, currentUser, isAuthenticated]);
 
     return (
         <div className="space-y-16 fade-in-up">
@@ -424,38 +417,53 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* Active colleges — old contents-page style */}
+                    {/* Monthly Top Contributors */}
                     <div className="rounded-sm border border-rule bg-paper-2/60 p-5">
-                        <h3 className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                            <Sparkles className="h-3.5 w-3.5 text-accent" />
-                            // active colleges
+                        <h3 className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                            <span className="flex items-center gap-2">
+                                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                                // monthly top contributors
+                            </span>
                         </h3>
 
-                        <ul className="mt-3 space-y-1">
-                            {!apiLoaded ? (
-                                [1, 2, 3, 4].map(i => (
-                                    <li key={i} className="flex justify-between py-1.5 border-b border-dotted border-rule last:border-0">
-                                        <div className="flex gap-2 w-full"><Skeleton className="h-4 w-4" /><Skeleton className="h-4 w-3/4" /></div>
+                        <ul className="mt-4 space-y-3">
+                            {contributorsLoading ? (
+                                [1, 2, 3, 4, 5].map(i => (
+                                    <li key={i} className="flex gap-3 items-center py-2">
+                                        <Skeleton className="h-8 w-8 rounded-full" />
+                                        <div className="flex-1 space-y-1.5"><Skeleton className="h-3 w-2/3" /><Skeleton className="h-3 w-1/2" /></div>
                                         <Skeleton className="h-4 w-6" />
                                     </li>
                                 ))
-                            ) : activeColleges.length > 0 ? (
-                                activeColleges.map(([c, count], i) => (
-                                    <li
-                                        key={c}
-                                        className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule py-1.5 text-sm last:border-b-0"
+                            ) : topContributors.length > 0 ? (
+                                topContributors.map((user, i) => (
+                                    <Link
+                                        key={user.id}
+                                        to={`/pv/${user.username}`}
+                                        className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule pb-3 last:border-0 last:pb-0"
                                     >
-                                        <span className="text-ink-2 transition-colors group-hover:text-ink">
-                                            <span className="mr-3 font-mono text-ink-3">
-                                                {String(i + 1).padStart(2, "0")}
-                                            </span>
-                                            {c}
-                                        </span>
-                                        <span className="font-mono text-xs text-ink-3">{count}</span>
-                                    </li>
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <span className="font-mono text-[10px] font-bold text-ink-3 w-4">{i + 1}.</span>
+                                            <img src={user.avatar} alt="" className="h-8 w-8 rounded-full object-cover border border-rule group-hover:border-accent transition-colors shrink-0" />
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className="truncate text-sm font-semibold text-ink transition-colors group-hover:text-accent">
+                                                    {user.name} <span className="font-mono text-xs text-ink-3 font-normal ml-1">@{user.username}</span>
+                                                </span>
+                                                {(user.college || user.branch) && (
+                                                    <span className="truncate text-[11px] text-ink-2">
+                                                        {user.college}{user.college && user.branch ? ' · ' : ''}{user.branch}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end shrink-0 pl-2">
+                                            <span className="font-mono text-xs font-bold text-accent">{user.score}</span>
+                                            <span className="font-mono text-[9px] uppercase tracking-wider text-ink-3">pts</span>
+                                        </div>
+                                    </Link>
                                 ))
                             ) : (
-                                <li className="text-xs text-ink-3 font-mono py-1.5">No active colleges.</li>
+                                <li className="text-xs text-ink-3 font-mono py-1.5">No contributors this month yet.</li>
                             )}
                         </ul>
                     </div>

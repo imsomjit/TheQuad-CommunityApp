@@ -61,10 +61,9 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                             <Star className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Featured Content</span>}
                         </NavLink>
                         
-                        {/* Placeholder for future Platform Settings */}
-                        <button className={`${linkClass({ isActive: false })} cursor-not-allowed opacity-50`} title="Platform Settings (Coming Soon)">
-                            <Settings className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Settings</span>}
-                        </button>
+                        <NavLink to="/admin/settings" className={linkClass} title="Platform Settings">
+                            <Settings className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Site Settings</span>}
+                        </NavLink>
                     </>
                 )}
             </nav>

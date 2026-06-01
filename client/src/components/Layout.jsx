@@ -7,7 +7,8 @@ import MobileNav from "./MobileNav";
 import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import { Braces } from "lucide-react";
+import { useApp } from "../context/AppContext";
+import { Braces, AlertCircle, Info, CheckCircle2 } from "lucide-react";
 
 const ROUTE_LABELS = [
     { match: /^\/$/, label: "feed", section: "§01" },
@@ -36,6 +37,7 @@ function getRouteMeta(pathname) {
 export default function Layout() {
     const { theme } = useTheme();
     const { isAuthenticated } = useAuth();
+    const { siteSettings } = useApp();
     const location = useLocation();
     const meta = getRouteMeta(location.pathname);
     const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
@@ -99,6 +101,24 @@ export default function Layout() {
                     className={`${hideSidebar ? "" : isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
                     style={{ "--sidebar-width": hideSidebar ? "0px" : isSidebarCollapsed ? "80px" : "16rem" }}
                 >
+                    {/* Announcement Banner */}
+                    {siteSettings?.announcementActive && siteSettings?.announcementText && (
+                        <div className={`w-full py-2.5 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 mb-2
+                            ${siteSettings.announcementType === 'WARNING' ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' : 
+                            siteSettings.announcementType === 'ERROR' ? 'bg-red-500/10 text-red-600 border border-red-500/20' :
+                            siteSettings.announcementType === 'SUCCESS' ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 
+                            'bg-blue-500/10 text-blue-600 border border-blue-500/20'}`}
+                        >
+                            {siteSettings.announcementType === 'WARNING' || siteSettings.announcementType === 'ERROR' ? (
+                                <AlertCircle className="w-4 h-4" />
+                            ) : siteSettings.announcementType === 'SUCCESS' ? (
+                                <CheckCircle2 className="w-4 h-4" />
+                            ) : (
+                                <Info className="w-4 h-4" />
+                            )}
+                            {siteSettings.announcementText}
+                        </div>
+                    )}
                     {/* Main content */}
                     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-2 flex-1 -mt-4 sm:-mt-2">
                         <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both">
@@ -185,11 +205,14 @@ export default function Layout() {
                             </p>
                             <ul className="mt-3 space-y-2.5">
                                 {[
-                                    { label: "GitHub", href: "#" },
-                                    { label: "Twitter", href: "#" },
-                                    { label: "Discord", href: "#" },
-                                    { label: "Contact", href: "#" },
-                                ].map((link) => (
+                                    { label: "LinkedIn", href: siteSettings?.socialLinks?.linkedin },
+                                    { label: "Twitter", href: siteSettings?.socialLinks?.twitter },
+                                    { label: "Instagram", href: siteSettings?.socialLinks?.instagram },
+                                    { label: "Discord", href: siteSettings?.socialLinks?.discord },
+                                    { label: "Email", href: siteSettings?.socialLinks?.email ? `mailto:${siteSettings.socialLinks.email}` : "" },
+                                ]
+                                .filter(link => !!link.href)
+                                .map((link) => (
                                     <li key={link.label}>
                                         <a
                                             href={link.href}

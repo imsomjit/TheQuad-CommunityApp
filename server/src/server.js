@@ -6,6 +6,7 @@ const createApp = require("./app");
 const { pool } = require("./db/index");
 const logger = require("./utils/logger");
 const { startSyncJobs } = require("./modules/opportunities/sync/sync.service");
+const { startCronJobs } = require("./utils/cron");
 
 const start = async () => {
   try {
@@ -26,6 +27,9 @@ const start = async () => {
       // Start background sync jobs
       startSyncJobs();
       logger.info(`🔄  Background sync jobs started`);
+
+      // Start cron jobs
+      startCronJobs();
     });
 
     // ── Graceful shutdown ────────────────────────────────────────────────────

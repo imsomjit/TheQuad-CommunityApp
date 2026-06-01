@@ -38,6 +38,7 @@ const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminOpportunities = lazy(() => import("./pages/admin/AdminOpportunities"));
 const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 
 function App() {
   return (
@@ -150,6 +151,10 @@ function App() {
                   <Route
                     path="/admin/featured"
                     element={<AdminFeatured />}
+                  />
+                  <Route
+                    path="/admin/settings"
+                    element={<AdminSettings />}
                   />
                 </Route>
               </Routes>

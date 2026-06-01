@@ -1,7 +1,7 @@
 "use strict";
 
 // Barrel export — import everything from here so drizzle-kit sees one schema file
-const { users, userRoleEnum } = require("./users");
+const { users, userRoleEnum, genderEnum, authProviderEnum } = require("./users");
 const { resources, resourceTags, resourceTypeEnum } = require("./resources");
 const { questions, questionTags } = require("./questions");
 const { answers } = require("./answers");
@@ -33,6 +33,8 @@ const {
   opportunityStatusEnum,
   opportunityModerationStatusEnum,
 } = require("./opportunities");
+const { siteSettings } = require("./settings");
+const { broadcasts, broadcastTypeEnum } = require("./broadcasts");
 
 module.exports = {
   // Tables
@@ -55,9 +57,13 @@ module.exports = {
   series,
   opportunities,
   opportunityBookmarks,
+  siteSettings,
+  broadcasts,
 
   // Enums
   userRoleEnum,
+  genderEnum,
+  authProviderEnum,
   resourceTypeEnum,
   commentTargetEnum,
   voteTargetEnum,
@@ -74,4 +80,5 @@ module.exports = {
   opportunityStatusEnum,
   opportunityModerationStatusEnum,
   actionTypeEnum,
+  broadcastTypeEnum,
 };
