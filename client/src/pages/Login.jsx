@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   Braces,
   ArrowRight,
@@ -18,6 +18,7 @@ import { toast } from "sonner";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
@@ -52,9 +53,17 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await login({ email, password });
+      const loggedInUser = await login({ email, password });
       toast.success("Welcome back!");
-      navigate("/");
+      
+      const from = location.state?.from?.pathname;
+      if (from) {
+        navigate(from);
+      } else if (loggedInUser.role === "admin" || loggedInUser.role === "moderator") {
+        navigate("/admin/reports");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       if (err.response?.data?.code === "UNVERIFIED_EMAIL") {
         toast.error("Please verify your email to log in.");

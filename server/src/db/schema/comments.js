@@ -19,6 +19,7 @@ const {
   varchar,
   timestamp,
   pgEnum,
+  boolean,
 } = require("drizzle-orm/pg-core");
 const { users } = require("./users");
 
@@ -38,7 +39,13 @@ const comments = pgTable("comments", {
   targetId: integer("target_id").notNull(),
   body: text("body").notNull(),
   // Reply threading — null for top-level comments
-  parentId: integer("parent_id"),
+  parentId: integer("parent_id"), // self-referencing foreign key set after initialization
+
+  // Moderation
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedById: integer("deleted_by_id").references(() => users.id),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

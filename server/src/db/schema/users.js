@@ -56,6 +56,7 @@ const users = pgTable("users", {
 
   // ─── Moderation ───────────────────────────────────────────────────────────
   isSuspended: boolean("is_suspended").default(false).notNull(),
+  suspensionExpiresAt: timestamp("suspension_expires_at", { withTimezone: true }),
   isBanned: boolean("is_banned").default(false).notNull(),
 
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

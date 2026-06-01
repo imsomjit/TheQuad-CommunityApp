@@ -7,6 +7,7 @@ import { AppProvider } from "./context/AppContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
 import Layout from "./components/Layout";
+import AdminLayout from "./components/AdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import { Suspense, lazy } from "react";
@@ -32,6 +33,11 @@ const FollowList = lazy(() => import("./pages/FollowList"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminOpportunities = lazy(() => import("./pages/admin/AdminOpportunities"));
+const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 
 function App() {
   return (
@@ -120,6 +126,30 @@ function App() {
                         <PostEditor />
                       </ProtectedRoute>
                     }
+                  />
+                  </Route>
+
+                {/* Admin Routes (with Dedicated AdminLayout) */}
+                <Route element={<AdminLayout />}>
+                  <Route
+                    path="/admin/reports"
+                    element={<AdminReports />}
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={<AdminUsers />}
+                  />
+                  <Route
+                    path="/admin/analytics"
+                    element={<AdminAnalytics />}
+                  />
+                  <Route
+                    path="/admin/opportunities"
+                    element={<AdminOpportunities />}
+                  />
+                  <Route
+                    path="/admin/featured"
+                    element={<AdminFeatured />}
                   />
                 </Route>
               </Routes>

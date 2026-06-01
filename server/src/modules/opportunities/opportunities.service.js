@@ -18,6 +18,10 @@ const listOpportunities = async (filters) => {
   if (type) queryConditions.push(eq(opportunities.type, type));
   if (status) queryConditions.push(eq(opportunities.status, status));
 
+  // Filter out soft-deleted and only show APPROVED opportunities
+  queryConditions.push(eq(opportunities.isDeleted, false));
+  queryConditions.push(eq(opportunities.moderationStatus, "APPROVED"));
+
   if (q) {
     const searchString = `%${q}%`;
     queryConditions.push(
@@ -70,7 +74,7 @@ const getOpportunityById = async (id, userId = null) => {
   const [opportunity] = await db
     .select()
     .from(opportunities)
-    .where(eq(opportunities.id, id));
+    .where(and(eq(opportunities.id, id), eq(opportunities.isDeleted, false)));
 
   if (!opportunity) throw new AppError("Opportunity not found", 404);
 
@@ -113,7 +117,13 @@ const getBookmarkedOpportunities = async (userId, page = 1, limit = 10) => {
     .select({ opportunity: opportunities })
     .from(opportunityBookmarks)
     .innerJoin(opportunities, eq(opportunityBookmarks.opportunityId, opportunities.id))
-    .where(eq(opportunityBookmarks.userId, userId))
+    .where(
+      and(
+        eq(opportunityBookmarks.userId, userId),
+        eq(opportunities.isDeleted, false),
+        eq(opportunities.moderationStatus, "APPROVED")
+      )
+    )
     .orderBy(desc(opportunityBookmarks.createdAt))
     .limit(limit)
     .offset(offset);

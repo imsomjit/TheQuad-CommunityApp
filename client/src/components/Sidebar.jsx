@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, BookOpen, MessageSquare, FileText, Bell, LogOut, PanelLeftClose, Target } from "lucide-react";
+import { Home, BookOpen, MessageSquare, FileText, Bell, LogOut, PanelLeftClose, Target, ShieldAlert } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,9 +9,9 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
     const { isAuthenticated, logout } = useAuth();
 
     const linkClass = ({ isActive }) => {
-        const base = "group flex items-center rounded-xl py-2.5 text-sm transition-all duration-200";
+        const base = "group flex items-center rounded-xl py-2 text-sm transition-all duration-300";
         const state = isActive 
-            ? "bg-paper-2 text-accent font-semibold ring-1 ring-accent-soft" 
+            ? "bg-paper text-accent font-medium hover:bg-paper-2 border border-accent-soft transition-color duration-300" 
             : "text-ink-2 hover:bg-paper-2 hover:text-ink";
         const layout = isCollapsed 
             ? "justify-center w-12 mx-auto px-0" 
@@ -20,12 +20,12 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
     };
 
     return (
-        <aside className={`fixed left-0 bottom-0 z-30 hidden flex-col justify-between border-r border-rule bg-paper/50 backdrop-blur-md py-6 md:flex animate-in fade-in slide-in-from-left-8 duration-700 ease-out transition-all duration-300 ease-in-out ${scrolled ? 'top-[56px]' : 'top-[92px]'} ${isCollapsed ? 'w-[80px] px-2' : 'w-60 px-4'}`}>
+        <aside className={`fixed left-0 bottom-0 z-30 hidden flex-col justify-between border-r border-rule bg-paper/50 backdrop-blur-md py-6 md:flex animate-in fade-in slide-in-from-left-8 duration-700 ease-out transition-all duration-700 ease-in-out ${scrolled ? 'top-[56px]' : 'top-[92px]'} ${isCollapsed ? 'w-[70px] px-2' : 'w-60 px-4'}`}>
             <nav className="flex flex-col gap-3">
-                <div className={`flex items-center pb-4 ${isCollapsed ? 'justify-center' : 'justify-between px-3'}`}>
-                    {!isCollapsed && <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-ink-3">Menu</p>}
+                <div className={`flex items-center pb-1 ${isCollapsed ? 'justify-center' : 'justify-between px-3'}`}>
+                    {!isCollapsed && <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">Contents</p>}
                     <button onClick={onToggle} className="text-ink-3 hover:text-ink transition-colors" title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-                        <PanelLeftClose className={`h-5 w-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+                        <PanelLeftClose className={`h-4 w-4 transition-transform duration-700 ${isCollapsed ? 'rotate-180' : ''}`} />
                     </button>
                 </div>
                 <NavLink to="/" className={linkClass} end title="Feed">
@@ -62,6 +62,12 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
                         )}
                     </NavLink>
                 )}
+                
+                {isAuthenticated && currentUser && (currentUser.role === 'admin' || currentUser.role === 'moderator') && (
+                    <NavLink to="/admin/reports" className={linkClass} title="Admin Console">
+                        <ShieldAlert className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Admin Console</span>}
+                    </NavLink>
+                )}
             </nav>
 
             {isAuthenticated && currentUser ? (
@@ -82,13 +88,13 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
                     </button>
                 </div>
             ) : (
-                <div className="mt-auto flex flex-col gap-2 border-t border-rule pt-4">
-                    <NavLink to="/login" className={`flex items-center justify-center ${isCollapsed ? 'w-12 mx-auto px-0' : 'w-full gap-2 px-4'} rounded-xl bg-accent py-2.5 text-sm font-semibold text-paper glow-btn transition-all hover:scale-105`} title="Sign in">
+                <div className="mt-auto flex flex-col font-mono tracking-wide uppercase gap-2 border-t border-rule pt-4">
+                    <NavLink to="/login" className={`flex items-center justify-center ${isCollapsed ? 'w-12 mx-auto px-0' : 'w-full gap-2 px-4'} rounded-md bg-paper-3 py-2.5 text-sm font-medium text-accent border border-accent-soft transition-all hover:bg-accent hover:text-paper hover:scale-105`} title="Sign in">
                         {isCollapsed ? <LogOut className="h-5 w-5 rotate-180" /> : "Sign in"}
                     </NavLink>
                     {!isCollapsed && (
-                        <NavLink to="/register" className="flex w-full items-center justify-center gap-2 rounded-xl border border-rule bg-paper-2/50 px-4 py-2.5 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80">
-                            Sign up
+                        <NavLink to="/register" className="flex w-full items-center justify-center gap-2 rounded-md border border-rule bg-paper px-4 py-2.5 text-sm font-medium text-ink-2 transition-all hover:border-ink-3 hover:text-ink">
+                            Create Account
                         </NavLink>
                     )}
                 </div>

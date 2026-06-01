@@ -8,8 +8,8 @@ import { Loader2 } from "lucide-react";
  * Shows a loading spinner while auth state is being determined,
  * then redirects to /login if not authenticated.
  */
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+export default function ProtectedRoute({ children, requireRole }) {
+  const { isAuthenticated, user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -23,6 +23,10 @@ export default function ProtectedRoute({ children }) {
   if (!isAuthenticated) {
     // Preserve the intended destination so we can redirect after login
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (requireRole && user && !requireRole.includes(user.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;

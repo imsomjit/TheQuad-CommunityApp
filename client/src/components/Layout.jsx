@@ -58,10 +58,10 @@ export default function Layout() {
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300">
+                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 pr-[var(--removed-body-scroll-bar-size,0px)]">
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
-                        className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md transition-all duration-300 overflow-hidden ${
+                        className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md transition-all duration-700 overflow-hidden ${
                             scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
@@ -100,7 +100,7 @@ export default function Layout() {
                     style={{ "--sidebar-width": hideSidebar ? "0px" : isSidebarCollapsed ? "80px" : "16rem" }}
                 >
                     {/* Main content */}
-                    <main className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1 -mt-4 sm:-mt-2">
+                    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-2 flex-1 -mt-4 sm:-mt-2">
                         <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both">
                             <Outlet />
                         </div>
@@ -124,9 +124,6 @@ export default function Layout() {
                     <div className="mx-auto max-w-7xl w-full grid grid-cols-2 gap-10 px-4 py-12 sm:grid-cols-4 sm:px-6 lg:px-2">
                         {/* Brand column */}
                         <div className="col-span-2 sm:col-span-1">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                                colophon
-                            </p>
                                 <span className="flex items-baseline gap-0.5">
                                     <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
                                         Peer
@@ -210,10 +207,10 @@ export default function Layout() {
 
                         {/* Typography / Legal */}
                         <div>
-                            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                                set in
+                            <p className="hidden sm:inline font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                                colophon
                             </p>
-                            <ul className="mt-3 space-y-1 text-sm">
+                            <ul className="mt-3 space-y-1 text-sm hidden sm:inline">
                                 <li className="font-display text-lg text-ink">
                                     Fraunces
                                 </li>
@@ -230,8 +227,7 @@ export default function Layout() {
                                 </p>
                                 <p className="mt-1 font-mono text-[10px] text-ink-3">
                                     <span className="text-accent">$</span>{" "}
-                                    built for students who{" "}
-                                    <span className="text-ink-2">ship_</span>
+                                    build with ❤️ for peers by <span className="text-ink"><a href="https://github.com/soumyajiitdas">me_</a></span>
                                 </p>
                             </div>
                         </div>

@@ -69,7 +69,6 @@ const TYPEWRITER_PHRASES = [
     "problem solvers",
     "knowledge seekers",
     "lifelong learners",
-    "collaborative learners",
     "peers helping peers"
 ];
 
@@ -194,14 +193,14 @@ export default function Home() {
                                 <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                                     section
                                 </p>
-                                <p className="mt-1 font-mono text-xs text-ink-2">// feed</p>
+                                <p className="mt-1 font-mono text-xs text-ink-2">// hero</p>
 
                                 <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                                     status
                                 </p>
                                 <p className="mt-1 flex items-center gap-1.5 font-mono text-xs text-ink-2">
                                     <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent-2" />
-                                    now in beta
+                                    in development
                                 </p>
                             </aside>
 
@@ -209,7 +208,7 @@ export default function Home() {
                             <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
                                 <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
                                     <Terminal className="h-3.5 w-3.5 text-accent" />
-                                    volume one · summer '26 · for people who code
+                                    PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span> 
                                 </p>
 
                                 <h1 className="h-[180px] sm:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
@@ -280,7 +279,7 @@ export default function Home() {
                     </section>
 
                     {/* ── TICKER ─────────────────────────────── */}
-                    <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 shadow-lg w-[100vw] relative left-1/2 -ml-[50vw] md:w-[calc(100vw-var(--sidebar-width,16rem))] md:-ml-[calc(50vw-calc(var(--sidebar-width,16rem)/2))] transition-all duration-300 ease-in-out">
+                    <div className="overflow-hidden border-y-2 border-ink bg-ink py-4 shadow-lg w-[100vw] relative left-1/2 -ml-[50vw] md:w-[calc(100vw-var(--sidebar-width,16rem))] md:-ml-[calc(50vw-calc(var(--sidebar-width,16rem)/2))] transition-all duration-700 ease-in-out">
                         <div className="flex w-max whitespace-nowrap marquee">
                             {[...Array(2)].map((_, k) => (
                                 <div

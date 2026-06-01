@@ -173,6 +173,10 @@ const updatePost = async (id, userId, patch) => {
     throw new AppError("You can only edit your own posts", 403, "FORBIDDEN");
   }
 
+  if (post.status === "published") {
+    throw new AppError("Published posts cannot be edited. Unpublish to edit.", 403, "FORBIDDEN");
+  }
+
   const { tags, ...meta } = patch;
 
   // Recalculate computed fields if body changed
@@ -304,7 +308,14 @@ const deletePost = async (id, userId, userRole) => {
     throw new AppError("You cannot delete this post", 403, "FORBIDDEN");
   }
 
-  await db.delete(posts).where(eq(posts.id, id));
+  await db
+    .update(posts)
+    .set({
+      isDeleted: true,
+      deletedById: userId,
+      deletedAt: new Date(),
+    })
+    .where(eq(posts.id, id));
 };
 
 // ── Read ─────────────────────────────────────────────────────────────────────
@@ -345,7 +356,7 @@ const getPostById = async (id) => {
     })
     .from(posts)
     .leftJoin(users, eq(posts.authorId, users.id))
-    .where(eq(posts.id, id))
+    .where(and(eq(posts.id, id), eq(posts.isDeleted, false)))
     .limit(1);
 
   if (!row) throw new AppError("Post not found", 404, "NOT_FOUND");
@@ -399,7 +410,7 @@ const getPostBySlug = async (slug, incrementView = false) => {
     })
     .from(posts)
     .leftJoin(users, eq(posts.authorId, users.id))
-    .where(and(eq(posts.slug, slug), eq(posts.status, "published")))
+    .where(and(eq(posts.slug, slug), eq(posts.status, "published"), eq(posts.isDeleted, false)))
     .limit(1);
 
   if (!row) throw new AppError("Post not found", 404, "NOT_FOUND");
@@ -436,7 +447,7 @@ const listPosts = async (query) => {
   const { limit, offset, meta } = paginate({ page, limit: lim });
 
   // Build WHERE
-  const conditions = [eq(posts.status, "published")];
+  const conditions = [eq(posts.status, "published"), eq(posts.isDeleted, false)];
 
   if (q) {
     conditions.push(
@@ -545,7 +556,8 @@ const listDrafts = async (userId, query = {}) => {
 
   const where = and(
     eq(posts.authorId, userId),
-    eq(posts.status, "draft")
+    eq(posts.status, "draft"),
+    eq(posts.isDeleted, false)
   );
 
   const [rows, [{ count }]] = await Promise.all([
@@ -607,7 +619,8 @@ const getSeriesNav = async (seriesId, currentOrder) => {
     .where(
       and(
         eq(posts.seriesId, seriesId),
-        eq(posts.status, "published")
+        eq(posts.status, "published"),
+        eq(posts.isDeleted, false)
       )
     )
     .orderBy(asc(posts.seriesOrder));

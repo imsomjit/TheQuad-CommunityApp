@@ -68,6 +68,12 @@ const posts = pgTable("posts", {
   seriesId: integer("series_id"), // FK added after series table is defined
   seriesOrder: integer("series_order"), // position within the series (1-indexed)
 
+  // Moderation & Curation
+  isFeatured: boolean("is_featured").default(false).notNull(),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedById: integer("deleted_by_id").references(() => users.id),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+
   // Timestamps
   publishedAt: timestamp("published_at", { withTimezone: true }), // set on first publish
   createdAt: timestamp("created_at", { withTimezone: true })

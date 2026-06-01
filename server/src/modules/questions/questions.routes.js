@@ -25,7 +25,6 @@ router.delete("/:id", auth, questionWriteLimiter, controller.remove);
 
 // Answers (nested under questions)
 router.post("/:id/answers", auth, questionWriteLimiter, validate(createAnswerSchema), controller.createAnswer);
-router.patch("/:id/answers/:answerId", auth, questionWriteLimiter, validate(createAnswerSchema), controller.updateAnswer);
 router.delete("/:id/answers/:answerId", auth, questionWriteLimiter, controller.deleteAnswer);
 router.post("/:id/answers/:answerId/accept", auth, questionWriteLimiter, controller.acceptAnswer);
 

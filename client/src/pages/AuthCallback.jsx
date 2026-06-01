@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Loader2, AlertCircle } from "lucide-react";
 import { setAccessToken } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -19,6 +19,7 @@ import { toast } from "sonner";
  */
 export default function AuthCallback() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState(null);
   const { fetchMe } = useAuth();
@@ -50,9 +51,16 @@ export default function AuthCallback() {
       // Clean the URL
       window.history.replaceState(null, "", "/auth/callback");
 
-      fetchMe().then(() => {
+      fetchMe().then((user) => {
         toast.success("Signed in with Google!");
-        navigate("/", { replace: true });
+        const from = location.state?.from?.pathname;
+        if (from) {
+          navigate(from, { replace: true });
+        } else if (user?.role === "admin" || user?.role === "moderator") {
+          navigate("/admin/reports", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       });
     } else {
       setError("No authentication token received. Please try signing in again.");

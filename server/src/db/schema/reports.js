@@ -13,16 +13,19 @@ const { users } = require("./users");
 
 const reportReasonEnum = pgEnum("report_reason", [
   "spam",
+  "harassment",
   "abusive",
-  "irrelevant",
+  "misleading",
   "copyright",
-  "misinformation",
+  "inappropriate",
+  "duplicate",
   "other",
 ]);
 
 const reportStatusEnum = pgEnum("report_status", [
   "pending",
-  "reviewed",
+  "under_review",
+  "resolved",
   "dismissed",
 ]);
 
@@ -32,6 +35,7 @@ const reportTargetEnum = pgEnum("report_target_type", [
   "answer",
   "blog",
   "comment",
+  "opportunity",
   "user",
 ]);
 
@@ -44,7 +48,9 @@ const reports = pgTable("reports", {
   targetId: integer("target_id").notNull(),
   reason: reportReasonEnum("reason").notNull(),
   details: text("details"),
+  contentSnapshot: text("content_snapshot"), // Store JSON stringified snapshot or direct text
   status: reportStatusEnum("status").default("pending").notNull(),
+  assignedToId: integer("assigned_to_id").references(() => users.id),
   resolvedById: integer("resolved_by_id").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

@@ -8,6 +8,7 @@ const {
   integer,
   timestamp,
   pgEnum,
+  boolean,
 } = require("drizzle-orm/pg-core");
 const { users } = require("./users");
 
@@ -51,6 +52,13 @@ const resources = pgTable("resources", {
   views: integer("views").default(0).notNull(),
   downloads: integer("downloads").default(0).notNull(),
   bookmarksCount: integer("bookmarks_count").default(0).notNull(),
+
+  // Moderation & Curation
+  isFeatured: boolean("is_featured").default(false).notNull(),
+  isEdited: boolean("is_edited").default(false).notNull(),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedById: integer("deleted_by_id").references(() => users.id),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

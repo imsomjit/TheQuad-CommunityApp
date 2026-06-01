@@ -12,10 +12,10 @@ import {
   questionsApi,
   commentsApi,
   votesApi,
-  bookmarksApi,
   notificationsApi,
   getAccessToken,
 } from "../services/api";
+import ReportModal from "../components/ReportModal";
 
 
 const AppContext = createContext(null);
@@ -38,6 +38,14 @@ export function AppProvider({ children }) {
   const [bookmarks, setBookmarks] = useState(new Set());
   const [votes, setVotes] = useState({});
   const [apiLoaded, setApiLoaded] = useState(false);
+
+  // Global report modal state
+  const [reportModal, setReportModal] = useState({
+    isOpen: false,
+    targetType: "",
+    targetId: null,
+    targetTitle: "",
+  });
 
   const currentUser = authUser;
 
@@ -366,6 +374,19 @@ export function AppProvider({ children }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const openReportModal = useCallback((targetType, targetId, targetTitle) => {
+    setReportModal({
+      isOpen: true,
+      targetType,
+      targetId,
+      targetTitle,
+    });
+  }, []);
+
+  const closeReportModal = useCallback(() => {
+    setReportModal(prev => ({ ...prev, isOpen: false }));
+  }, []);
+
   // ── Context value ──────────────────────────────────────────────────────────
   const value = useMemo(
     () => ({
@@ -391,6 +412,7 @@ export function AppProvider({ children }) {
       incrementViews,
       markNotifRead,
       markAllNotifsRead,
+      openReportModal,
     }),
     [
       currentUser,
@@ -415,12 +437,20 @@ export function AppProvider({ children }) {
       incrementViews,
       markNotifRead,
       markAllNotifsRead,
+      openReportModal,
     ]
   );
 
   return (
     <AppContext.Provider value={value}>
       {children}
+      <ReportModal 
+        isOpen={reportModal.isOpen} 
+        onClose={closeReportModal} 
+        targetType={reportModal.targetType} 
+        targetId={reportModal.targetId} 
+        targetTitle={reportModal.targetTitle} 
+      />
     </AppContext.Provider>
   );
 }

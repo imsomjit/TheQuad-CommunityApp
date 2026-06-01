@@ -24,8 +24,12 @@ const answers = pgTable("answers", {
   // Stats (denormalized)
   upvotes: integer("upvotes").default(0).notNull(),
   downvotes: integer("downvotes").default(0).notNull(),
-
   isAccepted: boolean("is_accepted").default(false).notNull(),
+
+  // Moderation
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedById: integer("deleted_by_id").references(() => users.id),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

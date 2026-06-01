@@ -88,14 +88,14 @@ export default function Questions() {
                             &sect;03 &middot; the forum
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-                            Ask. <span className="font-display-italic text-accent">Answer.</span>{" "}
-                            Argue.
+                        <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                            Ask. <span className="font-display-italic text-accent">Answer.</span> &
+                            <span className="italic marker">Argue.</span> 
                         </h1>
 
                         <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
                             Stack-Overflow energy, with people who know your syllabus and
-                            actually care about your grade.
+                            actually care about your grade. Feel free to ask, solve questions and grow together.
                         </p>
                     </div>
 

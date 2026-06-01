@@ -103,17 +103,15 @@ export default function PostsFeed() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-violet">
-              &sect;04 &middot; the editorial
+              &sect;04 &middot; the Post
             </p>
 
-            <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-              Published <span className="font-display-italic text-accent">Posts</span>,
-              <br />
-              shared by peers.
+            <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+              Blogs & <span className="font-display-italic text-accent">editorials</span>, shared <span className="italic marker">by peers.</span>
             </h1>
 
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
-              DSA editorials, interview experiences, learning journals, and project breakdowns.
+              A constellation of &mdash; DSA editorials, interview experiences, learning journals, and project breakdowns written by learners based on their learnings, experiences and late night sessions.
             </p>
           </div>
 

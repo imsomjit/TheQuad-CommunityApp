@@ -33,11 +33,11 @@ export default function Navbar({ scrolled }) {
     return (
         <header
             data-testid="app-navbar"
-            className={`border-b border-rule bg-paper/85 backdrop-blur-xl transition-all duration-300 ${
+            className={`border-b border-rule bg-paper/85 backdrop-blur-xl transition-all duration-700 ${
                 scrolled ? "h-14 shadow-sm" : "h-16"
             }`}
         >
-            <div className="mx-auto flex h-full w-full max-w-7xl items-center gap-5 px-4 sm:px-6 lg:px-2">
+            <div className="mx-auto flex h-full w-full items-center gap-5 px-4 sm:px-6 lg:px-10">
                 {/* Logo — bracket mark + serif wordmark */}
                 <Link
                     to="/"
@@ -78,7 +78,7 @@ export default function Navbar({ scrolled }) {
                         <Input
                             data-testid="navbar-search-input"
                             placeholder="search notes, papers, questions…"
-                            className="h-9 rounded-sm border-rule rounded-md bg-paper-2/60 pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+                            className="h-9 rounded-sm border-rule rounded-md bg-paper pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                         />
 
                         <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 lg:flex">

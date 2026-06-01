@@ -72,7 +72,8 @@ const getComments = async (targetType, targetId) => {
     .where(
       and(
         eq(comments.targetType, targetType),
-        eq(comments.targetId, parseInt(targetId))
+        eq(comments.targetId, parseInt(targetId)),
+        eq(comments.isDeleted, false)
       )
     )
     .orderBy(asc(comments.createdAt));
@@ -130,11 +131,25 @@ const deleteComment = async (id, userId, userRole) => {
     throw new AppError("You cannot delete this comment", 403, "FORBIDDEN");
   }
 
-  // Delete comment and all its replies (cascade via parentId check)
-  // First delete child replies
-  await db.delete(comments).where(eq(comments.parentId, id));
-  // Then delete the comment itself
-  await db.delete(comments).where(eq(comments.id, id));
+  // First soft delete child replies
+  await db
+    .update(comments)
+    .set({
+      isDeleted: true,
+      deletedById: userId,
+      deletedAt: new Date(),
+    })
+    .where(eq(comments.parentId, id));
+
+  // Then soft delete the comment itself
+  await db
+    .update(comments)
+    .set({
+      isDeleted: true,
+      deletedById: userId,
+      deletedAt: new Date(),
+    })
+    .where(eq(comments.id, id));
 };
 
 const getCommentWithAuthor = async (id) => {

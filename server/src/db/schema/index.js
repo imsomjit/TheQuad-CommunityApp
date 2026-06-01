@@ -17,6 +17,7 @@ const {
   reportTargetEnum,
 } = require("./reports");
 const { refreshTokens } = require("./refresh_tokens");
+const { userActions, actionTypeEnum } = require("./user_actions");
 const {
   posts,
   postTags,
@@ -30,6 +31,7 @@ const {
   opportunitySourceEnum,
   opportunityTypeEnum,
   opportunityStatusEnum,
+  opportunityModerationStatusEnum,
 } = require("./opportunities");
 
 module.exports = {
@@ -47,6 +49,7 @@ module.exports = {
   notifications,
   reports,
   refreshTokens,
+  userActions,
   posts,
   postTags,
   series,
@@ -69,4 +72,6 @@ module.exports = {
   opportunitySourceEnum,
   opportunityTypeEnum,
   opportunityStatusEnum,
+  opportunityModerationStatusEnum,
+  actionTypeEnum,
 };

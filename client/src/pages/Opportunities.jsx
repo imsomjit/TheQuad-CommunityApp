@@ -35,7 +35,7 @@ export default function Opportunities() {
             const currentPage = resetPage ? 1 : page;
             const params = {
                 page: currentPage,
-                limit: 12,
+                limit: 9,
                 q: search,
                 organizer: organizer === "ALL" ? "" : organizer,
                 status: status === "ALL" ? "" : status,
@@ -120,13 +120,13 @@ export default function Opportunities() {
                             &sect;04 &middot; the board
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-                            Code. <span className="font-display-italic text-accent">Compete.</span>{" "}
-                            Conquer.
+                        <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                            Code. <span className="font-display-italic text-accent">Compete.</span> & <span className="italic marker">Conquer.</span>
+                            
                         </h1>
 
                         <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
-                            Discover coding contests, hackathons, and data science competitions from Codeforces and Kaggle.
+                            Discover coding contests, hackathons, and data science competitions from various of popular platforms like &mdash; LeetCode, CodeForces, Kaggle, Naukri etc.
                         </p>
                     </div>
                 </div>

@@ -57,6 +57,10 @@ const listResources = async (query) => {
       sql`to_tsvector('english', ${resources.title} || ' ' || coalesce(${resources.description}, '')) @@ plainto_tsquery('english', ${q})`
     );
   }
+  
+  // Filter out deleted resources
+  conditions.push(eq(resources.isDeleted, false));
+  
   if (type) conditions.push(eq(resources.type, type));
   if (college) conditions.push(ilike(resources.college, `%${college}%`));
   if (branch) conditions.push(ilike(resources.branch, `%${branch}%`));
@@ -187,7 +191,7 @@ const getResourceById = async (id, incrementView = false) => {
     })
     .from(resources)
     .leftJoin(users, eq(resources.uploaderId, users.id))
-    .where(eq(resources.id, id))
+    .where(and(eq(resources.id, id), eq(resources.isDeleted, false)))
     .limit(1);
 
   if (!row) throw new AppError("Resource not found", 404, "NOT_FOUND");
@@ -227,7 +231,7 @@ const updateResource = async (id, userId, patch) => {
   if (Object.keys(meta).length > 0) {
     await db
       .update(resources)
-      .set({ ...meta, updatedAt: new Date() })
+      .set({ ...meta, isEdited: true, updatedAt: new Date() })
       .where(eq(resources.id, id));
   }
 
@@ -258,11 +262,18 @@ const deleteResource = async (id, userId, userRole) => {
   }
 
   // Delete from Cloudinary (fire-and-forget, don't block the response)
-  cloudinary.uploader
-    .destroy(resource.filePublicId, { resource_type: "raw" })
-    .catch(() => {});
+  // cloudinary.uploader
+  //   .destroy(resource.filePublicId, { resource_type: "raw" })
+  //   .catch(() => {});
 
-  await db.delete(resources).where(eq(resources.id, id));
+  await db
+    .update(resources)
+    .set({
+      isDeleted: true,
+      deletedById: userId,
+      deletedAt: new Date(),
+    })
+    .where(eq(resources.id, id));
 };
 
 /**

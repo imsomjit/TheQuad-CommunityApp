@@ -12,7 +12,7 @@ import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
 
 // ── Base instance ────────────────────────────────────────────────────────────
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-peerverse.onrender.com/api");
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -496,6 +496,25 @@ export const opportunitiesApi = {
     api.get(`/opportunities/${id}`).then((r) => r.data.data),
   toggleBookmark: (id) =>
     api.post(`/opportunities/${id}/bookmark`).then((r) => r.data.data),
+};
+
+// Admin / Moderation
+export const adminApi = {
+  getAnalytics: () => api.get("/moderation/analytics").then((r) => r.data.data),
+  listUsers: (params) => api.get("/moderation/users", { params }).then((r) => r.data),
+  getUserHistory: (id) => api.get(`/moderation/users/${id}/history`).then((r) => r.data.data),
+  warnUser: (id, data) => api.post(`/moderation/users/${id}/warn`, data).then((r) => r.data),
+  suspendUser: (id, data) => api.post(`/moderation/users/${id}/suspend`, data).then((r) => r.data.data),
+  banUser: (id, data) => api.post(`/moderation/users/${id}/ban`, data).then((r) => r.data),
+  updateUserRole: (id, role) => api.patch(`/moderation/users/${id}/role`, { role }).then((r) => r.data.data),
+  createModerator: (data) => api.post("/moderation/moderators", data).then((r) => r.data.data),
+  
+  getFeaturedContent: () => api.get("/moderation/featured").then((r) => r.data.data),
+  toggleFeatureContent: (type, id) => api.patch(`/moderation/content/${type}/${id}/feature`).then((r) => r.data.data),
+  
+  createOpportunity: (data) => api.post("/moderation/opportunities", data).then((r) => r.data.data),
+  updateOpportunity: (id, data) => api.patch(`/moderation/opportunities/${id}`, data).then((r) => r.data.data),
+  deleteOpportunity: (id) => api.delete(`/moderation/opportunities/${id}`).then((r) => r.data.data),
 };
 
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };

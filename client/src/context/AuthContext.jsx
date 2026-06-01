@@ -69,11 +69,14 @@ export function AuthProvider({ children }) {
   const fetchMe = useCallback(async () => {
     try {
       const { data } = await authApi.me();
-      setUser(mapUser(data.data.user));
+      const mappedUser = mapUser(data.data.user);
+      setUser(mappedUser);
+      return mappedUser;
     } catch {
       // If fetching fails, clear everything
       clearAccessToken();
       setUser(null);
+      return null;
     }
   }, []);
 

@@ -10,6 +10,7 @@ const {
   integer,
   unique,
   index,
+  boolean,
 } = require("drizzle-orm/pg-core");
 const { users } = require("./users");
 
@@ -37,6 +38,13 @@ const opportunityStatusEnum = pgEnum("opportunity_status", [
   "ENDED",
 ]);
 
+const opportunityModerationStatusEnum = pgEnum("opportunity_moderation_status", [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+  "ARCHIVED",
+]);
+
 // ── Opportunities Table ─────────────────────────────────────────────────────
 const opportunities = pgTable(
   "opportunities",
@@ -55,6 +63,11 @@ const opportunities = pgTable(
     deadline: timestamp("deadline", { withTimezone: true }), // For Kaggle
     tags: text("tags").array(), // e.g. ["machine learning", "computer vision"]
     rawData: text("raw_data"), // To store raw JSON if needed
+    moderationStatus: opportunityModerationStatusEnum("moderation_status").default("APPROVED").notNull(),
+    isEdited: boolean("is_edited").default(false).notNull(),
+    isDeleted: boolean("is_deleted").default(false).notNull(),
+    deletedById: integer("deleted_by_id").references(() => users.id),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -88,6 +101,7 @@ module.exports = {
   opportunitySourceEnum,
   opportunityTypeEnum,
   opportunityStatusEnum,
+  opportunityModerationStatusEnum,
   opportunities,
   opportunityBookmarks,
 };

@@ -57,9 +57,12 @@ const listQuestions = async (query) => {
     );
   }
 
+  // Filter out deleted questions
+  conditions.push(eq(questions.isDeleted, false));
+
   if (sort === "unanswered") {
     conditions.push(
-      sql`NOT EXISTS (SELECT 1 FROM answers WHERE answers.question_id = ${questions.id})`
+      sql`NOT EXISTS (SELECT 1 FROM answers WHERE answers.question_id = ${questions.id} AND answers.is_deleted = false)`
     );
   }
 
@@ -83,7 +86,7 @@ const listQuestions = async (query) => {
         authorName: users.name,
         authorUsername: users.username,
         authorAvatarUrl: users.avatarUrl,
-        answerCount: sql`(SELECT COUNT(*) FROM answers WHERE answers.question_id = ${questions.id})`.mapWith(Number),
+        answerCount: sql`(SELECT COUNT(*) FROM answers WHERE answers.question_id = ${questions.id} AND answers.is_deleted = false)`.mapWith(Number),
       })
       .from(questions)
       .leftJoin(users, eq(questions.authorId, users.id))
@@ -154,7 +157,7 @@ const getQuestionById = async (id, incrementView = false) => {
     })
     .from(questions)
     .leftJoin(users, eq(questions.authorId, users.id))
-    .where(eq(questions.id, id))
+    .where(and(eq(questions.id, id), eq(questions.isDeleted, false)))
     .limit(1);
 
   if (!row) throw new AppError("Question not found", 404, "NOT_FOUND");
@@ -181,7 +184,7 @@ const getQuestionById = async (id, incrementView = false) => {
       })
       .from(answers)
       .leftJoin(users, eq(answers.authorId, users.id))
-      .where(eq(answers.questionId, id))
+      .where(and(eq(answers.questionId, id), eq(answers.isDeleted, false)))
       .orderBy(desc(answers.isAccepted), desc(sql`${answers.upvotes} - ${answers.downvotes}`)),
   ]);
 
@@ -220,7 +223,7 @@ const updateQuestion = async (id, userId, patch) => {
   if (Object.keys(meta).length > 0) {
     await db
       .update(questions)
-      .set({ ...meta, updatedAt: new Date() })
+      .set({ ...meta, isEdited: true, updatedAt: new Date() })
       .where(eq(questions.id, id));
   }
 
@@ -246,7 +249,14 @@ const deleteQuestion = async (id, userId, userRole) => {
     throw new AppError("You cannot delete this question", 403, "FORBIDDEN");
   }
 
-  await db.delete(questions).where(eq(questions.id, id));
+  await db
+    .update(questions)
+    .set({
+      isDeleted: true,
+      deletedById: userId,
+      deletedAt: new Date(),
+    })
+    .where(eq(questions.id, id));
 };
 
 // ── Answers ───────────────────────────────────────────────────────────────────
@@ -275,24 +285,7 @@ const createAnswer = async (questionId, authorId, body) => {
 };
 
 const updateAnswer = async (id, userId, body) => {
-  const [answer] = await db
-    .select()
-    .from(answers)
-    .where(eq(answers.id, id))
-    .limit(1);
-
-  if (!answer) throw new AppError("Answer not found", 404, "NOT_FOUND");
-  if (answer.authorId !== userId) {
-    throw new AppError("You can only edit your own answers", 403, "FORBIDDEN");
-  }
-
-  const [updated] = await db
-    .update(answers)
-    .set({ body, updatedAt: new Date() })
-    .where(eq(answers.id, id))
-    .returning();
-
-  return updated;
+  throw new AppError("Answers cannot be edited", 403, "FORBIDDEN");
 };
 
 const deleteAnswer = async (id, userId, userRole) => {
@@ -311,7 +304,14 @@ const deleteAnswer = async (id, userId, userRole) => {
     throw new AppError("You cannot delete this answer", 403, "FORBIDDEN");
   }
 
-  await db.delete(answers).where(eq(answers.id, id));
+  await db
+    .update(answers)
+    .set({
+      isDeleted: true,
+      deletedById: userId,
+      deletedAt: new Date(),
+    })
+    .where(eq(answers.id, id));
 };
 
 const acceptAnswer = async (questionId, answerId, userId) => {
