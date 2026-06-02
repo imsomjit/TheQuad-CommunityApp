@@ -105,7 +105,7 @@ export default function Navbar({ scrolled }) {
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         data-testid="nav-add-dropdown"
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-accent text-paper glow-btn sm:hidden"
+                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-accent text-paper sm:hidden"
                                     >
                                         <Plus className="h-4 w-4" strokeWidth={2.5} />
                                     </button>
@@ -126,7 +126,7 @@ export default function Navbar({ scrolled }) {
                             <Link
                                 to="/ask"
                                 data-testid="nav-ask-btn"
-                                className="hidden h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper glow-btn sm:inline-flex"
+                                className="hidden h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper sm:inline-flex"
                             >
                                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                                 Ask
@@ -146,7 +146,7 @@ export default function Navbar({ scrolled }) {
                             <Link
                                 to="/register"
                                 data-testid="nav-register-btn"
-                                className="inline-flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper glow-btn"
+                                className="inline-flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper"
                             >
                                 <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
                                 Join

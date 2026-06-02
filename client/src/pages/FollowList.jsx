@@ -45,7 +45,7 @@ export default function FollowList({ mode = "followers" }) {
     }, [username, isAuthenticated, authUser, navigate]);
 
     return (
-        <div className="max-w-xl mx-auto fade-in-up space-y-6">
+        <div className="max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
                 <button onClick={() => navigate(`/pv/${username}`)}

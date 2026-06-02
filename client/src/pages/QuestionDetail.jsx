@@ -92,7 +92,7 @@ export default function QuestionDetail() {
     });
 
     return (
-        <div className="mx-auto max-w-5xl fade-in-up">
+        <div className="mx-auto max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Link
                 to="/questions"
                 className="mb-6 inline-flex items-center gap-1 text-sm text-ink-2 transition-colors hover:text-accent"

@@ -72,6 +72,33 @@ async function githubFetch(path) {
   return data;
 }
 
+async function githubGraphQL(query, variables) {
+  const url = `https://api.github.com/graphql`;
+  const key = `${url}:${JSON.stringify(variables)}`;
+  const cached = getCached(key);
+  if (cached) return cached;
+
+  const headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "PeerVerse/1.0",
+    "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
+  };
+
+  const res = await fetch(url, { method: "POST", headers, body: JSON.stringify({ query, variables }) });
+  
+  if (res.status === 403) throw new AppError("GitHub API rate limit exceeded.", 429, "GITHUB_RATE_LIMITED");
+  if (!res.ok) throw new AppError("Failed to fetch from GitHub GraphQL", 502, "GITHUB_API_ERROR");
+
+  const data = await res.json();
+  if (data.errors) {
+    if (data.errors[0]?.type === "NOT_FOUND") throw new AppError("GitHub user not found", 404, "GITHUB_NOT_FOUND");
+    throw new AppError("GraphQL Error", 500, "GITHUB_API_ERROR");
+  }
+
+  setCache(key, data.data);
+  return data.data;
+}
+
 // ── Service functions ────────────────────────────────────────────────────────
 
 /**
@@ -199,6 +226,68 @@ const getActivity = async (githubUsername, { limit = 30 } = {}) => {
  * Calculate a contribution "streak" and summary from recent events.
  */
 const getContributionSummary = async (githubUsername) => {
+  if (process.env.GITHUB_TOKEN) {
+    try {
+      const query = `
+        query($login: String!) {
+          user(login: $login) {
+            contributionsCollection {
+              contributionCalendar {
+                totalContributions
+                weeks {
+                  contributionDays {
+                    date
+                    contributionCount
+                  }
+                }
+              }
+              totalCommitContributions
+            }
+          }
+        }
+      `;
+      const data = await githubGraphQL(query, { login: githubUsername });
+      const collection = data.user.contributionsCollection;
+      const calendar = collection.contributionCalendar;
+
+      const dayMap = {};
+      let activeDays = 0;
+
+      for (const week of calendar.weeks) {
+        for (const day of week.contributionDays) {
+          if (day.contributionCount > 0) {
+            dayMap[day.date] = day.contributionCount;
+            activeDays++;
+          }
+        }
+      }
+
+      const today = new Date();
+      let streak = 0;
+      for (let i = 0; i < 365; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        if (dayMap[key]) {
+          streak++;
+        } else if (i > 0) {
+          break;
+        }
+      }
+
+      return {
+        currentStreak: streak,
+        totalEvents: calendar.totalContributions,
+        totalCommits: collection.totalCommitContributions,
+        activeDays,
+        contributionsByDay: dayMap,
+      };
+    } catch (err) {
+      logger.error("GraphQL contribution fetch failed, falling back to REST", err);
+    }
+  }
+
+  // Fallback to REST API (only last 90 days available)
   const events = await githubFetch(
     `/users/${githubUsername}/events/public?per_page=100`
   );

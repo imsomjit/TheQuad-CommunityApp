@@ -56,7 +56,7 @@ export default function AskQuestion() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto fade-in-up">
+        <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Back Button */}
             <button
                 onClick={() => navigate(-1)}
@@ -189,7 +189,7 @@ export default function AskQuestion() {
                         type="submit"
                         disabled={submitting}
                         data-testid="submit-question-btn"
-                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-sm text-sm font-semibold text-paper bg-accent glow-btn disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 h-11 px-6 rounded-sm text-sm font-semibold text-paper bg-accent btn-primary disabled:opacity-50"
                     >
                         {submitting ? "Posting..." : "Post question"}
                     </button>

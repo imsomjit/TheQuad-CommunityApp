@@ -97,7 +97,7 @@ export default function PostsFeed() {
   const hasActiveFilters = category || tag || q;
 
   return (
-    <div className="space-y-10 fade-in-up">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Editorial header */}
       <header className="border-b-2 border-double border-rule pb-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -118,7 +118,7 @@ export default function PostsFeed() {
           {currentUser && (
             <Link
               to="/posts/new"
-              className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
             >
               <PenLine className="h-4 w-4" />
               Write a post
@@ -128,7 +128,7 @@ export default function PostsFeed() {
       </header>
 
       {/* Filter bar */}
-      <div className="space-y-4 rounded-sm border border-rule bg-paper-2/40 p-5">
+      <div className="space-y-4 rounded-md border border-rule bg-paper-2/40 p-5">
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
@@ -143,7 +143,7 @@ export default function PostsFeed() {
                 }
               }}
               placeholder="Search by title, description or tag (press Enter)..."
-              className="h-10 rounded-sm border-rule bg-paper pl-9 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+              className="h-10 rounded-md border-rule bg-paper pl-9 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
             />
           </div>
 
@@ -179,7 +179,7 @@ export default function PostsFeed() {
                 }
               }}
               placeholder="Filter by tag (press Enter)..."
-              className="h-10 w-full rounded-sm border-rule bg-paper px-3 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+              className="h-10 w-full rounded-md border-rule bg-paper px-3 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
             />
           </div>
 
@@ -234,7 +234,7 @@ export default function PostsFeed() {
             ))}
           </PostsGrid>
         ) : error ? (
-          <div className="rounded-sm border border-rule bg-paper-2/40 p-10 text-center">
+          <div className="rounded-md border border-rule bg-paper-2/40 p-10 text-center">
             <p className="text-sm text-ink-2">{error}</p>
             <button
               onClick={fetchPosts}
@@ -259,7 +259,7 @@ export default function PostsFeed() {
                 <button
                   disabled={!pagination.hasPrevPage}
                   onClick={() => setParam("page", String(page - 1))}
-                  className="rounded-sm border border-rule px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+                  className="rounded-md border border-rule px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink disabled:pointer-events-none disabled:opacity-40"
                 >
                   ← Prev
                 </button>
@@ -269,7 +269,7 @@ export default function PostsFeed() {
                 <button
                   disabled={!pagination.hasNextPage}
                   onClick={() => setParam("page", String(page + 1))}
-                  className="rounded-sm border border-rule px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink disabled:pointer-events-none disabled:opacity-40"
+                  className="rounded-md border border-rule px-3 py-1.5 text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink disabled:pointer-events-none disabled:opacity-40"
                 >
                   Next →
                 </button>
@@ -297,7 +297,7 @@ function FilterSelect({ value, setValue, options, placeholder, testId, icon: Ico
     <Select value={value} onValueChange={setValue}>
       <SelectTrigger
         data-testid={testId}
-        className="h-10 rounded-sm border-rule bg-paper text-sm text-ink hover:border-ink-3"
+        className="h-10 rounded-md border-rule bg-paper text-sm text-ink hover:border-ink-3"
       >
         <div className="flex items-center gap-2">
           {Icon && <Icon className="h-3.5 w-3.5 text-ink-3" />}
@@ -318,7 +318,7 @@ function FilterSelect({ value, setValue, options, placeholder, testId, icon: Ico
 
 function Chip({ children, onRemove }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-sm border border-accent bg-accent-soft px-2 py-1 font-mono text-xs text-accent">
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-accent bg-accent-soft px-2 py-1 font-mono text-xs text-accent">
       {children}
       <button onClick={onRemove} className="transition-colors hover:text-syntax-rose">
         <X className="h-3 w-3" />
@@ -329,14 +329,14 @@ function Chip({ children, onRemove }) {
 
 function PostSkeleton() {
   return (
-    <div className="flex flex-col gap-3 rounded-sm border border-rule bg-paper p-5">
-      <div className="h-5 w-24 animate-pulse rounded-sm bg-paper-2" />
-      <div className="h-6 w-full animate-pulse rounded-sm bg-paper-2" />
-      <div className="h-4 w-3/4 animate-pulse rounded-sm bg-paper-2" />
-      <div className="h-4 w-1/2 animate-pulse rounded-sm bg-paper-2" />
+    <div className="flex flex-col gap-3 rounded-md border border-rule bg-paper p-5">
+      <div className="h-5 w-24 animate-pulse rounded-md bg-paper-2" />
+      <div className="h-6 w-full animate-pulse rounded-md bg-paper-2" />
+      <div className="h-4 w-3/4 animate-pulse rounded-md bg-paper-2" />
+      <div className="h-4 w-1/2 animate-pulse rounded-md bg-paper-2" />
       <div className="mt-2 flex gap-2">
         {[1, 2].map((i) => (
-          <div key={i} className="h-4 w-16 animate-pulse rounded-sm bg-paper-2" />
+          <div key={i} className="h-4 w-16 animate-pulse rounded-md bg-paper-2" />
         ))}
       </div>
     </div>
@@ -347,7 +347,7 @@ function EmptyState({ category, currentUser }) {
   const cat = CATEGORY_META[category];
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-rule border-dashed bg-paper py-20 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-sm border border-rule bg-paper-2">
+      <div className="flex h-14 w-14 items-center justify-center rounded-md border border-rule bg-paper-2">
         <PenLine className="h-6 w-6 text-ink-3" />
       </div>
       <p className="mt-4 font-display text-xl text-ink">
@@ -361,7 +361,7 @@ function EmptyState({ category, currentUser }) {
       {currentUser && (
         <Link
           to="/posts/new"
-          className="mt-5 flex items-center gap-2 rounded-sm bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink/80"
+          className="mt-5 flex items-center gap-2 rounded-md bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink/80"
         >
           <PenLine className="h-4 w-4" />
           Write a post

@@ -23,10 +23,10 @@ const router = Router();
 router.get("/", postReadLimiter, controller.list);
 
 // GET /api/posts/drafts — user's own drafts (must come before :slug)
-router.get("/drafts", auth, controller.drafts);
+router.get("/drafts", auth, postReadLimiter, controller.drafts);
 
 // GET /api/posts/id/:id — get by ID (for editor, drafts visible to author)
-router.get("/id/:id", auth, controller.getById);
+router.get("/id/:id", auth, postReadLimiter, controller.getById);
 
 // GET /api/posts/:slug — read published post by slug
 router.get("/:slug", postReadLimiter, controller.getBySlug);

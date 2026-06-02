@@ -31,6 +31,7 @@ router.post(
 router.get(
   "/",
   auth,
+  bookmarkLimiter,
   asyncHandler(async (req, res) => {
     const ids = await bookmarkService.getUserBookmarkIds(
       req.user.id,

@@ -18,11 +18,55 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs"
 import { toast } from "sonner";
 import NetworkBanner from "../components/NetworkBanner";
 
-const LANG_COLORS = {
-    "TypeScript": "#3178c6", "JavaScript": "#f1e05a", "Go": "#00ADD8",
-    "Rust": "#dea584", "Python": "#3572A5", "Shell": "#89e051",
-    "C++": "#f34b7d", "Java": "#b07219", "CSS": "#563d7c",
-    "HTML": "#e34c26", "Swift": "#F05138", "Kotlin": "#A97BFF",
+export const LANG_COLORS = {
+  TypeScript: "#3178C6",
+  JavaScript: "#F7DF1E",
+  Python: "#3572A5",
+  Java: "#B07219",
+  "C++": "#F34B7D",
+  C: "#555555",
+  "C#": "#239120",
+  PHP: "#4F5D95",
+  Ruby: "#CC342D",
+  Go: "#00ADD8",
+  Rust: "#DEA584",
+  Swift: "#F05138",
+  Kotlin: "#A97BFF",
+  Dart: "#0175C2",
+  Scala: "#DC322F",
+  R: "#276DC3",
+  MATLAB: "#E16737",
+  Perl: "#39457E",
+  Lua: "#000080",
+  Haskell: "#5E5086",
+  Elixir: "#6E4A7E",
+  Clojure: "#DB5855",
+  Groovy: "#4298B8",
+  HTML: "#E34F26",
+  CSS: "#663399",
+  SCSS: "#CF649A",
+  Less: "#1D365D",
+  Sass: "#CC6699",
+  Vue: "#41B883",
+  Svelte: "#FF3E00",
+  Shell: "#89E051",
+  PowerShell: "#012456",
+  Batchfile: "#C1F12E",
+  SQL: "#E38C00",
+  "PLpgSQL": "#336791",
+  "PL/pgSQL": "#336791",
+  Dockerfile: "#2496ED",
+  YAML: "#CB171E",
+  JSON: "#F4A261",
+  XML: "#8BC34A",
+  TOML: "#9C4221",
+  Markdown: "#083FA1",
+  Assembly: "#6E4C13",
+  Solidity: "#AA6746",
+  Zig: "#F7A41D",
+  "Objective-C": "#438EFF",
+  "Objective-C++": "#6866FB",
+  "Jupyter Notebook": "#DA5B0B",
 };
 
 export default function Profile() {
@@ -167,11 +211,11 @@ export default function Profile() {
     const totalLangBytes = ghLanguages.reduce((a, l) => a + (l.bytes || 0), 0) || 1;
 
     return (
-        <div className="space-y-8 fade-in-up">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* ── Banner + Header ─────────────────────────────────────────────── */}
             <div>
                 {/* Banner */}
-                <div className="relative h-44 sm:h-56 overflow-hidden rounded-t-sm border border-rule group">
+                <div className="relative h-44 sm:h-56 overflow-hidden rounded-t-md border border-rule group">
                     {profile.bannerUrl?.startsWith("data:image/svg+xml") ? (
                         <NetworkBanner username={profile.username} className="absolute inset-0 z-0" />
                     ) : (
@@ -182,7 +226,7 @@ export default function Profile() {
                         <button
                             onClick={() => bannerInputRef.current?.click()}
                             disabled={bannerUploading}
-                            className="absolute top-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-rule/60 bg-paper/80 px-3 py-1.5 text-xs font-mono text-ink backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-paper"
+                            className="absolute top-3 right-3 z-20 flex items-center gap-1.5 rounded-md border border-rule/60 bg-paper/80 px-3 py-1.5 text-xs font-mono text-ink backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-paper"
                         >
                             {bannerUploading ? <Loader inline size="sm" /> : <Camera className="h-3 w-3" />}
                             {bannerUploading ? "Uploading…" : "Change banner"}
@@ -190,7 +234,7 @@ export default function Profile() {
                     )}
                     
                     {isOwnProfile && (profile.role === 'admin' || profile.role === 'moderator') && (
-                        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-accent-soft bg-accent px-3 py-1 text-xs font-medium font-mono uppercase tracking-wider text-paper backdrop-blur-md shadow-md" title={`${profile.role} Console Access`}>
+                        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 rounded-md border border-accent-soft bg-accent px-3 py-1 text-xs font-medium font-mono uppercase tracking-wider text-paper backdrop-blur-md shadow-md" title={`${profile.role} Console Access`}>
                             <ShieldAlert className="h-3.5 w-3.5" />
                             {profile.role}
                         </div>
@@ -200,7 +244,7 @@ export default function Profile() {
                 </div>
 
                 {/* Header */}
-                <div className="relative px-4 sm:px-6 border border-t-0 border-rule rounded-b-sm bg-paper-2/20 pb-5">
+                <div className="relative px-4 sm:px-6 border border-t-0 border-rule rounded-b-md bg-paper-2/20 pb-5">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4 mb-4">
                         {/* Avatar */}
                         <div className="-mt-14 sm:-mt-16 relative group self-start shrink-0">
@@ -227,13 +271,13 @@ export default function Profile() {
                                 <>
                                     <Link
                                         to="/settings/profile"
-                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
+                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
                                     >
                                         <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit profile</span><span className="sm:hidden">Edit</span>
                                     </Link>
                                     <button
                                         onClick={() => logout()}
-                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-medium text-red-500 font-mono bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors shrink-0"
+                                        className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium text-red-500 font-mono bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors shrink-0"
                                     >
                                         <LogOut className="w-3.5 h-3.5" /><span className="hidden sm:inline">Logout</span>
                                     </button>
@@ -242,10 +286,10 @@ export default function Profile() {
                                 <button
                                     onClick={handleFollow}
                                     disabled={followLoading}
-                                    className={`inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-sm text-xs sm:text-sm font-semibold transition-all shrink-0 ${
+                                    className={`inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-semibold transition-all shrink-0 ${
                                         following
                                             ? "text-ink bg-paper border border-rule hover:border-red-300 hover:text-red-400"
-                                            : "text-paper bg-accent glow-btn hover:brightness-110"
+                                            : "text-paper bg-accent btn-primary hover:brightness-110"
                                     }`}
                                 >
                                     {followLoading ? (
@@ -266,12 +310,12 @@ export default function Profile() {
                             <span className="marker">{profile.name}</span>
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper border border-rule text-xs sm:text-sm font-medium text-ink-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-ink-2">
                                 @{profile.username}
                             </span>
                             {profile.website && (
                                 <a href={profile.website} target="_blank" rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper border border-rule text-xs sm:text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors truncate max-w-[150px] sm:max-w-none">
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors truncate max-w-[150px] sm:max-w-none">
                                     <Globe className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//, "")}</span>
                                 </a>
                             )}
@@ -284,34 +328,34 @@ export default function Profile() {
                     )}
 
                     {/* Metadata Grid */}
-                    <div className="mt-6 flex flex-wrap gap-4 text-sm text-ink-2">
+                    <div className="mt-6 flex flex-wrap gap-4 text-sm font-mono text-ink-2">
                         {profile.organization && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-md bg-paper border border-rule"><Building2 className="w-4 h-4 text-ink-3" /></div>
+                                <div className="p-1"><Building2 className="w-4 h-4 text-ink-2" fill="var(--syntax-amber)" /></div>
                                 <span>{profile.organization}</span>
                             </div>
                         )}
                         {profile.location && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-md bg-paper border border-rule"><MapPin className="w-4 h-4 text-ink-3" /></div>
+                                <div className="p-1"><MapPin className="w-4 h-4 text-ink-2" fill="var(--syntax-rose)" /></div>
                                 <span>{profile.location}</span>
                             </div>
                         )}
                         {profile.college && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-md bg-paper border border-rule"><BookOpen className="w-4 h-4 text-ink-3" /></div>
+                                <div className="p-1"><BookOpen className="w-4 h-4 text-ink-2" fill="var(--syntax-mint)" /></div>
                                 <span>
                                     {profile.college}
-                                    {profile.branch && <span className="text-ink-3 mx-1">•</span>}
+                                    {profile.branch && <span className="text-accent mx-1">•</span>}
                                     {profile.branch}
-                                    {profile.graduationYear && <span className="text-ink-3 mx-1">•</span>}
+                                    {profile.graduationYear && <span className="text-accent mx-1">•</span>}
                                     {profile.graduationYear && `'${String(profile.graduationYear).slice(-2)}`}
                                 </span>
                             </div>
                         )}
                         {profile.joined && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-md bg-paper border border-rule"><Calendar className="w-4 h-4 text-ink-3" /></div>
+                                <div className="p-1.5 rounded-md bg-paper"><Calendar className="w-4 h-4 text-ink-3" /></div>
                                 <span>Joined {new Date(profile.joined).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span>
                             </div>
                         )}
@@ -323,11 +367,11 @@ export default function Profile() {
                             {isOwnProfile ? (
                                 <>
                                     <Link to={`/pv/${username}/followers`} className="group flex items-baseline font-mono gap-1">
-                                        <span className="font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.followers || 0).toLocaleString()}</span>
+                                        <span className="font-bold text-accent group-hover:text-accent transition-colors">{(profile.stats?.followers || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">followers</span>
                                     </Link>
                                     <Link to={`/pv/${username}/following`} className="group flex items-baseline font-mono gap-1">
-                                        <span className="font-bold text-ink group-hover:text-accent transition-colors">{(profile.stats?.following || 0).toLocaleString()}</span>
+                                        <span className="font-bold text-accent group-hover:text-accent transition-colors">{(profile.stats?.following || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">following</span>
                                     </Link>
                                 </>
@@ -349,31 +393,31 @@ export default function Profile() {
                         <div className="flex items-center gap-2">
                             {profile.githubUsername && (
                                 <a href={`https://github.com/${profile.githubUsername}`} target="_blank" rel="noreferrer" title="GitHub"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-black hover:border-black transition-all">
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-2 hover:text-white hover:bg-black hover:border-black transition-all">
                                     <Github className="w-4 h-4" />
                                 </a>
                             )}
                             {profile.leetcodeUsername && (
                                 <a href={`https://leetcode.com/${profile.leetcodeUsername}`} target="_blank" rel="noreferrer" title="LeetCode"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-black hover:bg-[#FFA116] hover:border-[#FFA116] transition-all flex items-center justify-center font-mono font-bold text-xs" style={{ width: 34, height: 34 }}>
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-2 hover:text-black hover:bg-[#FFA116] hover:border-[#FFA116] transition-all flex items-center justify-center font-mono font-bold text-xs" style={{ width: 34, height: 34 }}>
                                     LC
                                 </a>
                             )}
                             {profile.linkedinUrl && (
                                 <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" title="LinkedIn"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-blue-600 hover:border-blue-600 transition-all">
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-2 hover:text-white hover:bg-blue-600 hover:border-blue-600 transition-all">
                                     <Linkedin className="w-4 h-4" />
                                 </a>
                             )}
                             {profile.instagramHandle && (
                                 <a href={`https://instagram.com/${profile.instagramHandle}`} target="_blank" rel="noreferrer" title="Instagram"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition-all">
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-2 hover:text-white hover:bg-[#E1306C] hover:border-[#E1306C] transition-all">
                                     <Instagram className="w-4 h-4" />
                                 </a>
                             )}
                             {profile.twitterHandle && (
                                 <a href={`https://x.com/${profile.twitterHandle}`} target="_blank" rel="noreferrer" title="X / Twitter"
-                                    className="p-2 rounded-full bg-paper border border-rule text-ink-3 hover:text-white hover:bg-blue-400 hover:border-blue-400 transition-all">
+                                    className="p-2 rounded-full bg-paper border border-rule text-ink-2 hover:text-white hover:bg-blue-400 hover:border-blue-400 transition-all">
                                     <Twitter className="w-4 h-4" />
                                 </a>
                             )}
@@ -578,7 +622,7 @@ export default function Profile() {
                     )}
                 </section>
             ) : isOwnProfile ? (
-                <section className="border border-dashed border-rule rounded-sm p-8 text-center">
+                <section className="border border-dashed border-rule rounded-md p-8 text-center">
                     <Github className="w-8 h-8 text-ink-3 mx-auto mb-3" />
                     <p className="text-sm text-ink-2">Connect your GitHub to show repos and contributions</p>
                     <Link to="/settings/profile"
@@ -688,7 +732,7 @@ function MiniStat({ icon: Icon, label, value }) {
 
 function Empty({ label }) {
     return (
-        <div className="text-center py-12 border border-dashed border-rule rounded-sm">
+        <div className="text-center py-12 border border-dashed border-rule rounded-md">
             <Bookmark className="w-7 h-7 text-ink-3 mx-auto mb-2" />
             <p className="text-ink-2 text-sm">{label}</p>
         </div>

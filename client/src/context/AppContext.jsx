@@ -28,9 +28,6 @@ export const useApp = () => {
   return ctx;
 };
 
-let commentCounter = 1000;
-let answerCounter = 1000;
-
 export function AppProvider({ children }) {
   const { user: authUser, isAuthenticated } = useAuth();
 
@@ -100,27 +97,6 @@ export function AppProvider({ children }) {
     load();
   }, [isAuthenticated]);
 
-  // ── SSE for live notifications ─────────────────────────────────────────────
-  useEffect(() => {
-    if (!isAuthenticated || !getAccessToken()) return;
-
-    let es;
-    try {
-      // EventSource doesn't support custom headers, so we use query param
-      // Actually for PeerVerse SSE, the server reads Bearer from Authorization header.
-      // Standard EventSource can't send headers, so we'll use fetch-based SSE or
-      // just poll for now. The SSE endpoint works if accessed via browser with
-      // the token in query. For production, use EventSourcePolyfill.
-      // For now, let's skip SSE and rely on the fetched notifications.
-    } catch {
-      // SSE not available
-    }
-
-    return () => {
-      if (es) es.close();
-    };
-  }, [isAuthenticated]);
-
   // ── Voting ─────────────────────────────────────────────────────────────────
   const voteOn = useCallback(
     async (kind, id, direction) => {
@@ -177,7 +153,22 @@ export function AppProvider({ children }) {
 
       // Fire API call (non-blocking)
       if (isAuthenticated) {
-        votesApi.cast({ targetType: kind, targetId: id, direction }).catch(() => {});
+        votesApi.cast({ targetType: kind, targetId: id, direction }).catch(() => {
+          // Rollback on failure
+          setVotes((prev) => ({ ...prev, [key]: existing }));
+          const revD = { upvotes: -(d.upvotes || 0), downvotes: -(d.downvotes || 0) };
+
+          if (kind === "resource") {
+            setResources((rs) => rs.map((r) => r.id === id ? { ...r, upvotes: (r.upvotes || 0) + revD.upvotes, downvotes: (r.downvotes || 0) + revD.downvotes } : r));
+          } else if (kind === "question") {
+            setQuestions((qs) => qs.map((q) => q.id === id ? { ...q, upvotes: (q.upvotes || 0) + revD.upvotes, downvotes: (q.downvotes || 0) + revD.downvotes } : q));
+          } else if (kind === "answer") {
+            setQuestions((qs) => qs.map((q) => ({
+              ...q,
+              answers: (q.answers || []).map((a) => a.id === id ? { ...a, upvotes: (a.upvotes || 0) + revD.upvotes, downvotes: (a.downvotes || 0) + revD.downvotes } : a),
+            })));
+          }
+        });
       }
     },
     [votes, isAuthenticated]
@@ -195,7 +186,15 @@ export function AppProvider({ children }) {
       });
 
       if (isAuthenticated) {
-        bookmarksApi.toggle({ targetType: "resource", targetId: id }).catch(() => {});
+        bookmarksApi.toggle({ targetType: "resource", targetId: id }).catch(() => {
+          // Rollback on failure
+          setBookmarks((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+          });
+        });
       }
     },
     [isAuthenticated]
@@ -247,24 +246,13 @@ export function AppProvider({ children }) {
 
   const addCommentToResource = useCallback(
     async (resourceId, text) => {
-      if (isAuthenticated) {
-        const comment = await commentsApi.add({
-          targetType: "resource",
-          targetId: resourceId,
-          body: text,
-        });
-        setResources((rs) =>
-          rs.map((r) =>
-            r.id === resourceId
-              ? { ...r, comments: [...(r.comments || []), comment] }
-              : r
-          )
-        );
-        return comment;
-      }
-
-      const id = `c_${++commentCounter}`;
-      const comment = { id, author: currentUser, text, created_at: new Date().toISOString() };
+      if (!isAuthenticated) return;
+      
+      const comment = await commentsApi.add({
+        targetType: "resource",
+        targetId: resourceId,
+        body: text,
+      });
       setResources((rs) =>
         rs.map((r) =>
           r.id === resourceId
@@ -280,14 +268,9 @@ export function AppProvider({ children }) {
   // ── Questions ──────────────────────────────────────────────────────────────
   const addQuestion = useCallback(
     async (data) => {
-      if (isAuthenticated) {
-        const q = await questionsApi.create(data);
-        setQuestions((qs) => [q, ...qs]);
-        return q;
-      }
-      const id = `q_${Date.now()}`;
-      const now = new Date().toISOString();
-      const q = { id, ...data, author: currentUser, created_at: now, views: 0, upvotes: 0, downvotes: 0, answers: [] };
+      if (!isAuthenticated) return;
+
+      const q = await questionsApi.create(data);
       setQuestions((qs) => [q, ...qs]);
       return q;
     },
@@ -316,17 +299,9 @@ export function AppProvider({ children }) {
 
   const addAnswer = useCallback(
     async (questionId, body) => {
-      if (isAuthenticated) {
-        const answer = await questionsApi.addAnswer(questionId, body);
-        setQuestions((qs) =>
-          qs.map((q) =>
-            q.id === questionId ? { ...q, answers: [...(q.answers || []), answer] } : q
-          )
-        );
-        return answer;
-      }
-      const id = `a_${++answerCounter}`;
-      const answer = { id, author: currentUser, body, created_at: new Date().toISOString(), upvotes: 0, downvotes: 0, accepted: false, comments: [] };
+      if (!isAuthenticated) return;
+
+      const answer = await questionsApi.addAnswer(questionId, body);
       setQuestions((qs) =>
         qs.map((q) =>
           q.id === questionId ? { ...q, answers: [...(q.answers || []), answer] } : q

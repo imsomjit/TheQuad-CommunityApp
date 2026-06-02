@@ -3,12 +3,14 @@
 const { Router } = require("express");
 const controller = require("./moderation.controller");
 const { auth, restrictTo } = require("../../middleware/auth");
+const { adminLimiter } = require("../../middleware/rateLimiter");
 
 const router = Router();
 
 // All moderation routes require at least moderator access
 router.use(auth);
 router.use(restrictTo("moderator", "admin"));
+router.use(adminLimiter);
 
 // Reports
 router.get("/reports", controller.listReports);

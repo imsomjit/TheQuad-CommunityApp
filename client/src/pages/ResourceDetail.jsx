@@ -124,7 +124,7 @@ export default function ResourceDetail() {
     };
 
     return (
-        <div className="mx-auto max-w-5xl fade-in-up">
+        <div className="mx-auto max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Link
                 to="/resources"
                 data-testid="back-to-resources"

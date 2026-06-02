@@ -104,7 +104,7 @@ export default function Notifications() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 fade-in-up">
+      <div className="flex flex-col items-center justify-center py-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Bell className="h-12 w-12 text-ink-3 mb-4" />
         <h2 className="font-display text-xl font-semibold text-ink">
           Sign in to view notifications
@@ -114,7 +114,7 @@ export default function Notifications() {
         </p>
         <Link
           to="/login"
-          className="mt-6 inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper glow-btn"
+          className="mt-6 inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper btn-primary"
         >
           Sign in
         </Link>
@@ -123,7 +123,7 @@ export default function Notifications() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto fade-in-up">
+    <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <header className="mb-8">
         <div className="flex items-center justify-between">

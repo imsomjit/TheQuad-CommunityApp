@@ -80,7 +80,7 @@ export default function Questions() {
     }, [questions, q, tag, sort]);
 
     return (
-        <div className="space-y-10 fade-in-up">
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="border-b-2 border-double border-rule pb-8">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
@@ -102,7 +102,7 @@ export default function Questions() {
                     <Link
                         to="/ask"
                         data-testid="ask-question-button"
-                        className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+                        className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
                     >
                         <Plus className="h-4 w-4" />
                         Ask question

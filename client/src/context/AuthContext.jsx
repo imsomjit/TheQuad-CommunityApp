@@ -16,6 +16,7 @@ import {
   authApi,
   setAccessToken,
   clearAccessToken,
+  setAuthFailureHandler,
   mapUser,
 } from "../services/api";
 
@@ -44,6 +45,16 @@ export function AuthProvider({ children }) {
         clearAccessToken();
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  // Register auth failure handler so the API interceptor can clear
+  // React state instead of doing a hard window.location redirect.
+  useEffect(() => {
+    setAuthFailureHandler(() => {
+      clearAccessToken();
+      setUser(null);
+    });
+    return () => setAuthFailureHandler(null);
   }, []);
 
   const login = useCallback(async ({ email, password }) => {

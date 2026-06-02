@@ -128,7 +128,7 @@ export default function AdminSettings() {
         <button 
           onClick={handleSaveSettings}
           disabled={loading}
-          className="flex items-center gap-2 rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-paper hover:bg-accent-hover disabled:opacity-50 transition-all glow-btn"
+          className="flex items-center gap-2 rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-paper hover:bg-accent-hover disabled:opacity-50 transition-all btn-primary"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save Settings

@@ -3,11 +3,12 @@
 const express = require("express");
 const { auth, restrictTo } = require("../../middleware/auth");
 const broadcastsService = require("./broadcasts.service");
+const { adminLimiter } = require("../../middleware/rateLimiter");
 
 const router = express.Router();
 
 // All broadcast endpoints are Admin only
-router.use(auth, restrictTo("admin"));
+router.use(auth, restrictTo("admin"), adminLimiter);
 
 /**
  * @route   GET /api/broadcasts

@@ -129,17 +129,15 @@ export default function Layout() {
                     {/* Footer / colophon */}
                     <footer className="mt-10 border-t-2 border-double border-rule">
                     {/* Marquee separator (hidden when authenticated) */}
-                    {!isAuthenticated && (
                         <div className="overflow-hidden border-b border-rule/60 py-2">
                             <div className="marquee whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3/50">
                                 {Array(4)
                                     .fill(
-                                        "peerverse · share · learn · grow · collaborate · build · ship · "
+                                        "peerverse - share · debate · learn · grow · collaborate · build · ship | "
                                     )
                                     .join("")}
                             </div>
                         </div>
-                    )}
 
                     <div className="mx-auto max-w-7xl w-full grid grid-cols-2 gap-10 px-4 py-12 sm:grid-cols-4 sm:px-6 lg:px-2">
                         {/* Brand column */}
@@ -258,32 +256,32 @@ export default function Layout() {
 
                     {/* Bottom bar */}
                     <div className="border-t border-rule/60">
-                        <div className="mx-auto max-w-7xl w-full flex flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row sm:px-6 lg:px-2">
+                        <div className="mx-auto mb-20 sm:mb-2 max-w-7xl w-full flex flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row sm:px-6 lg:px-2">
                             <p className="font-mono text-[10px] text-ink-3">
                                 © {new Date().getFullYear()} PeerVerse. All rights
                                 reserved.
                             </p>
                             <div className="flex items-center gap-4">
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/privacy"
                                     className="font-mono text-[10px] text-ink-3 hover:text-ink transition-colors"
                                 >
                                     Privacy
-                                </a>
+                                </Link>
                                 <span className="text-rule">·</span>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/terms"
                                     className="font-mono text-[10px] text-ink-3 hover:text-ink transition-colors"
                                 >
                                     Terms
-                                </a>
+                                </Link>
                                 <span className="text-rule">·</span>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/faq"
                                     className="font-mono text-[10px] text-ink-3 hover:text-ink transition-colors"
                                 >
-                                    Status
-                                </a>
+                                    FAQ
+                                </Link>
                             </div>
                         </div>
                     </div>

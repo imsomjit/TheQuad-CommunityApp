@@ -23,6 +23,7 @@ const api = axios.create({
 // ── Token management ─────────────────────────────────────────────────────────
 let accessToken = null;
 let refreshPromise = null; // single in-flight refresh to avoid races
+let authFailureCallback = null; // called instead of hard redirect on auth failure
 
 export const setAccessToken = (token) => {
   accessToken = token;
@@ -32,6 +33,15 @@ export const getAccessToken = () => accessToken;
 
 export const clearAccessToken = () => {
   accessToken = null;
+};
+
+/**
+ * Register a callback to invoke when silent refresh fails.
+ * AuthContext sets this on mount so we can clear React state
+ * instead of doing a full-page reload via window.location.
+ */
+export const setAuthFailureHandler = (handler) => {
+  authFailureCallback = handler;
 };
 
 // ── Request interceptor: inject Bearer token ─────────────────────────────────
@@ -70,8 +80,11 @@ api.interceptors.response.use(
         return api(original);
       } catch {
         clearAccessToken();
-        // Redirect to login if refresh fails
-        window.location.href = "/login";
+        // Notify AuthContext so React state is cleared and
+        // ProtectedRoute handles the redirect — no page reload.
+        if (authFailureCallback) {
+          authFailureCallback();
+        }
         return Promise.reject(error);
       }
     }
@@ -112,13 +125,11 @@ const mapUser = (u) => {
     skills: u.skills || [],
     // Social
     githubUsername: u.githubUsername || u.github_username || "",
-    github_username: u.githubUsername || u.github_username || "",
     linkedinUrl: u.linkedinUrl || "",
     twitterHandle: u.twitterHandle || "",
     instagramHandle: u.instagramHandle || "",
     leetcodeUsername: u.leetcodeUsername || "",
     // Meta
-    joined: u.createdAt || u.joined || null,
     createdAt: u.createdAt || null,
     stats: u.stats || { resources: 0, questions: 0, answers: 0, followers: 0, following: 0, totalUpvotes: 0 },
     viewerFollows: u.viewerFollows || false,
@@ -150,8 +161,8 @@ const mapResource = (r) => ({
         avatar: r.uploader.avatarUrl || r.uploader.avatar || r.uploaderAvatarUrl || "",
       }
     : { id: r.uploaderId, name: r.uploaderName || "", username: r.uploaderUsername || "", avatar: r.uploaderAvatarUrl || "" },
-  created_at: r.createdAt || r.created_at,
-  updated_at: r.updatedAt || r.updated_at,
+  createdAt: r.createdAt || r.created_at,
+  updatedAt: r.updatedAt || r.updated_at,
   upvotes: r.upvotes || 0,
   downvotes: r.downvotes || 0,
   views: r.views || 0,
@@ -174,8 +185,8 @@ const mapQuestion = (q) => ({
         avatar: q.author.avatarUrl || q.author.avatar || q.authorAvatarUrl || "",
       }
     : { id: q.authorId, name: q.authorName || "", username: q.authorUsername || "", avatar: q.authorAvatarUrl || "" },
-  created_at: q.createdAt || q.created_at,
-  updated_at: q.updatedAt || q.updated_at,
+  createdAt: q.createdAt || q.created_at,
+  updatedAt: q.updatedAt || q.updated_at,
   upvotes: q.upvotes || 0,
   downvotes: q.downvotes || 0,
   views: q.views || 0,
@@ -195,8 +206,8 @@ const mapAnswer = (a) => ({
         avatar: a.author.avatarUrl || a.author.avatar || a.authorAvatarUrl || "",
       }
     : { id: a.authorId, name: a.authorName || "", username: a.authorUsername || "", avatar: a.authorAvatarUrl || "" },
-  created_at: a.createdAt || a.created_at,
-  updated_at: a.updatedAt || a.updated_at,
+  createdAt: a.createdAt || a.created_at,
+  updatedAt: a.updatedAt || a.updated_at,
   upvotes: a.upvotes || 0,
   downvotes: a.downvotes || 0,
   accepted: a.isAccepted || a.accepted || false,
@@ -220,7 +231,6 @@ const mapComment = (c) => ({
   body: c.body || c.text || "",
   text: c.body || c.text || "",
   createdAt: c.createdAt || c.created_at,
-  created_at: c.createdAt || c.created_at,
   replies: (c.replies || []).map(mapComment),
 });
 
@@ -280,7 +290,7 @@ const mapNotification = (n) => {
     titleOverride,
     targetId: n.targetId,
     targetType: n.targetType,
-    created_at: n.createdAt || n.created_at,
+    createdAt: n.createdAt || n.created_at,
     read: n.isRead ?? n.read ?? false,
   };
 };

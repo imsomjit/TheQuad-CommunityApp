@@ -4,23 +4,29 @@ const nodemailer = require("nodemailer");
 const env = require("../config/env");
 const logger = require("./logger");
 
+let transporter = null;
+
 /**
- * Gmail SMTP transporter.
+ * Gets or creates the Gmail SMTP transporter.
  * Uses 'service: gmail' to handle connection timeouts on Render.com.
  * Requires a Gmail App Password (2FA must be enabled on the account).
  */
-const createTransporter = () =>
-  nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: env.GMAIL_USER,
-      pass: env.GMAIL_APP_PASSWORD,
-    },
-    // Increased timeouts for Render's cold-start network
-    connectionTimeout: 10_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 15_000,
-  });
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: env.GMAIL_USER,
+        pass: env.GMAIL_APP_PASSWORD,
+      },
+      // Increased timeouts for Render's cold-start network
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
+    });
+  }
+  return transporter;
+};
 
 /**
  * Sends an email. Fails silently (logs error) if GMAIL_* env vars are not set.
@@ -33,10 +39,10 @@ const sendEmail = async ({ to, subject, html, text }) => {
     return;
   }
 
-  const transporter = createTransporter();
+  const mailTransporter = getTransporter();
 
   try {
-    await transporter.sendMail({
+    await mailTransporter.sendMail({
       from: `"PeerVerse Community" <${env.GMAIL_USER}>`,
       to,
       subject,

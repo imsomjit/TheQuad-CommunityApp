@@ -153,7 +153,7 @@ export default function EditProfile() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto pb-12 fade-in-up">
+        <div className="max-w-3xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-4 mb-6">
                 <Link to={`/pv/${currentUser.username}`} className="p-2 rounded-sm text-ink-3 hover:text-ink hover:bg-paper-2 transition-colors">
                     <ArrowLeft className="w-5 h-5" />

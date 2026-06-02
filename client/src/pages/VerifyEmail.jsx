@@ -126,7 +126,7 @@ export default function VerifyEmail() {
 
       {/* ──── RIGHT PANEL — Form ─────────────────────────────────────── */}
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-16 xl:px-24">
-        <div className="w-full max-w-md space-y-8 fade-in-up">
+        <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent mb-3">
               // email verification
@@ -159,7 +159,7 @@ export default function VerifyEmail() {
               type="submit"
               disabled={loading || otp.length !== 6}
               data-testid="verify-submit"
-              className="flex w-full items-center justify-center gap-2 rounded-sm bg-accent py-3 text-sm font-semibold text-paper glow-btn disabled:opacity-50 transition-all hover:scale-[1.01]"
+              className="flex w-full items-center justify-center gap-2 rounded-sm bg-accent py-3 text-sm font-semibold text-paper btn-primary disabled:opacity-50 transition-all hover:scale-[1.01]"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

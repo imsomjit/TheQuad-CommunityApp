@@ -4,19 +4,12 @@ const authService = require("./auth.service");
 const asyncHandler = require("../../utils/asyncHandler");
 const env = require("../../config/env");
 const logger = require("../../utils/logger");
-
-/** Parses "7d" → milliseconds for cookie maxAge */
-const parseDurationMs = (str) => {
-  const map = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
-  const match = str.match(/^(\d+)([smhd])$/);
-  if (!match) return 7 * 86_400_000;
-  return parseInt(match[1]) * map[match[2]];
-};
+const { parseDurationMs } = require("../../utils/jwt");
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,              // JS cannot read this cookie (XSS protection)
   secure: env.NODE_ENV === "production", // HTTPS only in prod
-  sameSite: env.NODE_ENV === "production" ? "strict" : "lax",
+  sameSite: "lax",                // "lax" allows cookie on OAuth redirect navigations; "strict" would block it
   maxAge: parseDurationMs(env.JWT_REFRESH_EXPIRES_IN),
   path: "/api/auth",          // Only sent to auth routes (minimizes exposure)
 };

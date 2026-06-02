@@ -125,7 +125,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50 glow-btn"
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50 btn-primary"
             >
               {isSubmitting ? "Submitting..." : "Submit Report"}
             </button>

@@ -107,7 +107,7 @@ export default function Resources() {
         activeTag;
 
     return (
-        <div className="space-y-10 fade-in-up">
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Editorial header */}
             <header className="border-b-2 border-double border-rule pb-8">
                 <div className="flex flex-wrap items-end justify-between gap-4">
@@ -131,7 +131,7 @@ export default function Resources() {
                     <Link
                         to="/upload"
                         data-testid="resources-upload-btn"
-                        className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+                        className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
                     >
                         <Upload className="h-4 w-4" />
                         Upload resource
@@ -140,7 +140,7 @@ export default function Resources() {
             </header>
 
             {/* Filter bar */}
-            <div className="space-y-4 rounded-sm border border-rule bg-paper-2/40 p-5">
+            <div className="space-y-4 rounded-md border border-rule bg-paper-2/40 p-5">
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
@@ -150,7 +150,7 @@ export default function Resources() {
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
                             placeholder="Search by title, description or tag…"
-                            className="h-10 rounded-sm border-rule bg-paper pl-9 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+                            className="h-10 rounded-md border-rule bg-paper pl-9 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                         />
                     </div>
 
@@ -288,7 +288,7 @@ function FilterSelect({ value, setValue, options, placeholder, testId, icon: Ico
         <Select value={value} onValueChange={setValue}>
             <SelectTrigger
                 data-testid={testId}
-                className="h-10 rounded-sm border-rule bg-paper text-sm text-ink hover:border-ink-3"
+                className="h-10 rounded-md border-rule bg-paper text-sm text-ink hover:border-ink-3"
             >
                 <div className="flex items-center gap-2">
                     {Icon && <Icon className="h-3.5 w-3.5 text-ink-3" />}
@@ -309,7 +309,7 @@ function FilterSelect({ value, setValue, options, placeholder, testId, icon: Ico
 
 function Chip({ children, onRemove }) {
     return (
-        <span className="inline-flex items-center gap-1.5 rounded-sm border border-accent bg-accent-soft px-2 py-1 font-mono text-xs text-accent">
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-accent bg-accent-soft px-2 py-1 font-mono text-xs text-accent">
             {children}
             <button onClick={onRemove} className="transition-colors hover:text-syntax-rose">
                 <X className="h-3 w-3" />

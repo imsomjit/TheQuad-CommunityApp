@@ -5,12 +5,13 @@ const { sql } = require("drizzle-orm");
 const { db } = require("../db/index");
 const { users, notifications, broadcasts } = require("../db/schema/index");
 const { sendEmail } = require("./email");
+const logger = require("./logger");
 
 const startCronJobs = () => {
   // Run everyday at 8:00 AM server time
   cron.schedule("0 8 * * *", async () => {
     try {
-      console.log("[Cron] Running birthday check job...");
+      logger.info("[Cron] Running birthday check job...");
       const today = new Date();
       const currentMonth = today.getMonth() + 1; // 1-12
       const currentDay = today.getDate(); // 1-31
@@ -24,20 +25,21 @@ const startCronJobs = () => {
       `);
 
       if (!birthdayUsers || birthdayUsers.length === 0) {
-        console.log("[Cron] No birthdays today.");
+        logger.info("[Cron] No birthdays today.");
         return;
       }
 
-      console.log(`[Cron] Found ${birthdayUsers.length} birthdays today. Sending greetings...`);
+      logger.info(`[Cron] Found ${birthdayUsers.length} birthdays today. Sending greetings...`);
 
       for (const user of birthdayUsers) {
         // Send In-App Notification
         await db.insert(notifications).values({
-          userId: user.id,
-          actorId: null, // System notification
-          type: "SYSTEM",
-          targetId: user.id, // target doesn't matter for this system notification
-          content: `Happy Birthday, ${user.name}! 🥳 PeerVerse wishes you a fantastic day ahead!`,
+          recipientId: user.id,
+          actorId: user.id, // System-generated; use self as actor (actorId is NOT NULL)
+          type: "system_broadcast",
+          targetType: "birthday",
+          targetId: user.id,
+          targetTitle: `[Birthday] PeerVerse: Happy Birthday, ${user.name}! 🥳 Wishing you a fantastic day ahead!`,
           isRead: false,
         });
 
@@ -59,9 +61,9 @@ const startCronJobs = () => {
           html: emailHtml,
         });
       }
-      console.log("[Cron] Birthday greetings sent successfully.");
+      logger.info("[Cron] Birthday greetings sent successfully.");
     } catch (error) {
-      console.error("[Cron] Error running birthday job:", error);
+      logger.error("[Cron] Error running birthday job:", error);
     }
   });
 
@@ -78,7 +80,7 @@ const startCronJobs = () => {
         return; // Nothing to send
       }
 
-      console.log(`[Cron] Found ${pendingBroadcasts.length} pending broadcasts.`);
+      logger.info(`[Cron] Found ${pendingBroadcasts.length} pending broadcasts.`);
 
       // Get all active users
       const { rows: activeUsers } = await db.execute(sql`
@@ -110,14 +112,28 @@ const startCronJobs = () => {
         await db.execute(sql`
           UPDATE broadcasts SET is_sent = true WHERE id = ${broadcast.id}
         `);
-        console.log(`[Cron] Broadcast ${broadcast.id} sent successfully.`);
+        logger.info(`[Cron] Broadcast ${broadcast.id} sent successfully.`);
       }
     } catch (error) {
-      console.error("[Cron] Error running broadcast job:", error);
+      logger.error("[Cron] Error running broadcast job:", error);
     }
   });
 
-  console.log("[Cron] Cron jobs initialized.");
+  // Run everyday at midnight to cleanup expired refresh tokens
+  cron.schedule("0 0 * * *", async () => {
+    try {
+      logger.info("[Cron] Running refresh token cleanup job...");
+      await db.execute(sql`
+        DELETE FROM refresh_tokens
+        WHERE expires_at < NOW() OR is_revoked = true
+      `);
+      logger.info("[Cron] Refresh token cleanup completed.");
+    } catch (error) {
+      logger.error("[Cron] Error running refresh token cleanup job:", error);
+    }
+  });
+
+  logger.info("[Cron] Cron jobs initialized.");
 };
 
 module.exports = { startCronJobs };

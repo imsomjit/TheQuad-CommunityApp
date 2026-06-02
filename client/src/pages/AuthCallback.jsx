@@ -69,7 +69,7 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center fade-in-up">
+      <div className="flex min-h-[60vh] items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="max-w-md text-center space-y-4">
           <div className="flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-sm border border-rule bg-paper-2">
@@ -82,7 +82,7 @@ export default function AuthCallback() {
           <p className="text-sm text-ink-2">{error}</p>
           <button
             onClick={() => navigate("/login", { replace: true })}
-            className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper glow-btn"
+            className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper btn-primary"
           >
             Back to sign in
           </button>

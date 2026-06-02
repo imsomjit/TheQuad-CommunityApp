@@ -4,7 +4,7 @@ const { Router } = require("express");
 const asyncHandler = require("../../utils/asyncHandler");
 const { auth } = require("../../middleware/auth");
 const commentService = require("./comments.service");
-const { commentLimiter } = require("../../middleware/rateLimiter");
+const { commentLimiter, apiLimiter } = require("../../middleware/rateLimiter");
 const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
@@ -32,6 +32,7 @@ router.post(
 // GET /api/comments?targetType=resource&targetId=5
 router.get(
   "/",
+  apiLimiter,
   asyncHandler(async (req, res) => {
     const { targetType, targetId } = req.query;
     const rows = await commentService.getComments(targetType, targetId);

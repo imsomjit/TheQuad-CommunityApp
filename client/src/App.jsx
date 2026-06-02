@@ -40,6 +40,11 @@ const AdminOpportunities = lazy(() => import("./pages/admin/AdminOpportunities")
 const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 
+// Static pages
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+
 function App() {
   return (
     <ThemeProvider>
@@ -104,6 +109,14 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+
+                  {/* Static informational pages */}
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/faq" element={<FAQ />} />
+
+                  {/* Catch-all for non-admin pages */}
+                  <Route path="*" element={<Home />} />
 
                   {/* Posts — Knowledge Publishing */}
                   <Route path="/posts" element={<PostsFeed />} />

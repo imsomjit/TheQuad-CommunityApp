@@ -53,15 +53,15 @@ const hashToken = (token) =>
  * @returns {Date}
  */
 const refreshTokenExpiry = () => {
-  const ms = parseDuration(env.JWT_REFRESH_EXPIRES_IN);
+  const ms = parseDurationMs(env.JWT_REFRESH_EXPIRES_IN);
   return new Date(Date.now() + ms);
 };
 
 /** Parses simple duration strings like "7d", "15m", "1h" to milliseconds. */
-function parseDuration(str) {
+function parseDurationMs(str) {
   const map = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
   const match = str.match(/^(\d+)([smhd])$/);
-  if (!match) throw new Error(`Cannot parse duration: ${str}`);
+  if (!match) return 7 * 86_400_000; // default 7d
   return parseInt(match[1]) * map[match[2]];
 }
 
@@ -72,4 +72,5 @@ module.exports = {
   verifyRefreshToken,
   hashToken,
   refreshTokenExpiry,
+  parseDurationMs,
 };

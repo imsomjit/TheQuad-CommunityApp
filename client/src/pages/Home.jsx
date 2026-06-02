@@ -34,7 +34,7 @@ function StatTile({ icon: Icon, label, value, colorKey }) {
     const c = `var(${STAT_COLOR[colorKey]})`;
 
     return (
-        <div className="group relative overflow-hidden rounded-sm border border-rule bg-paper-2 p-4 transition-colors hover:border-ink-3">
+        <div className="group relative overflow-hidden rounded-md border border-rule bg-paper-2 p-4 transition-colors hover:border-ink-3">
             <span
                 aria-hidden
                 className="absolute left-0 top-0 h-full w-[2px]"
@@ -43,7 +43,7 @@ function StatTile({ icon: Icon, label, value, colorKey }) {
 
             <div className="flex items-center gap-3">
                 <span
-                    className="flex h-9 w-9 items-center justify-center rounded-sm border"
+                    className="flex h-9 w-9 items-center justify-center rounded-md border"
                     style={{ borderColor: c, color: c, backgroundColor: "transparent" }}
                 >
                     <Icon className="h-4 w-4" />
@@ -167,11 +167,11 @@ export default function Home() {
     }, [resources, questions]);
 
     return (
-        <div className="space-y-16 fade-in-up">
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {!isAuthenticated && (
                 <>
                     {/* ── EDITORIAL HERO ─────────────────────────────────── */}
-                    <section className="relative overflow-hidden rounded-sm border border-rule bg-paper-2/40 card-elevated">
+                    <section className="relative overflow-hidden rounded-md border border-rule bg-paper-2/40 card-elevated">
                         <div className="aurora" />
                         <div className="absolute inset-0 grid-bg opacity-50" />
                         
@@ -222,7 +222,7 @@ export default function Home() {
                                     <Link
                                         to="/resources"
                                         data-testid="hero-browse-btn"
-                                        className="inline-flex items-center gap-2 rounded-sm bg-accent px-5 py-3 text-sm font-semibold text-paper glow-btn shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
+                                        className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-semibold text-paper btn-primary shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
                                     >
                                         Open the library <ArrowRight className="h-4 w-4" />
                                     </Link>
@@ -230,7 +230,7 @@ export default function Home() {
                                     <Link
                                         to="/ask"
                                         data-testid="hero-ask-btn"
-                                        className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
+                                        className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                                     >
                                         Ask a question
                                     </Link>
@@ -317,10 +317,10 @@ export default function Home() {
                         </div>
                         
                         <div className="flex items-center mt-2 gap-3">
-                            <Link to="/ask" className="inline-flex items-center gap-2 rounded-sm bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
+                            <Link to="/ask" className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
                                 <MessageSquare className="h-4 w-4" /> Ask Question
                             </Link>
-                            <Link to="/upload" className="inline-flex items-center gap-2 rounded-sm border border-rule bg-paper-2 px-4 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper active:scale-95">
+                            <Link to="/upload" className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2 px-4 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper active:scale-95">
                                 <BookOpen className="h-4 w-4" /> Share Note
                             </Link>
                         </div>
@@ -332,7 +332,7 @@ export default function Home() {
                         <input
                             type="text"
                             placeholder="Search notes, papers, questions…"
-                            className="w-full h-10 rounded-sm border border-rule bg-paper-2/60 pl-9 pr-4 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30"
+                            className="w-full h-10 rounded-md border border-rule bg-paper-2/60 pl-9 pr-4 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30"
                         />
                     </div>
                 </header>
@@ -388,7 +388,7 @@ export default function Home() {
 
                 <aside className="space-y-6 lg:col-span-5">
                     {/* Popular tags */}
-                    <div className="rounded-sm border border-rule bg-paper-2/60 p-5">
+                    <div className="rounded-md border border-rule bg-paper-2/60 p-5">
                         <h3 className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             <TrendingUp className="h-3.5 w-3.5 text-accent" />
                             // popular tags
@@ -418,7 +418,7 @@ export default function Home() {
                     </div>
 
                     {/* Monthly Top Contributors */}
-                    <div className="rounded-sm border border-rule bg-paper-2/60 p-5">
+                    <div className="rounded-md border border-rule bg-paper-2/60 p-5">
                         <h3 className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             <span className="flex items-center gap-2">
                                 <Sparkles className="h-3.5 w-3.5 text-accent" />
@@ -470,7 +470,7 @@ export default function Home() {
                     
                     {/* Profile card — index-card style */}
                     {isAuthenticated && currentUser && (
-                    <div className="hidden sm:inline relative overflow-hidden rounded-sm border border-rule bg-paper-2/60 p-5">
+                    <div className="hidden sm:inline relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
                         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // profile card
                         </p>
@@ -479,7 +479,7 @@ export default function Home() {
                             <img
                                 src={currentUser.avatar}
                                 alt=""
-                                className="h-14 w-14 rounded-sm border border-rule object-cover"
+                                className="h-14 w-14 rounded-md border border-rule object-cover"
                             />
 
                             <div>
@@ -504,7 +504,7 @@ export default function Home() {
 
                         <Link
                             to={`/pv/${currentUser.username}`}
-                            className="mt-4 block w-full rounded-sm border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                            className="mt-4 block w-full rounded-md border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                         >
                             View full profile →
                         </Link>
@@ -563,7 +563,7 @@ export default function Home() {
 
 function MiniStat({ value, label, colorVar }) {
     return (
-        <div className="rounded-sm border border-rule bg-paper p-2">
+        <div className="rounded-md border border-rule bg-paper p-2">
             <div
                 className="font-mono text-lg font-bold tabular-nums"
                 style={{ color: `var(${colorVar})` }}

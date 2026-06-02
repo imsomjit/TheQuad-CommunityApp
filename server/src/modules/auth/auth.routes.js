@@ -8,6 +8,7 @@ const { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema } = requir
 const {
   authLimiter,
   registerLimiter,
+  userReadLimiter,
 } = require("../../middleware/rateLimiter");
 
 const router = Router();
@@ -47,21 +48,21 @@ router.post(
 );
 
 // GET /api/auth/google — redirect to Google consent screen
-router.get("/google", controller.googleRedirect);
+router.get("/google", authLimiter, controller.googleRedirect);
 
 // GET /api/auth/google/callback — handle Google OAuth callback
-router.get("/google/callback", controller.googleCallback);
+router.get("/google/callback", authLimiter, controller.googleCallback);
 
 // POST /api/auth/refresh
-// Uses httpOnly cookie — no rate limiter needed (automatic browser behavior)
-router.post("/refresh", controller.refresh);
+// Rate-limited to prevent brute-force refresh token guessing
+router.post("/refresh", authLimiter, controller.refresh);
 
 // POST /api/auth/logout
-router.post("/logout", controller.logout);
+router.post("/logout", authLimiter, controller.logout);
 
 // GET /api/auth/me
 // Protected — must have valid access token
-router.get("/me", auth, controller.me);
+router.get("/me", auth, userReadLimiter, controller.me);
 
 module.exports = router;
 
