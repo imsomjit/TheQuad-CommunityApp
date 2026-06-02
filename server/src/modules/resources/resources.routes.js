@@ -11,8 +11,37 @@ const {
   resourceWriteLimiter,
   uploadLimiter,
 } = require("../../middleware/rateLimiter");
+const { db } = require("../../db/index");
+const { resources } = require("../../db/schema/index");
+const { eq } = require("drizzle-orm");
+const { extractIdFromSlug } = require("../../utils/slugify");
 
 const router = Router();
+
+// Middleware to resolve slug or ID to integer ID
+router.param("id", async (req, res, next, val) => {
+  try {
+    const publicId = extractIdFromSlug(val);
+    if (!publicId) return next();
+    
+    // First try publicId
+    const [row] = await db.select({ id: resources.id }).from(resources).where(eq(resources.publicId, publicId)).limit(1);
+    if (row) {
+      req.params.id = row.id;
+      return next();
+    }
+    
+    // Fallback to integer
+    if (/^\d+$/.test(publicId)) {
+      req.params.id = parseInt(publicId, 10);
+      return next();
+    }
+    
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // GET /api/resources  — public, 120 req/min
 router.get("/", resourceReadLimiter, optionalAuth, controller.list);

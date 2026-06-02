@@ -83,6 +83,7 @@ const listResources = async (query) => {
     db
       .select({
         id: resources.id,
+        publicId: resources.publicId,
         title: resources.title,
         description: resources.description,
         type: resources.type,
@@ -163,6 +164,7 @@ const getResourceById = async (id, incrementView = false) => {
   const [row] = await db
     .select({
       id: resources.id,
+      publicId: resources.publicId,
       title: resources.title,
       description: resources.description,
       type: resources.type,

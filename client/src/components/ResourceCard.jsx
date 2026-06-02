@@ -11,6 +11,7 @@ import {
     Sparkles,
     Folder,
 } from "lucide-react";
+import { generateSlug } from "../utils/slugify";
 
 import VoteButtons from "./VoteButtons";
 import TagBadge from "./TagBadge";
@@ -109,7 +110,7 @@ export default function ResourceCard({ resource, variant = "list" }) {
                 </div>
 
                 {/* Title — editorial serif */}
-                <Link to={`/resources/${resource.id}`} className="block">
+                <Link to={`/resources/${generateSlug(resource.title, resource.publicId || resource.id)}`} className="block">
                     <h3
                         data-testid={`resource-title-${resource.id}`}
                         className="font-display text-xl font-semibold leading-snug text-ink transition-colors group-hover:text-accent"

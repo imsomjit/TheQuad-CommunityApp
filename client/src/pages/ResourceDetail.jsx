@@ -20,6 +20,7 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
+import { extractIdFromSlug } from "../utils/slugify";
 const RESOURCE_TYPES = [
   { key: "notes", label: "Notes", icon: "BookOpen" },
   { key: "pyq", label: "PYQ", icon: "FileText" },
@@ -72,7 +73,10 @@ export default function ResourceDetail() {
     } = useApp();
     const { isAuthenticated } = useAuth();
 
-    const resource = resources.find((r) => r.id === id);
+    const extractedId = extractIdFromSlug(id);
+    const resource = resources.find(
+        (r) => r.publicId === extractedId || r.id === parseInt(extractedId, 10)
+    );
 
     useEffect(() => {
         if (resource) incrementViews("resource", id);
@@ -95,7 +99,7 @@ export default function ResourceDetail() {
     const Icon = ICONS[type.icon] || Folder;
     const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
 
-    const isMine = resource.uploader.id === currentUser.id;
+    const isMine = currentUser?.id === resource.uploader.id;
     const isBookmarked = bookmarks.has(resource.id);
 
     const handleDownload = () => {
@@ -289,7 +293,7 @@ export default function ResourceDetail() {
                 </div>
 
                 <div className="flex items-center gap-3 rounded-sm border border-rule bg-paper-2/40 p-4">
-                    <Link to={`/pv/${resource.uploader.username}`}>
+                    <Link to={`/u/${resource.uploader.username}`}>
                         <img
                             src={resource.uploader.avatar}
                             alt=""
@@ -299,7 +303,7 @@ export default function ResourceDetail() {
 
                     <div className="flex-1">
                         <Link
-                            to={`/pv/${resource.uploader.username}`}
+                            to={`/u/${resource.uploader.username}`}
                             className="font-semibold text-ink transition-colors hover:text-accent"
                         >
                             {resource.uploader.name}

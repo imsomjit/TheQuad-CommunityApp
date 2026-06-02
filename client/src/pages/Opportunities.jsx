@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import Loader from "../components/Loader";
 import { format } from "date-fns";
+import { generateSlug } from "../utils/slugify";
 
 export default function Opportunities() {
     const { isAuthenticated } = useAuth();
@@ -240,7 +241,7 @@ export default function Opportunities() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {opportunities.map(opp => (
-                            <Link key={opp.id} to={`/opportunities/${opp.id}`} className="group flex flex-col p-6 rounded-2xl border border-rule bg-paper hover:bg-paper-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                            <Link key={opp.id} to={`/opportunities/${generateSlug(opp.title, opp.publicId || opp.id)}`} className="group flex flex-col p-6 rounded-2xl border border-rule bg-paper hover:bg-paper-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wide uppercase border ${getStatusColor(opp.status)}`}>
                                         {opp.status}

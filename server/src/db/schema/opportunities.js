@@ -12,6 +12,7 @@ const {
   index,
   boolean,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 
 // ── Enums ───────────────────────────────────────────────────────────────────
@@ -50,6 +51,7 @@ const opportunities = pgTable(
   "opportunities",
   {
     id: serial("id").primaryKey(),
+    publicId: varchar("public_id", { length: 12 }).$defaultFn(() => nanoid(12)).unique(),
     source: opportunitySourceEnum("source").notNull(),
     sourceId: varchar("source_id", { length: 255 }).notNull(),
     organizer: varchar("organizer", { length: 255 }), // Platform name like codeforces.com

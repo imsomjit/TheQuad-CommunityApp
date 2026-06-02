@@ -12,6 +12,7 @@ const {
   jsonb,
   unique,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -27,6 +28,7 @@ const postStatusEnum = pgEnum("post_status", ["draft", "published"]);
 // ─── Posts ────────────────────────────────────────────────────────────────────
 const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
+  publicId: varchar("public_id", { length: 12 }).$defaultFn(() => nanoid(12)).unique(),
   title: varchar("title", { length: 300 }).notNull(),
   slug: varchar("slug", { length: 350 }).notNull().unique(),
   body: text("body").notNull().default(""), // raw markdown

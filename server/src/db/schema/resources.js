@@ -10,6 +10,7 @@ const {
   pgEnum,
   boolean,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ const resourceTypeEnum = pgEnum("resource_type", [
 // ─── Resources ────────────────────────────────────────────────────────────────
 const resources = pgTable("resources", {
   id: serial("id").primaryKey(),
+  publicId: varchar("public_id", { length: 12 }).$defaultFn(() => nanoid(12)).unique(),
   title: varchar("title", { length: 300 }).notNull(),
   description: text("description"),
   type: resourceTypeEnum("type").notNull(),

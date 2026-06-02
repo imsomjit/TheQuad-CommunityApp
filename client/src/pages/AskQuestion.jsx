@@ -5,6 +5,7 @@ import { useApp } from "../context/AppContext";
 import { Input } from "../components/ui/input";
 import MarkdownEditor from "../components/MarkdownEditor";
 import { toast } from "sonner";
+import { generateSlug } from "../utils/slugify";
 
 export default function AskQuestion() {
     const { addQuestion, currentUser } = useApp();
@@ -32,7 +33,7 @@ export default function AskQuestion() {
         setTags(tags.filter((x) => x !== t));
     };
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
 
         if (!title.trim() || !body.trim()) {
@@ -42,8 +43,8 @@ export default function AskQuestion() {
 
         setSubmitting(true);
 
-        setTimeout(() => {
-            const q = addQuestion({
+        try {
+            const q = await addQuestion({
                 title: title.trim(),
                 body: body.trim(),
                 tags,
@@ -51,8 +52,11 @@ export default function AskQuestion() {
 
             setSubmitting(false);
             toast.success("Question posted");
-            navigate(`/questions/${q.id}`);
-        }, 500);
+            navigate(`/questions/${generateSlug(q.title, q.publicId || q.id)}`);
+        } catch (error) {
+            setSubmitting(false);
+            toast.error("Failed to post question");
+        }
     };
 
     return (

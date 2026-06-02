@@ -439,7 +439,7 @@ export default function Home() {
                                 topContributors.map((user, i) => (
                                     <Link
                                         key={user.id}
-                                        to={`/pv/${user.username}`}
+                                        to={`/u/${user.username}`}
                                         className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule pb-3 last:border-0 last:pb-0"
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
@@ -503,7 +503,7 @@ export default function Home() {
                         </div>
 
                         <Link
-                            to={`/pv/${currentUser.username}`}
+                            to={`/u/${currentUser.username}`}
                             className="mt-4 block w-full rounded-md border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                         >
                             View full profile →

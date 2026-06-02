@@ -145,27 +145,30 @@ const updateBanner = async (userId, bannerUrl) => {
  * Get top contributors of the month based on a points system.
  */
 const getTopContributors = async () => {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
   const query = sql`
     WITH 
+      month_start AS (
+        SELECT date_trunc('month', CURRENT_DATE) as start_date
+      ),
+      month_questions AS (
+        SELECT author_id, COUNT(*) as count FROM questions CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false GROUP BY author_id
+      ),
       month_answers AS (
-        SELECT author_id, COUNT(*) as count FROM answers WHERE created_at >= ${thirtyDaysAgo} AND is_deleted = false GROUP BY author_id
+        SELECT author_id, COUNT(*) as count FROM answers CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false GROUP BY author_id
       ),
       month_resources AS (
-        SELECT uploader_id, COUNT(*) as count FROM resources WHERE created_at >= ${thirtyDaysAgo} AND is_deleted = false GROUP BY uploader_id
+        SELECT uploader_id, COUNT(*) as count FROM resources CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false GROUP BY uploader_id
       ),
       month_posts AS (
-        SELECT author_id, COUNT(*) as count FROM posts WHERE created_at >= ${thirtyDaysAgo} AND status = 'published' AND is_deleted = false GROUP BY author_id
+        SELECT author_id, COUNT(*) as count FROM posts CROSS JOIN month_start WHERE created_at >= start_date AND status = 'published' AND is_deleted = false GROUP BY author_id
       ),
       month_comments AS (
-        SELECT author_id, COUNT(*) as count FROM comments WHERE created_at >= ${thirtyDaysAgo} AND is_deleted = false GROUP BY author_id
+        SELECT author_id, COUNT(*) as count FROM comments CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false GROUP BY author_id
       ),
       month_votes AS (
         SELECT v.target_id as id, v.target_type as type
-        FROM votes v
-        WHERE v.created_at >= ${thirtyDaysAgo} AND v.direction = 'up'
+        FROM votes v CROSS JOIN month_start
+        WHERE v.created_at >= start_date AND v.direction = 'up'
       ),
       vote_authors AS (
         SELECT r.uploader_id as user_id FROM month_votes v JOIN resources r ON v.id = r.id WHERE v.type = 'resource'
@@ -186,18 +189,20 @@ const getTopContributors = async () => {
       u.avatar_url, 
       u.college, 
       u.branch,
+      COALESCE(q.count, 0) * 4 + 
       COALESCE(a.count, 0) * 15 + 
       COALESCE(r.count, 0) * 10 + 
       COALESCE(p.count, 0) * 10 + 
       COALESCE(c.count, 0) * 2 + 
       COALESCE(vu.count, 0) * 3 AS score
     FROM users u
+    LEFT JOIN month_questions q ON u.id = q.author_id
     LEFT JOIN month_answers a ON u.id = a.author_id
     LEFT JOIN month_resources r ON u.id = r.uploader_id
     LEFT JOIN month_posts p ON u.id = p.author_id
     LEFT JOIN month_comments c ON u.id = c.author_id
     LEFT JOIN month_received_upvotes vu ON u.id = vu.user_id
-    WHERE u.is_banned = false AND (COALESCE(a.count, 0) + COALESCE(r.count, 0) + COALESCE(p.count, 0) + COALESCE(c.count, 0) + COALESCE(vu.count, 0)) > 0
+    WHERE u.is_banned = false AND (COALESCE(q.count, 0) + COALESCE(a.count, 0) + COALESCE(r.count, 0) + COALESCE(p.count, 0) + COALESCE(c.count, 0) + COALESCE(vu.count, 0)) > 0
     ORDER BY score DESC
     LIMIT 10
   `;

@@ -327,6 +327,7 @@ const getPostById = async (id) => {
   const [row] = await db
     .select({
       id: posts.id,
+      publicId: posts.publicId,
       title: posts.title,
       slug: posts.slug,
       body: posts.body,
@@ -372,17 +373,18 @@ const getPostById = async (id) => {
 /**
  * Get a post by slug (public — only published).
  */
-const getPostBySlug = async (slug, incrementView = false) => {
+const getPostByPublicId = async (publicId, incrementView = false) => {
   if (incrementView) {
     await db
       .update(posts)
       .set({ views: sql`${posts.views} + 1` })
-      .where(and(eq(posts.slug, slug), eq(posts.status, "published")));
+      .where(and(eq(posts.publicId, publicId), eq(posts.status, "published")));
   }
 
   const [row] = await db
     .select({
       id: posts.id,
+      publicId: posts.publicId,
       title: posts.title,
       slug: posts.slug,
       body: posts.body,
@@ -410,7 +412,7 @@ const getPostBySlug = async (slug, incrementView = false) => {
     })
     .from(posts)
     .leftJoin(users, eq(posts.authorId, users.id))
-    .where(and(eq(posts.slug, slug), eq(posts.status, "published"), eq(posts.isDeleted, false)))
+    .where(and(eq(posts.publicId, publicId), eq(posts.status, "published"), eq(posts.isDeleted, false)))
     .limit(1);
 
   if (!row) throw new AppError("Post not found", 404, "NOT_FOUND");
@@ -492,6 +494,7 @@ const listPosts = async (query) => {
     db
       .select({
         id: posts.id,
+        publicId: posts.publicId,
         title: posts.title,
         slug: posts.slug,
         excerpt: posts.excerpt,
@@ -641,6 +644,7 @@ const getSeriesNav = async (seriesId, currentOrder) => {
 
 const formatPost = (row, tags = []) => ({
   id: row.id,
+  publicId: row.publicId,
   title: row.title,
   slug: row.slug,
   body: row.body,
@@ -682,7 +686,7 @@ module.exports = {
   unpublishPost,
   deletePost,
   getPostById,
-  getPostBySlug,
+  getPostByPublicId,
   listPosts,
   listDrafts,
   getSeriesNav,

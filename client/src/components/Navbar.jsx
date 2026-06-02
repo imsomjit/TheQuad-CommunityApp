@@ -194,7 +194,7 @@ export default function Navbar({ scrolled }) {
 
                             {/* User Avatar */}
                             <Link
-                                to={`/pv/${currentUser?.username || ''}`}
+                                to={`/u/${currentUser?.username || ''}`}
                                 data-testid="nav-avatar-link"
                                 className="relative"
                             >

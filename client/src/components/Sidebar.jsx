@@ -73,7 +73,7 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
             {isAuthenticated && currentUser ? (
                 <div className="mt-auto flex flex-col gap-2 border-t border-rule pt-4">
                     {!isCollapsed && <p className="px-4 pb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">Profile</p>}
-                    <NavLink to={`/pv/${currentUser.username}`} className={linkClass} title="Profile">
+                    <NavLink to={`/u/${currentUser.username}`} className={linkClass} title="Profile">
                         <img src={currentUser.avatar} alt="Avatar" className="h-6 w-6 shrink-0 rounded-md object-cover border border-rule transition-transform group-hover:scale-110" />
                         {!isCollapsed && <span className="truncate">{currentUser.name}</span>}
                     </NavLink>

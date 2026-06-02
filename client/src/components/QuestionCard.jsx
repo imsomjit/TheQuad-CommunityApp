@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Eye, MessageSquare, CheckCircle2 } from "lucide-react";
+import { generateSlug } from "../utils/slugify";
 
 import TagBadge from "./TagBadge";
 
@@ -85,7 +86,7 @@ export default function QuestionCard({ question }) {
 
             {/* Main content */}
             <div className="min-w-0 flex-1">
-                <Link to={`/questions/${question.id}`}>
+                <Link to={`/questions/${generateSlug(question.title, question.publicId || question.id)}`}>
                     <h3
                         data-testid={`question-title-${question.id}`}
                         className="font-display text-xl font-semibold leading-snug text-ink transition-colors group-hover:text-accent"

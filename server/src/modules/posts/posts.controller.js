@@ -2,6 +2,7 @@
 
 const postsService = require("./posts.service");
 const asyncHandler = require("../../utils/asyncHandler");
+const { extractIdFromSlug } = require("../../utils/slugify");
 
 // POST /api/posts
 const create = asyncHandler(async (req, res) => {
@@ -23,7 +24,8 @@ const drafts = asyncHandler(async (req, res) => {
 
 // GET /api/posts/:slug
 const getBySlug = asyncHandler(async (req, res) => {
-  const post = await postsService.getPostBySlug(req.params.slug, true);
+  const publicId = extractIdFromSlug(req.params.slug);
+  const post = await postsService.getPostByPublicId(publicId, true);
   res.json({ success: true, data: post });
 });
 

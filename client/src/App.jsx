@@ -41,8 +41,8 @@ const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 
 // Static pages
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
-const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 
 function App() {
@@ -87,17 +87,20 @@ function App() {
                     }
                   />
 
-                  <Route path="/pv/:username" element={<Profile />} />
+                  <Route path="/u/:username" element={<Profile />} />
                   <Route
                     path="/settings/profile"
                     element={<ProtectedRoute><EditProfile /></ProtectedRoute>}
                   />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/faq" element={<FAQ />} />
                   <Route
-                    path="/pv/:username/followers"
+                    path="/u/:username/followers"
                     element={<ProtectedRoute><FollowList mode="followers" /></ProtectedRoute>}
                   />
                   <Route
-                    path="/pv/:username/following"
+                    path="/u/:username/following"
                     element={<ProtectedRoute><FollowList mode="following" /></ProtectedRoute>}
                   />
 
@@ -111,9 +114,6 @@ function App() {
                   />
 
                   {/* Static informational pages */}
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/terms" element={<TermsOfService />} />
-                  <Route path="/faq" element={<FAQ />} />
 
                   {/* Catch-all for non-admin pages */}
                   <Route path="*" element={<Home />} />

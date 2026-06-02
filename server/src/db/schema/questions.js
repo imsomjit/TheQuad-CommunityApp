@@ -9,11 +9,13 @@ const {
   timestamp,
   boolean,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 
 // ─── Questions ────────────────────────────────────────────────────────────────
 const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
+  publicId: varchar("public_id", { length: 12 }).$defaultFn(() => nanoid(12)).unique(),
   title: varchar("title", { length: 400 }).notNull(),
   body: text("body").notNull(),
   authorId: integer("author_id")

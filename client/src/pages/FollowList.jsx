@@ -27,7 +27,7 @@ export default function FollowList({ mode = "followers" }) {
     useEffect(() => {
         if (!isAuthenticated) { navigate("/login"); return; }
         if (authUser && authUser.username !== username) {
-            navigate(`/pv/${username}`);
+            navigate(`/u/${username}`);
             return;
         }
         
@@ -48,7 +48,7 @@ export default function FollowList({ mode = "followers" }) {
         <div className="max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <button onClick={() => navigate(`/pv/${username}`)}
+                <button onClick={() => navigate(`/u/${username}`)}
                     className="rounded-sm p-1.5 text-ink-3 hover:bg-paper-2 hover:text-ink transition-colors">
                     <ArrowLeft className="w-4 h-4" />
                 </button>
@@ -57,11 +57,11 @@ export default function FollowList({ mode = "followers" }) {
                     <p className="font-mono text-xs text-ink-3">@{username}</p>
                 </div>
                 <div className="ml-auto flex rounded-sm border border-rule overflow-hidden text-xs font-mono">
-                    <Link to={`/pv/${username}/followers`}
+                    <Link to={`/u/${username}/followers`}
                         className={`px-4 py-2 transition-colors ${isFollowers ? "bg-accent text-paper" : "text-ink-2 hover:bg-paper-2"}`}>
                         Followers
                     </Link>
-                    <Link to={`/pv/${username}/following`}
+                    <Link to={`/u/${username}/following`}
                         className={`px-4 py-2 transition-colors ${!isFollowers ? "bg-accent text-paper" : "text-ink-2 hover:bg-paper-2"}`}>
                         Following
                     </Link>
@@ -99,7 +99,7 @@ export default function FollowList({ mode = "followers" }) {
 function UserRow({ person }) {
     const avatar = person.avatarUrl || getAvatarFallback(person.name, person.username);
     return (
-        <Link to={`/pv/${person.username}`}
+        <Link to={`/u/${person.username}`}
             className="flex items-center gap-3 p-4 rounded-sm border border-rule bg-paper-2/30 hover:border-ink-3 hover:bg-paper-2/60 transition-colors group">
             <img src={avatar} alt="" className="w-11 h-11 rounded-full object-cover shrink-0 bg-paper" />
             <div className="min-w-0 flex-1">

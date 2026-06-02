@@ -77,6 +77,7 @@ const listQuestions = async (query) => {
     db
       .select({
         id: questions.id,
+        publicId: questions.publicId,
         title: questions.title,
         authorId: questions.authorId,
         upvotes: questions.upvotes,
@@ -141,6 +142,7 @@ const getQuestionById = async (id, incrementView = false) => {
   const [row] = await db
     .select({
       id: questions.id,
+      publicId: questions.publicId,
       title: questions.title,
       body: questions.body,
       authorId: questions.authorId,

@@ -197,7 +197,7 @@ function CommentItem({ comment, currentUser, onReply, onDelete, depth = 0 }) {
         <div className="flex-1 rounded-sm border border-rule bg-paper-2/40 p-3">
           <div className="flex items-center gap-2">
             <Link
-              to={`/pv/${comment.author?.username}`}
+              to={`/u/${comment.author?.username}`}
               className="text-xs font-medium text-ink hover:text-accent"
             >
               {comment.author?.name || comment.author?.username || "User"}

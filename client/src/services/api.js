@@ -139,6 +139,7 @@ const mapUser = (u) => {
 /** Map API resource → frontend resource shape */
 const mapResource = (r) => ({
   id: r.id,
+  publicId: r.publicId,
   title: r.title,
   description: r.description || "",
   type: r.type,
@@ -174,6 +175,7 @@ const mapResource = (r) => ({
 /** Map API question → frontend question shape */
 const mapQuestion = (q) => ({
   id: q.id,
+  publicId: q.publicId,
   title: q.title,
   body: q.body || "",
   tags: q.tags || [],
@@ -426,6 +428,7 @@ export const githubApi = {
 /** Map an API post → frontend post shape */
 const mapPost = (p) => ({
   id: p.id,
+  publicId: p.publicId,
   title: p.title,
   slug: p.slug,
   body: p.body || "",

@@ -10,6 +10,7 @@ import {
   BookMarked,
   Layers,
 } from "lucide-react";
+import { generateSlug } from "../utils/slugify";
 
 // ── Category display helpers ─────────────────────────────────────────────────
 export const CATEGORY_META = {
@@ -77,7 +78,7 @@ export default function PostCard({ post, variant = "default" }) {
 
       {/* Cover image */}
       {!isCompact && post.coverImageUrl && (
-        <Link to={`/posts/${post.slug}`} className="mt-3 block">
+        <Link to={`/posts/${generateSlug(post.title, post.publicId || post.id)}`} className="mt-3 block">
           <img
             src={post.coverImageUrl}
             alt={post.title}
@@ -89,7 +90,7 @@ export default function PostCard({ post, variant = "default" }) {
 
       {/* Title */}
       <Link
-        to={`/posts/${post.slug}`}
+        to={`/posts/${generateSlug(post.title, post.publicId || post.id)}`}
         className={`mt-3 block font-display leading-snug text-ink transition-colors group-hover:text-accent
           ${isCompact ? "text-base" : "text-xl"}`}
       >
@@ -121,7 +122,7 @@ export default function PostCard({ post, variant = "default" }) {
       <div className={`mt-4 flex items-center gap-3 ${isCompact ? "mt-3" : ""}`}>
         {post.author && (
           <Link
-            to={`/pv/${post.author.username}`}
+            to={`/u/${post.author.username}`}
             className="flex min-w-0 items-center gap-2"
           >
             <img

@@ -69,7 +69,7 @@ export default function EditProfile() {
             })
             .catch(() => {
                 toast.error("Failed to load profile");
-                navigate(`/pv/${currentUser.username}`);
+                navigate(`/u/${currentUser.username}`);
             })
             .finally(() => setLoading(false));
     }, [isAuthenticated, currentUser, navigate]);
@@ -136,7 +136,7 @@ export default function EditProfile() {
             }
 
             toast.success("Profile updated!");
-            navigate(`/pv/${currentUser.username}`);
+            navigate(`/u/${currentUser.username}`);
         } catch (err) {
             const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to save";
             toast.error(msg);
@@ -155,7 +155,7 @@ export default function EditProfile() {
     return (
         <div className="max-w-3xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-4 mb-6">
-                <Link to={`/pv/${currentUser.username}`} className="p-2 rounded-sm text-ink-3 hover:text-ink hover:bg-paper-2 transition-colors">
+                <Link to={`/u/${currentUser.username}`} className="p-2 rounded-sm text-ink-3 hover:text-ink hover:bg-paper-2 transition-colors">
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <h1 className="font-display text-2xl font-bold text-ink">Edit Profile</h1>
@@ -306,7 +306,7 @@ export default function EditProfile() {
 
                         {/* Footer Actions */}
                         <div className="pt-8 border-t border-rule flex items-center justify-end gap-4">
-                            <Link to={`/pv/${currentUser.username}`} className="text-sm font-medium text-ink-3 hover:text-ink transition-colors">
+                            <Link to={`/u/${currentUser.username}`} className="text-sm font-medium text-ink-3 hover:text-ink transition-colors">
                                 Cancel
                             </Link>
                             <button onClick={handleSave} disabled={saving || !form.name.trim()} className="inline-flex items-center gap-2 rounded-sm bg-accent px-6 py-2.5 text-sm font-semibold text-paper hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">

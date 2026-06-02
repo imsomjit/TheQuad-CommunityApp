@@ -14,8 +14,35 @@ const {
   postWriteLimiter,
   autosaveLimiter,
 } = require("../../middleware/rateLimiter");
+const { db } = require("../../db/index");
+const { posts } = require("../../db/schema/index");
+const { eq } = require("drizzle-orm");
+const { extractIdFromSlug } = require("../../utils/slugify");
 
 const router = Router();
+
+// Middleware to resolve slug or ID to integer ID
+router.param("id", async (req, res, next, val) => {
+  try {
+    const publicId = extractIdFromSlug(val);
+    if (!publicId) return next();
+    
+    const [row] = await db.select({ id: posts.id }).from(posts).where(eq(posts.publicId, publicId)).limit(1);
+    if (row) {
+      req.params.id = row.id;
+      return next();
+    }
+    
+    if (/^\d+$/.test(publicId)) {
+      req.params.id = parseInt(publicId, 10);
+      return next();
+    }
+    
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // ── Public reads ─────────────────────────────────────────────────────────────
 

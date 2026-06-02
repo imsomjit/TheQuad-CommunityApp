@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
+import { generateSlug } from "../utils/slugify";
 import { usersApi, githubApi, leetcodeApi } from "../services/api";
 import ContributionGraph from "../components/ContributionGraph";
 import ResourceCard from "../components/ResourceCard";
@@ -366,11 +367,11 @@ export default function Profile() {
                         <div className="flex items-center gap-3 sm:gap-6">
                             {isOwnProfile ? (
                                 <>
-                                    <Link to={`/pv/${username}/followers`} className="group flex items-baseline font-mono gap-1">
+                                    <Link to={`/u/${username}/followers`} className="group flex items-baseline font-mono gap-1">
                                         <span className="font-bold text-accent group-hover:text-accent transition-colors">{(profile.stats?.followers || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">followers</span>
                                     </Link>
-                                    <Link to={`/pv/${username}/following`} className="group flex items-baseline font-mono gap-1">
+                                    <Link to={`/u/${username}/following`} className="group flex items-baseline font-mono gap-1">
                                         <span className="font-bold text-accent group-hover:text-accent transition-colors">{(profile.stats?.following || 0).toLocaleString()}</span>
                                         <span className="text-ink-3 text-sm font-medium group-hover:text-ink-2 transition-colors">following</span>
                                     </Link>
@@ -681,7 +682,7 @@ function ActivityTabs({ profile }) {
             </TabsContent>
             <TabsContent value="answers" className="mt-5 space-y-4">
                 {myAnswers.length === 0 ? <Empty label="No answers yet." /> : myAnswers.map(a => (
-                    <Link to={`/questions/${a.question.id}`} key={a.id} className="block p-5 border border-rule rounded-xl bg-paper-2/40 hover:border-ink-3 hover:bg-paper-2/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md card-elevated">
+                    <Link to={`/questions/${generateSlug(a.question.title, a.question.publicId || a.question.id)}`} key={a.id} className="block p-5 border border-rule rounded-xl bg-paper-2/40 hover:border-ink-3 hover:bg-paper-2/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md card-elevated">
                         <p className="font-mono text-xs uppercase tracking-wider text-ink-3 mb-1">// answer on</p>
                         <p className="font-display font-semibold text-ink">{a.question.title}</p>
                         <p className="mt-2 text-sm text-ink-2 line-clamp-2">{a.body}</p>

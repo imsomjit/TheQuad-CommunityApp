@@ -349,7 +349,7 @@ export default function PostDetail() {
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
             {post.author && (
               <Link
-                to={`/pv/${post.author.username}`}
+                to={`/u/${post.author.username}`}
                 className="flex items-center gap-2"
               >
                 <img
@@ -447,7 +447,7 @@ export default function PostDetail() {
             <div className="mt-10 rounded-sm border border-rule bg-paper-2/40 p-5">
               <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">Written by</p>
               <div className="flex items-start gap-4">
-                <Link to={`/pv/${post.author.username}`}>
+                <Link to={`/u/${post.author.username}`}>
                   <img
                     src={post.author.avatar}
                     alt={post.author.name}
@@ -455,7 +455,7 @@ export default function PostDetail() {
                   />
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <Link to={`/pv/${post.author.username}`} className="font-display text-lg text-ink hover:text-accent">
+                  <Link to={`/u/${post.author.username}`} className="font-display text-lg text-ink hover:text-accent">
                     {post.author.name}
                   </Link>
                   <p className="font-mono text-xs text-ink-3">@{post.author.username}</p>

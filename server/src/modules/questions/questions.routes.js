@@ -13,8 +13,38 @@ const {
   questionReadLimiter,
   questionWriteLimiter,
 } = require("../../middleware/rateLimiter");
+const { db } = require("../../db/index");
+const { questions } = require("../../db/schema/index");
+const { eq } = require("drizzle-orm");
+const { extractIdFromSlug } = require("../../utils/slugify");
 
 const router = Router();
+
+// Middleware to resolve slug or ID to integer ID
+router.param("id", async (req, res, next, val) => {
+  try {
+    const publicId = extractIdFromSlug(val);
+    if (!publicId) return next();
+    
+    // First try publicId
+    const [row] = await db.select({ id: questions.id }).from(questions).where(eq(questions.publicId, publicId)).limit(1);
+    if (row) {
+      req.params.id = row.id;
+      return next();
+    }
+    
+    // Fallback to integer (for backwards compatibility if someone uses old links)
+    if (/^\d+$/.test(publicId)) {
+      req.params.id = parseInt(publicId, 10);
+      return next();
+    }
+    
+    // If neither, let it fail in the controller
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Questions
 router.get("/", questionReadLimiter, optionalAuth, controller.list);

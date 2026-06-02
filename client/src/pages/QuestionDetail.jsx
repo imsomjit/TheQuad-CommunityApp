@@ -16,6 +16,7 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
+import { extractIdFromSlug } from "../utils/slugify";
 import MarkdownEditor from "../components/MarkdownEditor";
 import { MarkdownRenderer, CollapsibleContent } from "../components/MarkdownEditor";
 import CommentSection from "../components/CommentSection";
@@ -45,7 +46,10 @@ export default function QuestionDetail() {
     } = useApp();
     const { isAuthenticated } = useAuth();
 
-    const question = questions.find((qq) => qq.id === id);
+    const extractedId = extractIdFromSlug(id);
+    const question = questions.find(
+        (qq) => qq.publicId === extractedId || qq.id === parseInt(extractedId, 10)
+    );
     const [answerBody, setAnswerBody] = useState("");
 
     useEffect(() => {
@@ -64,7 +68,7 @@ export default function QuestionDetail() {
         );
     }
 
-    const isOwner = question.author.id === currentUser.id;
+    const isOwner = currentUser?.id === question.author.id;
 
     const submitAnswer = (e) => {
         e.preventDefault();
@@ -179,7 +183,7 @@ export default function QuestionDetail() {
                         </button>
 
                         <Link
-                            to={`/pv/${question.author.username}`}
+                            to={`/u/${question.author.username}`}
                             className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                         >
                             <img
@@ -199,13 +203,7 @@ export default function QuestionDetail() {
                         </Link>
                     </div>
 
-                    {/* Comments on the question */}
-                    <div className="mt-6 border-t border-rule pt-5">
-                        <CommentSection
-                            targetType="question"
-                            targetId={parseInt(question.id) || question.id}
-                        />
-                    </div>
+
                 </div>
             </article>
 
@@ -289,7 +287,7 @@ export default function QuestionDetail() {
                                 </div>
 
                                 <Link
-                                    to={`/pv/${answer.author.username}`}
+                                    to={`/u/${answer.author.username}`}
                                     className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                                 >
                                     <img

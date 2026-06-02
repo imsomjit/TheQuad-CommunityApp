@@ -22,7 +22,12 @@ const getOpportunityById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const userId = req.user?.id; // Optional: if auth middleware is applied optionally
   
-  const opportunity = await opportunitiesService.getOpportunityById(parseInt(id), userId);
+  const numericId = parseInt(id);
+  if (isNaN(numericId)) {
+    const AppError = require("../../utils/AppError");
+    throw new AppError("Opportunity not found", 404, "NOT_FOUND");
+  }
+  const opportunity = await opportunitiesService.getOpportunityById(numericId, userId);
   res.json({ success: true, data: opportunity, message: "Opportunity retrieved" });
 });
 
