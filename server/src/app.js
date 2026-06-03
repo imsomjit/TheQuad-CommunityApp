@@ -38,7 +38,7 @@ const createApp = () => {
     cors({
       origin: env.CLIENT_URL,
       credentials: true, // allow cookies to be sent cross-origin
-      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
   );

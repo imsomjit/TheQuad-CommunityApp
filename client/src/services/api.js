@@ -12,7 +12,7 @@ import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
 
 // ── Base instance ────────────────────────────────────────────────────────────
 
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-peerverse.onrender.com/api");
+export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-peerverse.onrender.com/api");
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -375,6 +375,7 @@ export const notificationsApi = {
     })),
   markRead: (id) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.patch("/notifications/read-all"),
+  clearAll: () => api.delete("/notifications/clear-all"),
 };
 
 // Users

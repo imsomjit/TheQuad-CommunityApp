@@ -6,6 +6,7 @@ const { db } = require("../db/index");
 const { users, notifications, broadcasts } = require("../db/schema/index");
 const { sendEmail } = require("./email");
 const logger = require("./logger");
+const sseManager = require("../config/sse");
 
 const startCronJobs = () => {
   // Run everyday at 8:00 AM server time
@@ -104,7 +105,21 @@ const startCronJobs = () => {
           const chunkSize = 1000;
           for (let i = 0; i < notificationsToInsert.length; i += chunkSize) {
             const chunk = notificationsToInsert.slice(i, i + chunkSize);
-            await db.insert(notifications).values(chunk);
+            const inserted = await db.insert(notifications).values(chunk).returning();
+            
+            // Push via SSE to connected clients
+            for (const notif of inserted) {
+              const payload = {
+                ...notif,
+                actor: {
+                  id: broadcast.created_by,
+                  name: "System", // System fallback, as we don't have the actor object fully populated
+                  username: "system",
+                  avatarUrl: null
+                }
+              };
+              sseManager.send(notif.recipientId, "notification", payload);
+            }
           }
         }
 

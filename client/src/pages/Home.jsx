@@ -11,16 +11,26 @@ import {
     Award,
     Terminal,
     Search,
+    Target,
+    Bookmark,
+    Calendar,
+    Clock,
+    Trophy,
+    CodeXml,
+    FileText
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { usersApi } from "../services/api";
+import { usersApi, postsApi, opportunitiesApi } from "../services/api";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
+import PostCard from "../components/PostCard";
 import TagBadge from "../components/TagBadge";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton } from "../components/Skeletons";
+import { format } from "date-fns";
+import { generateSlug } from "../utils/slugify";
 
 
 const STAT_COLOR = {
@@ -130,6 +140,10 @@ export default function Home() {
 
     const [topContributors, setTopContributors] = useState([]);
     const [contributorsLoading, setContributorsLoading] = useState(true);
+    
+    const [recentPosts, setRecentPosts] = useState([]);
+    const [recentOpportunities, setRecentOpportunities] = useState([]);
+    const [extrasLoading, setExtrasLoading] = useState(true);
 
     useEffect(() => {
         const fetchContributors = async () => {
@@ -144,6 +158,48 @@ export default function Home() {
         };
         fetchContributors();
     }, []);
+
+    useEffect(() => {
+        const fetchExtras = async () => {
+            try {
+                // Fetch top read posts and recent ongoing opportunities
+                const [postsData, oppsData] = await Promise.all([
+                    postsApi.list({ sort: "top", limit: 3 }),
+                    opportunitiesApi.list({ status: "ONGOING", limit: 3 })
+                ]);
+                setRecentPosts(postsData.data || []);
+                setRecentOpportunities(oppsData.data || []);
+            } catch (err) {
+                console.error("Failed to fetch home extras", err);
+            } finally {
+                setExtrasLoading(false);
+            }
+        };
+        fetchExtras();
+    }, []);
+
+    const getStatusColor = (s) => {
+        switch(s) {
+            case "UPCOMING": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+            case "ONGOING": return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+            case "ENDED": return "bg-ink-3/10 text-ink-3 border-ink-3/20";
+            default: return "bg-paper-2 text-ink-2 border-rule";
+        }
+    };
+
+    const getSourceLogo = (s) => {
+        if (!s) return <Target className="w-4 h-4" />;
+        const sourceName = s.toLowerCase();
+        if (sourceName.includes("codeforces")) return <span className="font-bold text-syntax-rose">CF</span>;
+        if (sourceName.includes("kaggle")) return <span className="font-bold text-syntax-cyan">K</span>;
+        if (sourceName.includes("leetcode")) return <span className="font-bold text-accent">LC</span>;
+        if (sourceName.includes("codechef")) return <span className="font-bold text-syntax-violet">CC</span>;
+        if (sourceName.includes("atcoder")) return <span className="font-bold text-syntax-mint">AC</span>;
+        if (sourceName.includes("naukri")) return <span className="font-bold text-syntax-magenta">N</span>;
+        if (sourceName.includes("google")) return <span className="font-bold text-syntax-red-500">G</span>;
+        if (sourceName.includes("hackerrank")) return <span className="font-bold text-syntax-blue-500">H</span>;
+        return <CodeXml className="w-4 h-4" />;
+    };
 
     const trendingResources = useMemo(() => {
         return [...resources]
@@ -361,8 +417,8 @@ export default function Home() {
                                 trending this week
                             </p>
                             <h2 className="mt-1 flex items-center gap-2 font-display text-4xl font-semibold tracking-tight text-ink">
-                                <Flame className="h-7 w-7 text-accent" />
-                                Most read
+                                <Flame className="h-7 w-7 text-syntax-rose" />
+                                Most downloaded
                             </h2>
                         </div>
                     </header>
@@ -443,11 +499,11 @@ export default function Home() {
                                         className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule pb-3 last:border-0 last:pb-0"
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <span className="font-mono text-[10px] font-bold text-ink-3 w-4">{i + 1}.</span>
-                                            <img src={user.avatar} alt="" className="h-8 w-8 rounded-full object-cover border border-rule group-hover:border-accent transition-colors shrink-0" />
+                                            <span className="font-mono text-[10px] font-bold text-ink-3 w-4">#{i + 1}</span>
+                                            <img src={user.avatar} alt="" className="h-8 w-8 rounded-md object-cover border border-rule group-hover:border-accent transition-colors shrink-0" />
                                             <div className="flex flex-col overflow-hidden">
                                                 <span className="truncate text-sm font-semibold text-ink transition-colors group-hover:text-accent">
-                                                    {user.name} <span className="font-mono text-xs text-ink-3 font-normal ml-1">@{user.username}</span>
+                                                    {user.username} <span className="font-mono text-xs text-ink-3 font-normal ml-1"></span>
                                                 </span>
                                                 {(user.college || user.branch) && (
                                                     <span className="truncate text-[11px] text-ink-2">
@@ -457,7 +513,7 @@ export default function Home() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end shrink-0 pl-2">
-                                            <span className="font-mono text-xs font-bold text-accent">{user.score}</span>
+                                            <span className="font-mono text-xs font-bold text-syntax-lime">+{user.score}</span>
                                             <span className="font-mono text-[9px] uppercase tracking-wider text-ink-3">pts</span>
                                         </div>
                                     </Link>
@@ -553,6 +609,140 @@ export default function Home() {
                             description="The forum is quiet. Start a discussion or ask a question to the community!"
                             linkTo="/questions"
                             linkText="Ask a Question"
+                        />
+                    )}
+                </div>
+            </section>
+
+            {/* ── Divider ─────────────────────────────────────── */}
+            <div className="flex items-center gap-4">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                    §04 · the blog
+                </span>
+                <span className="h-px flex-1 bg-rule" />
+                <Link
+                    to="/blog"
+                    className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-2 transition-colors hover:text-accent"
+                >
+                    all posts →
+                </Link>
+            </div>
+
+            {/* ── MOST READ POSTS ────────────────────────────── */}
+            <section className="space-y-4">
+                <header>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        trending in articles
+                    </p>
+                    <h2 className="mt-1 flex items-center gap-2 font-display text-4xl font-semibold tracking-tight text-ink">
+                        <FileText className="h-7 w-7 text-syntax-violet" />
+                        Most read
+                    </h2>
+                </header>
+
+                <div className="space-y-3">
+                    {extrasLoading ? (
+                        <div className="flex justify-center p-4"><span className="text-sm text-ink-3">Loading...</span></div>
+                    ) : recentPosts.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {recentPosts.map((p) => (
+                                <PostCard key={p.id} post={p} />
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyPlaceholder 
+                            icon={FileText}
+                            title="No posts found"
+                            description="The blog is currently empty."
+                            linkTo="/blog/write"
+                            linkText="Write a Post"
+                        />
+                    )}
+                </div>
+            </section>
+
+            {/* ── Divider ─────────────────────────────────────── */}
+            <div className="flex items-center gap-4">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                    §05 · the board
+                </span>
+                <span className="h-px flex-1 bg-rule" />
+                <Link
+                    to="/opportunities"
+                    className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-2 transition-colors hover:text-accent"
+                >
+                    all opportunities →
+                </Link>
+            </div>
+
+            {/* ── RECENT OPPORTUNITIES ────────────────────────────── */}
+            <section className="space-y-4">
+                <header>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        compete and conquer
+                    </p>
+                    <h2 className="mt-1 flex items-center gap-2 font-display text-4xl font-semibold tracking-tight text-ink">
+                        <Target className="h-7 w-7 text-syntax-lime" />
+                        Ongoing opportunities
+                    </h2>
+                </header>
+
+                <div className="space-y-3">
+                    {extrasLoading ? (
+                        <div className="flex justify-center p-4"><span className="text-sm text-ink-3">Loading...</span></div>
+                    ) : recentOpportunities.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {recentOpportunities.map((opp) => (
+                                <Link key={opp.id} to={`/opportunities/${generateSlug(opp.title, opp.publicId || opp.id)}`} className="group flex flex-col p-6 rounded-2xl border border-rule bg-paper hover:bg-paper-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wide uppercase border ${getStatusColor(opp.status)}`}>
+                                            {opp.status}
+                                        </div>
+                                    </div>
+                                    
+                                    <h3 className="font-display font-semibold text-ink text-2xl leading-tight mb-3 group-hover:text-accent transition-colors line-clamp-2">
+                                        {opp.title}
+                                    </h3>
+                                    
+                                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
+                                            {getSourceLogo(opp.organizer)}
+                                            <span className="text-ink">{opp.organizer || "Unknown"}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-ink-2 px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
+                                            <Trophy className="w-3.5 h-3.5" fill="var(--accent)" />
+                                            <span>{opp.type === "CODING_CONTEST" ? "Contest" : "Competition"}</span>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-sm text-ink-2 line-clamp-2 mb-6 leading-relaxed">
+                                        {opp.description || "Gear up and prepare to showcase your problem-solving skills! Join fellow developers in this exciting challenge and climb the leaderboard."}
+                                    </p>
+
+                                    <div className="mt-auto pt-4 border-t border-rule flex flex-col gap-2.5 text-xs font-medium text-ink-3">
+                                        {opp.startTime && (
+                                            <div className="flex items-center gap-2.5">
+                                                <Calendar className="w-4 h-4 text-ink-2" />
+                                                <span>Starts: {format(new Date(opp.startTime), "MMM d, yyyy h:mm a")}</span>
+                                            </div>
+                                        )}
+                                        {opp.deadline && (
+                                            <div className="flex items-center gap-2.5">
+                                                <Clock className="w-4 h-4 text-ink-2" />
+                                                <span>Deadline: {format(new Date(opp.deadline), "MMM d, yyyy h:mm a")}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyPlaceholder 
+                            icon={Target}
+                            title="No ongoing opportunities"
+                            description="There are no ongoing opportunities at the moment. Check back later!"
+                            linkTo="/opportunities"
+                            linkText="Browse Opportunities"
                         />
                     )}
                 </div>

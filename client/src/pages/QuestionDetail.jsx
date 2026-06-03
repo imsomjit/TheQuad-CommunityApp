@@ -43,6 +43,7 @@ export default function QuestionDetail() {
         acceptAnswer,
         deleteQuestion,
         incrementViews,
+        fetchQuestion,
     } = useApp();
     const { isAuthenticated } = useAuth();
 
@@ -51,11 +52,29 @@ export default function QuestionDetail() {
         (qq) => qq.publicId === extractedId || qq.id === parseInt(extractedId, 10)
     );
     const [answerBody, setAnswerBody] = useState("");
+    const [isLoading, setIsLoading] = useState(!question || !question.answers);
 
     useEffect(() => {
-        if (question) incrementViews("question", id);
+        const loadFullQuestion = async () => {
+            if (extractedId) {
+                await fetchQuestion(extractedId);
+            }
+            if (question) {
+                incrementViews("question", id);
+            }
+            setIsLoading(false);
+        };
+        loadFullQuestion();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
+    }, [id, extractedId]);
+
+    if (isLoading) {
+        return (
+            <div className="py-20 text-center">
+                <p className="font-display text-2xl text-ink">Loading...</p>
+            </div>
+        );
+    }
 
     if (!question) {
         return (
@@ -107,7 +126,7 @@ export default function QuestionDetail() {
 
             <header className="border-b-2 border-double border-rule pb-8">
                 <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-                    &sect;03 &middot; question / {question.id}
+                    &sect;03 &middot; question / #{question.id}
                 </p>
 
                 <h1 className="mt-2 font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">
@@ -117,7 +136,7 @@ export default function QuestionDetail() {
                 <div className="mt-4 flex flex-wrap items-center gap-4 font-mono text-xs text-ink-3">
                     <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
-                        asked {timeAgo(question.created_at)}
+                        asked {timeAgo(question.createdAt)}
                     </span>
 
                     <span className="flex items-center gap-1">

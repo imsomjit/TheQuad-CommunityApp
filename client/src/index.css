@@ -55,21 +55,19 @@
 html.light {
     color-scheme: light;
 
-    --paper: #f6f0e4;
-    --paper-2: #efe7d6;
-    --paper-3: #e8ddc6;
+    --paper: #faf8f2;
+    --paper-2: #f5f1e8;
+    --paper-3: #eeeadf;
     --ink: #231d17;
     --ink-2: #62584d;
     --ink-3: #8b8175;
     --rule: #d8cfb9;
     --rule-2: #c3b89e;
 
-    --accent: #b74d21;
-    /* deep rust */
-    --accent-soft: rgba(193, 74, 26, 0.10);
-    --accent-2: #2c6b46;
-    /* deep forest */
-    --accent-2-soft: rgba(31, 94, 58, 0.10);
+    --accent: #cc5521;
+    --accent-soft: rgba(204, 85, 33, 0.10);
+    --accent-2: #2a6943;
+    --accent-2-soft: rgba(42, 105, 67, 0.10);
 
     --syntax-cyan: #0e7490;
     --syntax-magenta: #9d174d;

@@ -16,13 +16,18 @@ const asyncHandler = require("../utils/asyncHandler");
  *   router.get('/protected', auth, controller.action);
  */
 const auth = asyncHandler(async (req, _res, next) => {
+  let token;
   const header = req.headers.authorization;
 
-  if (!header || !header.startsWith("Bearer ")) {
-    throw new AppError("Authentication required", 401, "MISSING_TOKEN");
+  if (header && header.startsWith("Bearer ")) {
+    token = header.slice(7);
+  } else if (req.query.token) {
+    token = req.query.token;
   }
 
-  const token = header.slice(7); // strip "Bearer "
+  if (!token) {
+    throw new AppError("Authentication required", 401, "MISSING_TOKEN");
+  }
 
   try {
     const decoded = verifyAccessToken(token);
@@ -44,15 +49,21 @@ const auth = asyncHandler(async (req, _res, next) => {
  * Useful for routes that are public but show extra data when authenticated.
  */
 const optionalAuth = (req, _res, next) => {
+  let token;
   const header = req.headers.authorization;
 
-  if (!header || !header.startsWith("Bearer ")) {
+  if (header && header.startsWith("Bearer ")) {
+    token = header.slice(7);
+  } else if (req.query.token) {
+    token = req.query.token;
+  }
+
+  if (!token) {
     req.user = null;
     return next();
   }
 
   try {
-    const token = header.slice(7);
     const decoded = verifyAccessToken(token);
     req.user = { id: decoded.id, username: decoded.username, role: decoded.role };
   } catch {

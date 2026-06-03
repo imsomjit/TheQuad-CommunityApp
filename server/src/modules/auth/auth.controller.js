@@ -9,7 +9,7 @@ const { parseDurationMs } = require("../../utils/jwt");
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,              // JS cannot read this cookie (XSS protection)
   secure: env.NODE_ENV === "production", // HTTPS only in prod
-  sameSite: "lax",                // "lax" allows cookie on OAuth redirect navigations; "strict" would block it
+  sameSite: env.NODE_ENV === "production" ? "none" : "lax", // "none" required for cross-domain in prod
   maxAge: parseDurationMs(env.JWT_REFRESH_EXPIRES_IN),
   path: "/api/auth",          // Only sent to auth routes (minimizes exposure)
 };

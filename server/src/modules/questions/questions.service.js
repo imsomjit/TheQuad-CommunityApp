@@ -79,6 +79,7 @@ const listQuestions = async (query) => {
         id: questions.id,
         publicId: questions.publicId,
         title: questions.title,
+        body: questions.body,
         authorId: questions.authorId,
         upvotes: questions.upvotes,
         downvotes: questions.downvotes,

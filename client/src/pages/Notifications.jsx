@@ -16,6 +16,7 @@ import { notificationsApi } from "../services/api";
 import { toast } from "sonner";
 import Loader from "../components/Loader";
 import { getAvatarFallback } from "../utils/fallbacks";
+import { useApp } from "../context/AppContext";
 
 function formatRel(ts) {
   const diff = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -49,6 +50,12 @@ const linkFor = (notification) => {
 
 export default function Notifications() {
   const { isAuthenticated } = useAuth();
+  const { 
+    markNotifRead: globalMarkNotifRead, 
+    markAllNotifsRead: globalMarkAllNotifsRead,
+    notifications: globalNotifications 
+  } = useApp();
+
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pagination, setPagination] = useState(null);
@@ -75,23 +82,40 @@ export default function Notifications() {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  const handleMarkRead = async (id) => {
+  // Sync global read status to local paginated list
+  // If the user marks read from the dropdown, it will automatically reflect here
+  useEffect(() => {
+    if (globalNotifications.length > 0) {
+      setNotifications(prev => prev.map(n => {
+        const globalMatch = globalNotifications.find(gn => gn.id === n.id);
+        if (globalMatch && globalMatch.read && !n.read) {
+          return { ...n, read: true };
+        }
+        return n;
+      }));
+    }
+  }, [globalNotifications]);
+
+  // Sync local unreadCount dynamically
+  useEffect(() => {
+    setUnreadCount(notifications.filter(n => !n.read).length);
+  }, [notifications]);
+
+  const handleMarkRead = (id) => {
     try {
-      await notificationsApi.markRead(id);
+      globalMarkNotifRead(id); // Hit API + global state
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
-      setUnreadCount((c) => Math.max(0, c - 1));
     } catch {
       // silent
     }
   };
 
-  const handleMarkAllRead = async () => {
+  const handleMarkAllRead = () => {
     try {
-      await notificationsApi.markAllRead();
+      globalMarkAllNotifsRead(); // Hit API + global state
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
       toast.success("All marked as read");
     } catch {
       toast.error("Failed to mark all as read");
@@ -250,7 +274,7 @@ export default function Notifications() {
                   )}
 
                   <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-3">
-                    {formatRel(notification.created_at)}
+                    {formatRel(notification.createdAt)}
                   </p>
                 </div>
 

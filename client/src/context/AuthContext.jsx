@@ -28,14 +28,21 @@ export const useAuth = () => {
   return ctx;
 };
 
+let initialRefreshPromise = null;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true); // true on mount while we check cookie
 
   // Try silent refresh on first load
   useEffect(() => {
-    authApi
-      .refresh()
+    if (!initialRefreshPromise) {
+      initialRefreshPromise = authApi.refresh().finally(() => {
+        initialRefreshPromise = null;
+      });
+    }
+
+    initialRefreshPromise
       .then(({ data }) => {
         setAccessToken(data.data.accessToken);
         setUser(mapUser(data.data.user));

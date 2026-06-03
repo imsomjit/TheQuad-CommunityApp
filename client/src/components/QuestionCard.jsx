@@ -96,7 +96,7 @@ export default function QuestionCard({ question }) {
                 </Link>
 
                 <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-2">
-                    {previewText}
+                    {previewText}...
                 </p>
 
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -119,7 +119,7 @@ export default function QuestionCard({ question }) {
                                 {question.author.name}
                             </span>
                             <span className="font-mono text-ink-3">
-                                {" "}· {timeAgo(question.created_at)}
+                                {" "}· {timeAgo(question.createdAt)}
                             </span>
                         </span>
                     </div>

@@ -63,6 +63,7 @@ export default function NotificationDropdown({ children }) {
         notifications,
         markNotifRead,
         markAllNotifsRead,
+        clearAllNotifs,
         unreadCount,
     } = useApp();
 
@@ -90,14 +91,24 @@ export default function NotificationDropdown({ children }) {
                         )}
                     </div>
 
-                    <button
-                        data-testid="mark-all-read-btn"
-                        onClick={markAllNotifsRead}
-                        className="flex items-center gap-1 text-xs text-ink-2 transition-colors hover:text-accent"
-                    >
-                        <CheckCheck className="h-3.5 w-3.5" />
-                        Mark all read
-                    </button>
+                    {unreadCount > 0 ? (
+                        <button
+                            data-testid="mark-all-read-btn"
+                            onClick={markAllNotifsRead}
+                            className="flex items-center gap-1 text-xs text-ink-2 transition-colors hover:text-accent"
+                        >
+                            <CheckCheck className="h-3.5 w-3.5" />
+                            Mark all read
+                        </button>
+                    ) : (
+                        <button
+                            onClick={clearAllNotifs}
+                            className="flex items-center gap-1 text-xs text-ink-2 transition-colors hover:text-red-500"
+                        >
+                            <CheckCheck className="h-3.5 w-3.5" />
+                            Clear all
+                        </button>
+                    )}
                 </div>
 
                 <div className="max-h-[440px] overflow-y-auto">
@@ -150,7 +161,7 @@ export default function NotificationDropdown({ children }) {
                                     </p>
 
                                     <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-3">
-                                        {formatRel(notification.created_at)}
+                                        {formatRel(notification.createdAt)}
                                     </p>
                                 </div>
 

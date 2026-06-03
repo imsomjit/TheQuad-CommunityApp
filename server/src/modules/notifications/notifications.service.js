@@ -233,6 +233,12 @@ const markAllRead = async (userId) => {
     .where(eq(notifications.recipientId, userId));
 };
 
+const clearAll = async (userId) => {
+  await db
+    .delete(notifications)
+    .where(eq(notifications.recipientId, userId));
+};
+
 module.exports = {
   create,
   notifyOnUpvote,
@@ -240,4 +246,5 @@ module.exports = {
   getForUser,
   markRead,
   markAllRead,
+  clearAll,
 };

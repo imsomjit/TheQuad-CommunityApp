@@ -16,6 +16,8 @@ import {
   bookmarksApi,
   settingsApi,
   getAccessToken,
+  API_BASE,
+  mapNotification,
 } from "../services/api";
 import ReportModal from "../components/ReportModal";
 
@@ -95,6 +97,48 @@ export function AppProvider({ children }) {
     };
 
     load();
+  }, [isAuthenticated]);
+
+  // ── Server-Sent Events (SSE) ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated || !getAccessToken()) return;
+
+    const token = getAccessToken();
+    const eventSource = new EventSource(`${API_BASE}/notifications/stream?token=${token}`, {
+      withCredentials: true,
+    });
+
+    eventSource.addEventListener("connected", (e) => {
+      // Just log connection, unreadCount is computed dynamically
+      console.log("SSE connected!");
+    });
+
+    eventSource.addEventListener("notification", (e) => {
+      try {
+        const rawNotif = JSON.parse(e.data);
+        const newNotif = mapNotification(rawNotif);
+        
+        // Add to notifications list safely
+        setNotifications((prev) => {
+          // Prevent duplicates
+          if (prev.find((n) => n.id === newNotif.id)) return prev;
+          
+          return [newNotif, ...prev];
+        });
+
+      } catch (err) {
+        console.error("SSE notification parse error", err);
+      }
+    });
+
+    eventSource.onerror = (error) => {
+      console.error("SSE connection error", error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, [isAuthenticated]);
 
   // ── Voting ─────────────────────────────────────────────────────────────────
@@ -291,10 +335,32 @@ export function AppProvider({ children }) {
 
   const deleteQuestion = useCallback(
     async (id) => {
-      if (isAuthenticated) await questionsApi.delete(id);
+      if (isAuthenticated) {
+        await questionsApi.delete(id);
+      }
       setQuestions((qs) => qs.filter((q) => q.id !== id));
     },
     [isAuthenticated]
+  );
+
+  const fetchQuestion = useCallback(
+    async (id) => {
+      try {
+        const fullQuestion = await questionsApi.getById(id);
+        setQuestions((qs) => {
+          const exists = qs.find(q => q.id === fullQuestion.id);
+          if (exists) {
+            return qs.map(q => q.id === fullQuestion.id ? fullQuestion : q);
+          }
+          return [...qs, fullQuestion];
+        });
+        return fullQuestion;
+      } catch (err) {
+        console.error("Failed to fetch question", err);
+        return null;
+      }
+    },
+    []
   );
 
   const addAnswer = useCallback(
@@ -354,6 +420,11 @@ export function AppProvider({ children }) {
     if (isAuthenticated) notificationsApi.markAllRead().catch(() => {});
   }, [isAuthenticated]);
 
+  const clearAllNotifs = useCallback(async () => {
+    setNotifications([]);
+    if (isAuthenticated) notificationsApi.clearAll().catch(() => {});
+  }, [isAuthenticated]);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const openReportModal = useCallback((targetType, targetId, targetTitle) => {
@@ -391,12 +462,15 @@ export function AppProvider({ children }) {
       addQuestion,
       updateQuestion,
       deleteQuestion,
+      fetchQuestion,
       addAnswer,
       acceptAnswer,
       incrementViews,
       markNotifRead,
       markAllNotifsRead,
+      clearAllNotifs,
       openReportModal,
+      closeReportModal,
     }),
     [
       currentUser,
@@ -418,6 +492,7 @@ export function AppProvider({ children }) {
       addQuestion,
       updateQuestion,
       deleteQuestion,
+      fetchQuestion,
       addAnswer,
       acceptAnswer,
       incrementViews,

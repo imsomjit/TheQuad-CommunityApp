@@ -80,4 +80,15 @@ router.patch(
   })
 );
 
+// DELETE /api/notifications/clear-all
+router.delete(
+  "/clear-all",
+  auth,
+  notificationLimiter,
+  asyncHandler(async (req, res) => {
+    await notificationService.clearAll(req.user.id);
+    res.json({ success: true, message: "All notifications cleared" });
+  })
+);
+
 module.exports = router;

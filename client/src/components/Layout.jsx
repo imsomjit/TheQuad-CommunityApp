@@ -60,27 +60,40 @@ export default function Layout() {
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 pr-[var(--removed-body-scroll-bar-size,0px)]">
+                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-700 pr-[var(--removed-body-scroll-bar-size,0px)]">
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
                         className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md transition-all duration-700 overflow-hidden ${
                             scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
-                        <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
-                            <span className="flex items-center gap-2">
-                                <span className="text-accent animate-pulse">●</span>
-                                the peerverse / vol.01 / a learning space
-                            </span>
+                        {siteSettings?.announcementActive && siteSettings?.announcementText ? (
+                            <div className="flex h-full w-full overflow-hidden whitespace-nowrap font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em]">
+                                <div className="flex h-full w-max animate-marquee-infinite">
+                                    <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4">
+                                        <span className="font-semibold text-accent">📢 {siteSettings.announcementText}</span>  
+                                    </div>
+                                    <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4" aria-hidden="true">
+                                        <span className="font-semibold text-accent">📢 {siteSettings.announcementText}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
+                                <span className="flex items-center gap-2">
+                                    <span className="text-accent animate-pulse">●</span>
+                                    the peerverse / vol.01 / a learning space
+                                </span>
 
-                            <span className="hidden items-center gap-2 sm:flex">
-                                <span>{meta.section}</span>
-                                <span>·</span>
-                                <span className="text-ink-2">{meta.label}</span>
-                                <span>·</span>
-                                <span>{theme === "light" ? "paper" : "ink"}</span>
-                            </span>
-                        </div>
+                                <span className="hidden items-center gap-2 sm:flex">
+                                    <span>{meta.section}</span>
+                                    <span>·</span>
+                                    <span className="text-ink-2">{meta.label}</span>
+                                    <span>·</span>
+                                    <span>{theme === "light" ? "paper" : "ink"}</span>
+                                </span>
+                            </div>
+                        )}
                     </div>
                     <Navbar scrolled={scrolled} />
                 </div>
@@ -101,24 +114,7 @@ export default function Layout() {
                     className={`${hideSidebar ? "" : isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
                     style={{ "--sidebar-width": hideSidebar ? "0px" : isSidebarCollapsed ? "80px" : "16rem" }}
                 >
-                    {/* Announcement Banner */}
-                    {siteSettings?.announcementActive && siteSettings?.announcementText && (
-                        <div className={`w-full py-2.5 px-4 text-center text-sm font-medium flex items-center justify-center gap-2 mb-2
-                            ${siteSettings.announcementType === 'WARNING' ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20' : 
-                            siteSettings.announcementType === 'ERROR' ? 'bg-red-500/10 text-red-600 border border-red-500/20' :
-                            siteSettings.announcementType === 'SUCCESS' ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 
-                            'bg-blue-500/10 text-blue-600 border border-blue-500/20'}`}
-                        >
-                            {siteSettings.announcementType === 'WARNING' || siteSettings.announcementType === 'ERROR' ? (
-                                <AlertCircle className="w-4 h-4" />
-                            ) : siteSettings.announcementType === 'SUCCESS' ? (
-                                <CheckCircle2 className="w-4 h-4" />
-                            ) : (
-                                <Info className="w-4 h-4" />
-                            )}
-                            {siteSettings.announcementText}
-                        </div>
-                    )}
+
                     {/* Main content */}
                     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-2 flex-1 -mt-4 sm:-mt-2">
                         <div key={location.pathname} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out fill-mode-both">

@@ -188,10 +188,10 @@ export default function AdminSettings() {
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="INFO">Info (Blue)</SelectItem>
-                    <SelectItem value="SUCCESS">Success (Green)</SelectItem>
-                    <SelectItem value="WARNING">Warning (Orange)</SelectItem>
-                    <SelectItem value="ERROR">Error (Red)</SelectItem>
+                    <SelectItem value="INFO">Info</SelectItem>
+                    <SelectItem value="SUCCESS">Success</SelectItem>
+                    <SelectItem value="WARNING">Warning</SelectItem>
+                    <SelectItem value="ERROR">Error</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -289,7 +289,7 @@ export default function AdminSettings() {
                     type="datetime-local"
                     value={broadcastForm.scheduledAt}
                     onChange={(e) => setBroadcastForm({ ...broadcastForm, scheduledAt: e.target.value })}
-                    className="bg-paper border-rule [color-scheme:light]"
+                    className="bg-paper border-rule [color-scheme:light] dark:[color-scheme:dark]"
                   />
                 </div>
               </div>
