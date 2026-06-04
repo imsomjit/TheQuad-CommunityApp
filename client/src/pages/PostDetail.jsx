@@ -13,7 +13,7 @@ import CommentSection from "../components/CommentSection";
 
 
 // ── Category metadata card ────────────────────────────────────────────────────
-function CategoryMetaCard({ category, meta }) {
+function CategoryMetaCard({ category, meta, variant }) {
   if (!meta || Object.keys(meta).length === 0) return null;
 
   const DIFFICULTY_COLOR = {
@@ -80,17 +80,37 @@ function CategoryMetaCard({ category, meta }) {
   const cat = CATEGORY_META[category];
   const Icon = cat?.icon || Code2;
 
+  if (variant === "sidebar") {
+    return (
+      <div className="space-y-4">
+        <div className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] font-semibold ${cat?.color || "text-ink-3"}`}>
+          <Icon className="h-4 w-4" />
+          {cat?.label || category}
+        </div>
+        <dl className="space-y-3">
+          {fields.map(({ label, value }) => (
+            <div key={label}>
+              <dt className="font-mono text-[10px] uppercase text-ink-3 mb-1">{label}</dt>
+              <dd className="text-sm font-medium text-ink leading-tight">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    );
+  }
+
   return (
-    <div className={`mb-6 rounded-sm border p-4 ${cat?.bg || "bg-paper-2/40 border-rule"}`}>
-      <div className={`mb-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] font-medium ${cat?.color || "text-ink-3"}`}>
-        <Icon className="h-3.5 w-3.5" />
+    <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl border border-rule bg-paper-2/30 px-5 py-4">
+      <div className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] font-semibold ${cat?.color || "text-ink-3"}`}>
+        <Icon className="h-4 w-4" />
         {cat?.label || category}
       </div>
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-2.5 sm:grid-cols-3">
+      <div className="hidden h-5 w-px bg-rule sm:block" />
+      <dl className="flex flex-wrap items-center gap-x-6 gap-y-2">
         {fields.map(({ label, value }) => (
-          <div key={label}>
-            <dt className="font-mono text-[10px] uppercase text-ink-3">{label}</dt>
-            <dd className="mt-0.5 text-sm text-ink">{value}</dd>
+          <div key={label} className="flex items-baseline gap-2">
+            <dt className="font-mono text-[10px] uppercase text-ink-3">{label}:</dt>
+            <dd className="text-sm font-medium text-ink">{value}</dd>
           </div>
         ))}
       </dl>
@@ -154,18 +174,18 @@ function TableOfContents({ body }) {
   if (headings.length < 2) return null;
 
   return (
-    <div className="sticky top-24 rounded-sm border border-rule bg-paper p-4">
-      <div className="mb-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
-        <List className="h-3.5 w-3.5" />
+    <div className="rounded-xl border border-rule bg-paper-2/30 p-5 shadow-sm">
+      <div className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-semibold text-ink">
+        <List className="h-4 w-4" />
         Contents
       </div>
-      <nav className="flex flex-col gap-1">
+      <nav className="flex flex-col gap-2.5">
         {headings.map((h) => (
           <a
             key={h.id}
             href={`#${h.id}`}
-            className={`block truncate text-xs leading-relaxed text-ink-2 transition-colors hover:text-ink
-              ${h.level === 3 ? "pl-3" : ""}`}
+            className={`block truncate text-[13px] leading-relaxed text-ink-2 transition-colors hover:text-accent
+              ${h.level === 3 ? "pl-4 text-ink-3" : "font-medium"}`}
           >
             {h.text}
           </a>
@@ -321,98 +341,102 @@ export default function PostDetail() {
         </div>
 
         {/* ── Article content ────────────────────────────────────────────── */}
-        <article className="min-w-0 flex-1">
+        {/* ── Article content ────────────────────────────────────────────── */}
+        <article className="min-w-0 flex-1 max-w-3xl mx-auto">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3 mb-6">
             <Link to="/posts" className="hover:text-ink">Posts</Link>
             <span>/</span>
             {cat && <span className={cat.color}>{cat.label}</span>}
           </div>
 
-          {/* Cover image */}
-          {post.coverImageUrl && (
-            <div className="mt-4 overflow-hidden rounded-sm border border-rule">
-              <img
-                src={post.coverImageUrl}
-                alt={post.title}
-                className="h-56 w-full object-cover sm:h-72"
-              />
-            </div>
-          )}
-
           {/* Title */}
-          <h1 className="mt-5 font-display text-3xl leading-tight text-ink sm:text-4xl">
+          <h1 className="font-display text-4xl leading-tight text-ink sm:text-5xl lg:text-[3.5rem] font-bold mb-8">
             {post.title}
           </h1>
 
           {/* Meta row */}
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-            {post.author && (
-              <Link
-                to={`/u/${post.author.username}`}
-                className="flex items-center gap-2"
-              >
-                <img
-                  src={post.author.avatar}
-                  alt={post.author.name}
-                  className="h-7 w-7 rounded-full object-cover"
-                />
-                <span className="text-sm font-medium text-ink transition-colors hover:text-accent">
-                  {post.author.name}
-                </span>
-              </Link>
-            )}
-            <span className="text-ink-3">·</span>
-            <span className="flex items-center gap-1 font-mono text-xs text-ink-3">
-              <Clock className="h-3.5 w-3.5" />
-              {post.readingTimeMin} min read
-            </span>
-            <span className="flex items-center gap-1 font-mono text-xs text-ink-3">
-              <Eye className="h-3.5 w-3.5" />
-              {post.views?.toLocaleString()}
-            </span>
-            {post.publishedAt && (
-              <span className="font-mono text-xs text-ink-3">
-                {new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-              </span>
-            )}
-            {isAuthor && (
-              <Link
-                to={`/posts/${post.id}/edit`}
-                className="ml-auto flex items-center gap-1.5 rounded-sm border border-rule px-2 py-1 text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-              >
-                <Edit2 className="h-3 w-3" />
-                Edit
-              </Link>
-            )}
+          <div className="flex items-center justify-between mb-8 pb-8 border-b border-rule">
+            <div className="flex items-center gap-4">
+              {post.author && (
+                <Link to={`/u/${post.author.username}`}>
+                  <img
+                    src={post.author.avatar}
+                    alt={post.author.name}
+                    className="h-12 w-12 rounded-full object-cover shadow-sm border border-rule"
+                  />
+                </Link>
+              )}
+              <div className="flex flex-col justify-center">
+                {post.author && (
+                  <div className="flex items-center gap-2">
+                    <Link to={`/u/${post.author.username}`} className="text-base font-medium text-ink transition-colors hover:text-accent">
+                      {post.author.name}
+                    </Link>
+                    {isAuthor && (
+                      <Link
+                        to={`/posts/${post.id}/edit`}
+                        className="flex items-center gap-1 rounded-full bg-paper border border-rule px-2 py-0.5 text-[10px] uppercase font-mono tracking-widest text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                      >
+                        <Edit2 className="h-3 w-3" /> Edit
+                      </Link>
+                    )}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-[13px] text-ink-3 mt-1">
+                  {post.publishedAt && (
+                    <span>{new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+                  )}
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /> {post.readingTimeMin} min read
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5" /> {post.views?.toLocaleString()} views
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Social Share / Bookmark (Desktop Inline) */}
+            <div className="hidden md:flex items-center gap-3">
+               <button
+                 onClick={handleShare}
+                 title="Copy link"
+                 className="flex h-9 w-9 items-center justify-center rounded-full border border-rule text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
+               >
+                 {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
+               </button>
+               <button
+                 onClick={handleBookmark}
+                 title="Bookmark"
+                 className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                   isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:bg-paper-2 hover:text-ink"
+                 }`}
+               >
+                 <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
+               </button>
+            </div>
           </div>
 
-          {/* Tags */}
-          {post.tags?.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {post.tags.map((t) => (
-                <Link
-                  key={t}
-                  to={`/posts?tag=${t}`}
-                  className="rounded-sm border border-rule bg-paper-2/40 px-2 py-0.5 font-mono text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-                >
-                  #{t}
-                </Link>
-              ))}
-            </div>
+          {/* Cover image / Banner */}
+          {post.coverImageUrl && (
+            <figure className="mb-12 overflow-hidden rounded-xl border border-rule shadow-sm">
+              <img
+                src={post.coverImageUrl}
+                alt={post.title}
+                className="w-full h-auto object-cover max-h-[500px]"
+              />
+            </figure>
           )}
 
           {/* Series navigation */}
           {post.seriesNav && (
-            <div className="mt-6">
+            <div className="mb-10">
               <SeriesNav seriesNav={post.seriesNav} />
             </div>
           )}
-
-          {/* Category metadata */}
-          <div className="mt-6">
-            <CategoryMetaCard category={post.category} meta={post.categoryMeta} />
-          </div>
 
           {/* Markdown body — uses shared MarkdownRenderer (theme-adaptive syntax) */}
           <div className="mt-4">
@@ -474,9 +498,45 @@ export default function PostDetail() {
           </div>
         </article>
 
-        {/* ── Right sidebar: TOC ─────────────────────────────────────────── */}
-        <aside className="hidden w-56 shrink-0 xl:block">
-          <TableOfContents body={post.body} />
+        {/* ── Right sidebar: TOC & Meta ────────────────────────────────── */}
+        <aside className="hidden w-64 shrink-0 xl:block">
+          <div className="sticky top-24 space-y-6">
+            <TableOfContents body={post.body} />
+            
+            {/* Sidebar Tags & Meta Card */}
+            {(post.tags?.length > 0 || (post.categoryMeta && Object.keys(post.categoryMeta).length > 0)) && (
+              <div className="rounded-xl border border-rule bg-paper-2/30 p-5 shadow-sm">
+                {post.categoryMeta && Object.keys(post.categoryMeta).length > 0 && (
+                  <div className={post.tags?.length > 0 ? "mb-6 pb-6 border-b border-rule" : ""}>
+                    <div className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-semibold text-ink">
+                      <Layers className="h-4 w-4" />
+                      Details
+                    </div>
+                    <CategoryMetaCard category={post.category} meta={post.categoryMeta} variant="sidebar" />
+                  </div>
+                )}
+                
+                {post.tags?.length > 0 && (
+                  <div>
+                    <div className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-semibold text-ink">
+                      Tags
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags.map((t) => (
+                        <Link
+                          key={t}
+                          to={`/posts?tag=${t}`}
+                          className="rounded-md border border-rule bg-paper px-2 py-1 font-mono text-[10px] text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                        >
+                          #{t}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </aside>
       </div>
     </div>

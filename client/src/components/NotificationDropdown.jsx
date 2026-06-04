@@ -6,6 +6,7 @@ import {
     MessageCircle,
     ArrowUp,
     MessageSquare,
+    PartyPopper,
 } from "lucide-react";
 
 import {
@@ -27,8 +28,12 @@ function formatRel(ts) {
     return `${Math.floor(diff / 86400)}d ago`;
 }
 
-const iconFor = (type) => {
-    switch (type) {
+const iconFor = (notification) => {
+    if (notification.targetType === "birthday") {
+        return PartyPopper;
+    }
+    
+    switch (notification.type) {
         case "comment_on_resource":
             return MessageCircle;
 
@@ -119,7 +124,7 @@ export default function NotificationDropdown({ children }) {
                     )}
 
                     {notifications.map((notification) => {
-                        const Icon = iconFor(notification.type);
+                        const Icon = iconFor(notification);
 
                         return (
                             <Link

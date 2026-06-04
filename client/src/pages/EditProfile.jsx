@@ -25,6 +25,7 @@ export default function EditProfile() {
         name: "", bio: "", location: "", organization: "", website: "",
         college: "", branch: "", graduationYear: "",
         githubUsername: "", linkedinUrl: "", twitterHandle: "", instagramHandle: "", leetcodeUsername: "",
+        gender: "other", dateOfBirth: "2000-01-01"
     });
     const [skills, setSkills] = useState([]);
     const [skillInput, setSkillInput] = useState("");
@@ -62,6 +63,8 @@ export default function EditProfile() {
                     twitterHandle: p.twitterHandle || "",
                     instagramHandle: p.instagramHandle || "",
                     leetcodeUsername: p.leetcodeUsername || "",
+                    gender: p.gender || "other",
+                    dateOfBirth: p.dateOfBirth ? p.dateOfBirth.split('T')[0] : "2000-01-01",
                 });
                 setSkills(p.skills || []);
                 setAvatarPreview(p.avatarUrl || null);
@@ -217,6 +220,29 @@ export default function EditProfile() {
                                         <Building2 className="field-icon" />
                                         <input value={form.organization} onChange={set("organization")} maxLength={200} className="field-input pl-8" placeholder="Company / Startup" />
                                     </div>
+                                </Field>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Field label="Gender">
+                                    <select 
+                                        value={form.gender} 
+                                        onChange={set("gender")} 
+                                        className="field-input"
+                                        disabled={profile?.gender && profile.gender !== "other"}
+                                    >
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </Field>
+                                <Field label="Date of Birth">
+                                    <input 
+                                        type="date" 
+                                        value={form.dateOfBirth} 
+                                        onChange={set("dateOfBirth")} 
+                                        className="field-input"
+                                        disabled={profile?.dateOfBirth && profile.dateOfBirth.split('T')[0] !== "2000-01-01"}
+                                    />
                                 </Field>
                             </div>
                             <Field label="Website">

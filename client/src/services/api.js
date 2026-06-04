@@ -129,6 +129,9 @@ const mapUser = (u) => {
     twitterHandle: u.twitterHandle || "",
     instagramHandle: u.instagramHandle || "",
     leetcodeUsername: u.leetcodeUsername || "",
+    // Personal
+    gender: u.gender || "other",
+    dateOfBirth: u.dateOfBirth || "2000-01-01",
     // Meta
     createdAt: u.createdAt || null,
     stats: u.stats || { resources: 0, questions: 0, answers: 0, followers: 0, following: 0, totalUpvotes: 0 },

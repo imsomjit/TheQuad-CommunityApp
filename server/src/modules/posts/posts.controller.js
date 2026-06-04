@@ -90,4 +90,15 @@ const remove = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Post deleted successfully" });
 });
 
-module.exports = { create, list, drafts, getBySlug, getById, update, autosave, publish, unpublish, remove };
+// PATCH /api/posts/:id/cover
+const uploadCover = asyncHandler(async (req, res) => {
+  const post = await postsService.uploadCover(
+    parseInt(req.params.id),
+    req.user.id,
+    req.uploadedImage.coverUrl,
+    req.uploadedImage.coverPublicId
+  );
+  res.json({ success: true, data: post });
+});
+
+module.exports = { create, list, drafts, getBySlug, getById, update, autosave, publish, unpublish, remove, uploadCover };

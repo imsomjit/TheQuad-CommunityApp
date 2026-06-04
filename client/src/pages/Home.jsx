@@ -644,7 +644,7 @@ export default function Home() {
                     {extrasLoading ? (
                         <div className="flex justify-center p-4"><span className="text-sm text-ink-3">Loading...</span></div>
                     ) : recentPosts.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="flex flex-col gap-5">
                             {recentPosts.map((p) => (
                                 <PostCard key={p.id} post={p} />
                             ))}

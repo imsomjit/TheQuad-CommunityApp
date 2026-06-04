@@ -178,7 +178,7 @@ export default function PostsFeed() {
                   handleSearch(e);
                 }
               }}
-              placeholder="Filter by tag (press Enter)..."
+              placeholder="Filter by tag..."
               className="h-10 w-full rounded-md border-rule bg-paper px-3 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
             />
           </div>
@@ -286,7 +286,7 @@ export default function PostsFeed() {
 
 function PostsGrid({ children }) {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6">
       {children}
     </div>
   );

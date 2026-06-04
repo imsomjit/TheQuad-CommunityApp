@@ -26,6 +26,8 @@ const updateProfileSchema = z.object({
   instagramHandle: z.string().max(50).trim().optional(),
   leetcodeUsername: z.string().max(50).trim().optional(),
   skills: z.array(z.string().max(50)).max(20).optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  dateOfBirth: z.string().date().optional(),
 });
 
 const router = Router();

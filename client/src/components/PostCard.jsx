@@ -29,8 +29,8 @@ export const CATEGORY_META = {
   learning_journal: {
     label: "Learning Journal",
     icon: BookMarked,
-    color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200/60 dark:border-amber-800/40",
+    color: "text-accent",
+    bg: "bg-paper-2 ",
   },
   project_breakdown: {
     label: "Project Breakdown",
@@ -56,108 +56,111 @@ export default function PostCard({ post, variant = "default" }) {
 
   return (
     <article
-      className={`group relative flex flex-col rounded-sm border border-rule bg-paper transition-all duration-200
+      className={`group relative flex flex-col sm:flex-row rounded-md border border-rule bg-paper transition-all duration-200
         hover:border-ink-3/50 hover:shadow-[0_2px_12px_rgba(0,0,0,0.06)]
-        ${isCompact ? "p-4" : "p-5"}`}
+        ${isCompact ? "p-4" : "p-5"} sm:gap-6`}
     >
-      {/* Category badge */}
-      <div className="flex items-center justify-between gap-3">
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.08em] font-medium ${cat.bg} ${cat.color}`}
-        >
-          <Icon className="h-3 w-3" />
-          {cat.label}
-        </span>
-
-        {post.seriesOrder && (
-          <span className="font-mono text-[10px] text-ink-3">
-            Part {post.seriesOrder}
+      {/* Left side: Content */}
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* Category badge */}
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-[0.08em] font-semibold shadow-sm ${cat.bg} ${cat.color}`}
+          >
+            <Icon className="h-3 w-3" />
+            {cat.label}
           </span>
+
+          {post.seriesOrder && (
+            <span className="font-mono text-[10px] text-ink-3">
+              Part {post.seriesOrder}
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <Link
+          to={`/posts/${generateSlug(post.title, post.publicId || post.id)}`}
+          className={`mt-3 block font-display leading-snug text-ink transition-colors font-medium group-hover:text-accent
+            ${isCompact ? "text-base" : "text-2xl"}`}
+        >
+          {post.title}
+        </Link>
+
+        {/* Excerpt */}
+        {!isCompact && post.excerpt && (
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-2">
+            {post.excerpt}...
+          </p>
         )}
+
+        {/* Tags */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {post.tags.slice(0, 4).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-md bg-paper-2 px-2 py-0.5 font-mono text-[10px] text-ink-3"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer: author + stats */}
+        <div className={`mt-auto pt-4 flex items-center gap-3 ${isCompact ? "pt-3" : ""}`}>
+          {post.author && (
+            <Link
+              to={`/u/${post.author.username}`}
+              className="flex min-w-0 items-center gap-2"
+            >
+              <img
+                src={post.author.avatar}
+                alt={post.author.name}
+                className="h-6 w-6 rounded-full object-cover"
+              />
+              <span className="truncate text-xs font-medium text-ink-2 transition-colors hover:text-ink">
+                {post.author.name}
+              </span>
+            </Link>
+          )}
+
+          <div className="ml-auto flex items-center gap-3 text-ink-3">
+            {post.readingTimeMin && (
+              <span className="flex items-center gap-1 font-mono text-[10px]">
+                <Clock className="h-3 w-3" />
+                {post.readingTimeMin}m
+              </span>
+            )}
+            <span className="flex items-center gap-1 font-mono text-[10px] hidden sm:flex">
+              <Eye className="h-3 w-3" />
+              {post.views?.toLocaleString() || 0}
+            </span>
+            <span className="flex items-center gap-1 font-mono text-[10px]">
+              <ChevronUp className="h-3 w-3" />
+              {post.upvotes || 0}
+            </span>
+            {post.publishedAt && (
+              <span className="font-mono text-[10px] hidden sm:block">
+                {formatDate(post.publishedAt)}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Cover image */}
+      {/* Right side: Cover image (Top on Mobile) */}
       {!isCompact && post.coverImageUrl && (
-        <Link to={`/posts/${generateSlug(post.title, post.publicId || post.id)}`} className="mt-3 block">
+        <Link to={`/posts/${generateSlug(post.title, post.publicId || post.id)}`} className="order-first sm:order-last sm:w-48 sm:h-32 lg:w-56 lg:h-36 shrink-0 block mb-4 sm:mb-0">
           <img
             src={post.coverImageUrl}
             alt={post.title}
-            className="h-40 w-full rounded-sm object-cover"
+            className="w-full h-40 sm:h-full rounded-md object-cover"
             loading="lazy"
           />
         </Link>
       )}
-
-      {/* Title */}
-      <Link
-        to={`/posts/${generateSlug(post.title, post.publicId || post.id)}`}
-        className={`mt-3 block font-display leading-snug text-ink transition-colors group-hover:text-accent
-          ${isCompact ? "text-base" : "text-xl"}`}
-      >
-        {post.title}
-      </Link>
-
-      {/* Excerpt */}
-      {!isCompact && post.excerpt && (
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-2">
-          {post.excerpt}
-        </p>
-      )}
-
-      {/* Tags */}
-      {post.tags && post.tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {post.tags.slice(0, 4).map((tag) => (
-            <span
-              key={tag}
-              className="rounded-sm bg-paper-2 px-2 py-0.5 font-mono text-[10px] text-ink-3"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Footer: author + stats */}
-      <div className={`mt-4 flex items-center gap-3 ${isCompact ? "mt-3" : ""}`}>
-        {post.author && (
-          <Link
-            to={`/u/${post.author.username}`}
-            className="flex min-w-0 items-center gap-2"
-          >
-            <img
-              src={post.author.avatar}
-              alt={post.author.name}
-              className="h-6 w-6 rounded-full object-cover"
-            />
-            <span className="truncate text-xs font-medium text-ink-2 transition-colors hover:text-ink">
-              {post.author.name}
-            </span>
-          </Link>
-        )}
-
-        <div className="ml-auto flex items-center gap-3 text-ink-3">
-          {post.readingTimeMin && (
-            <span className="flex items-center gap-1 font-mono text-[10px]">
-              <Clock className="h-3 w-3" />
-              {post.readingTimeMin}m
-            </span>
-          )}
-          <span className="flex items-center gap-1 font-mono text-[10px]">
-            <Eye className="h-3 w-3" />
-            {post.views?.toLocaleString() || 0}
-          </span>
-          <span className="flex items-center gap-1 font-mono text-[10px]">
-            <ChevronUp className="h-3 w-3" />
-            {post.upvotes || 0}
-          </span>
-          {post.publishedAt && (
-            <span className="font-mono text-[10px]">
-              {formatDate(post.publishedAt)}
-            </span>
-          )}
-        </div>
-      </div>
     </article>
   );
 }

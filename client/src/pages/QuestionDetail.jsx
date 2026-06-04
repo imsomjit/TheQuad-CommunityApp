@@ -320,7 +320,7 @@ export default function QuestionDetail() {
                                             {answer.author.name}
                                         </div>
                                         <div className="font-mono text-ink-3">
-                                            answered {timeAgo(answer.created_at)}
+                                            answered {timeAgo(answer.createdAt)}
                                         </div>
                                     </div>
                                 </Link>

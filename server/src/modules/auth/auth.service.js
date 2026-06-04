@@ -31,6 +31,23 @@ const sanitizeUser = (user) => {
   return safe;
 };
 
+const generateDiceBearAvatar = (username, gender) => {
+  let style = "adventurer";
+  let options = "";
+
+  if (gender === "male") {
+    style = "avataaars";
+    options = "&top=shortHair&facialHairProbability=20";
+  } else if (gender === "female") {
+    style = "avataaars";
+    options = "&top=longHair&facialHairProbability=0";
+  } else {
+    style = "bottts";
+  }
+
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(username)}${options}`;
+};
+
 /**
  * Register a new student account (email + password).
  */
@@ -51,6 +68,7 @@ const register = async ({ name, username, email, password, gender, dateOfBirth }
   
   const otp = generateOtp();
   const otpExpiresAt = getOtpExpiry();
+  const avatarUrl = generateDiceBearAvatar(username, gender);
 
   // Insert user — unique constraint on email/username handled by DB + error handler
   const [user] = await db
@@ -62,6 +80,7 @@ const register = async ({ name, username, email, password, gender, dateOfBirth }
       passwordHash, 
       gender,
       dateOfBirth,
+      avatarUrl,
       role: "student", 
       authProvider: "local",
       isVerified: false,

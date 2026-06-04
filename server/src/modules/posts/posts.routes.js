@@ -96,4 +96,9 @@ router.post("/:id/unpublish", auth, postWriteLimiter, controller.unpublish);
 // DELETE /api/posts/:id
 router.delete("/:id", auth, postWriteLimiter, controller.remove);
 
+const { uploadPostCover } = require("../../middleware/upload");
+
+// PATCH /api/posts/:id/cover
+router.patch("/:id/cover", auth, postWriteLimiter, uploadPostCover, controller.uploadCover);
+
 module.exports = router;

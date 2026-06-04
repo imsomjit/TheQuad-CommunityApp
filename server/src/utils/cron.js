@@ -17,11 +17,12 @@ const startCronJobs = () => {
       const currentMonth = today.getMonth() + 1; // 1-12
       const currentDay = today.getDate(); // 1-31
 
-      // Find users whose birthday is today
+      // Find users whose birthday is today (excluding default 2000-01-01)
       const { rows: birthdayUsers } = await db.execute(sql`
         SELECT id, name, username, email FROM users
         WHERE EXTRACT(MONTH FROM date_of_birth) = ${currentMonth} 
           AND EXTRACT(DAY FROM date_of_birth) = ${currentDay}
+          AND date_of_birth != '2000-01-01'
           AND is_banned = false
       `);
 
@@ -31,6 +32,8 @@ const startCronJobs = () => {
       }
 
       logger.info(`[Cron] Found ${birthdayUsers.length} birthdays today. Sending greetings...`);
+
+      const { getBirthdayEmailTemplate } = require("./emailTemplates");
 
       for (const user of birthdayUsers) {
         // Send In-App Notification
@@ -46,15 +49,7 @@ const startCronJobs = () => {
 
         // Send Email
         const emailSubject = "Happy Birthday from PeerVerse! 🎉";
-        const emailHtml = `
-          <div style="font-family: sans-serif; text-align: center; color: #1e293b; padding: 40px; background-color: #f8fafc; border-radius: 8px;">
-            <h1 style="color: #6366f1;">Happy Birthday, ${user.name}! 🥳</h1>
-            <p style="font-size: 16px; margin: 20px 0;">We at PeerVerse hope you have an incredible day filled with joy and success.</p>
-            <p style="font-size: 16px;">Keep building, keep sharing, and keep growing!</p>
-            <br/>
-            <p style="font-size: 14px; color: #64748b;">Best Wishes,<br>The PeerVerse Team</p>
-          </div>
-        `;
+        const emailHtml = getBirthdayEmailTemplate(user.name);
         
         await sendEmail({
           to: user.email,

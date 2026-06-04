@@ -96,11 +96,25 @@ const updateProfile = async (userId, patch) => {
     "name", "bio", "location", "organization", "website",
     "college", "branch", "graduationYear",
     "githubUsername", "linkedinUrl", "twitterHandle", "instagramHandle", "leetcodeUsername",
-    "skills",
+    "skills", "gender", "dateOfBirth"
   ];
   const filtered = Object.fromEntries(
     Object.entries(patch).filter(([k]) => allowedFields.includes(k))
   );
+
+  const [currentUser] = await db.select({ gender: users.gender, dateOfBirth: users.dateOfBirth }).from(users).where(eq(users.id, userId)).limit(1);
+
+  if (currentUser) {
+    // Only allow updating gender if it's currently 'other'
+    if (filtered.gender && currentUser.gender !== "other") {
+      delete filtered.gender;
+    }
+    // Only allow updating dob if it's the default '2000-01-01'
+    const isDefaultDob = currentUser.dateOfBirth && String(currentUser.dateOfBirth).startsWith("2000-01-01");
+    if (filtered.dateOfBirth && !isDefaultDob) {
+      delete filtered.dateOfBirth;
+    }
+  }
 
   if (Object.keys(filtered).length === 0) {
     throw new AppError("No valid fields to update", 400, "NO_UPDATE");

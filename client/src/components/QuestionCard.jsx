@@ -89,7 +89,7 @@ export default function QuestionCard({ question }) {
                 <Link to={`/questions/${generateSlug(question.title, question.publicId || question.id)}`}>
                     <h3
                         data-testid={`question-title-${question.id}`}
-                        className="font-display text-xl font-semibold leading-snug text-ink transition-colors group-hover:text-accent"
+                        className="font-display text-2xl font-medium leading-snug text-ink transition-colors group-hover:text-accent"
                     >
                         {question.title}
                     </h3>

@@ -346,7 +346,7 @@ export function AppProvider({ children }) {
   const fetchQuestion = useCallback(
     async (id) => {
       try {
-        const fullQuestion = await questionsApi.getById(id);
+        const fullQuestion = await questionsApi.get(id);
         setQuestions((qs) => {
           const exists = qs.find(q => q.id === fullQuestion.id);
           if (exists) {

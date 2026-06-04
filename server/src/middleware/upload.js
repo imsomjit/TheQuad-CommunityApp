@@ -151,4 +151,33 @@ const uploadBanner = [
   }),
 ];
 
-module.exports = { uploadResourceFile, uploadAvatar, uploadBanner, uploadToCloudinary };
+/**
+ * Middleware: upload a post cover image.
+ * Attaches { coverUrl, coverPublicId } to req.uploadedImage.
+ */
+const uploadPostCover = [
+  imageUpload.single("cover"),
+  asyncHandler(async (req, _res, next) => {
+    if (!req.file) {
+      throw new AppError("An image is required", 400, "FILE_REQUIRED");
+    }
+
+    const result = await uploadToCloudinary(req.file.buffer, {
+      folder: "peerverse/posts/covers",
+      resource_type: "image",
+      transformation: [
+        { width: 1200, height: 630, crop: "fill", gravity: "center" },
+        { quality: "auto" },
+      ],
+    });
+
+    req.uploadedImage = {
+      coverUrl: result.secure_url,
+      coverPublicId: result.public_id,
+    };
+
+    next();
+  }),
+];
+
+module.exports = { uploadResourceFile, uploadAvatar, uploadBanner, uploadPostCover, uploadToCloudinary };

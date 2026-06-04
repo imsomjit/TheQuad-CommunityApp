@@ -132,8 +132,22 @@ const getWelcomeEmailTemplate = (name) => {
   return getBaseTemplate(content, "Welcome to The PeerVerse!");
 };
 
+const getBirthdayEmailTemplate = (name) => {
+  const content = `
+    <h2 style="margin-top: 0; color: #1c1814;">Happy Birthday, ${name}! 🎉</h2>
+    <p>All of us at PeerVerse want to wish you a fantastic birthday!</p>
+    <p>We hope this year brings you joy, success, and lots of clean, bug-free code. Keep learning and sharing with the community.</p>
+    <div class="otp-box" style="font-size: 24px; border: none; padding: 10px;">
+      🎂 🎈 🎁
+    </div>
+    <p>Have a wonderful day!</p>
+  `;
+  return getBaseTemplate(content, "Happy Birthday from PeerVerse!");
+};
+
 module.exports = {
   getOtpEmailTemplate,
   getResendOtpEmailTemplate,
-  getWelcomeEmailTemplate
+  getWelcomeEmailTemplate,
+  getBirthdayEmailTemplate
 };

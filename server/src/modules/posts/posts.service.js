@@ -640,6 +640,30 @@ const getSeriesNav = async (seriesId, currentOrder) => {
   };
 };
 
+// ── Cover Upload ────────────────────────────────────────────────────────────
+const uploadCover = async (id, authorId, coverUrl, coverPublicId) => {
+  const [post] = await db
+    .select({ id: posts.id, authorId: posts.authorId })
+    .from(posts)
+    .where(eq(posts.id, id))
+    .limit(1);
+
+  if (!post) throw new AppError("Post not found", 404, "NOT_FOUND");
+  if (post.authorId !== authorId) throw new AppError("Unauthorized", 403, "FORBIDDEN");
+
+  const [updated] = await db
+    .update(posts)
+    .set({
+      coverImageUrl: coverUrl,
+      coverImagePublicId: coverPublicId,
+      updatedAt: new Date(),
+    })
+    .where(eq(posts.id, id))
+    .returning();
+
+  return formatPost(updated);
+};
+
 // ── Formatters ───────────────────────────────────────────────────────────────
 
 const formatPost = (row, tags = []) => ({
@@ -685,6 +709,7 @@ module.exports = {
   publishPost,
   unpublishPost,
   deletePost,
+  uploadCover,
   getPostById,
   getPostByPublicId,
   listPosts,
