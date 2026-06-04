@@ -6,10 +6,10 @@ const { reports, users } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
 
-const submitReport = async (reporterId, { targetType, targetId, reason, details }) => {
+const submitReport = async (reporterId, { targetType, targetId, reason, description }) => {
   const [report] = await db
     .insert(reports)
-    .values({ reporterId, targetType, targetId, reason, details })
+    .values({ reporterId, targetType, targetId, reason, details: description })
     .returning();
 
   return report;

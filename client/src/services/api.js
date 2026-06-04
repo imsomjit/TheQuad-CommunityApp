@@ -557,6 +557,10 @@ export const adminApi = {
   createOpportunity: (data) => api.post("/moderation/opportunities", data).then((r) => r.data.data),
   updateOpportunity: (id, data) => api.patch(`/moderation/opportunities/${id}`, data).then((r) => r.data.data),
   deleteOpportunity: (id) => api.delete(`/moderation/opportunities/${id}`).then((r) => r.data.data),
+  
+  getDeletedContent: () => api.get("/moderation/deleted-content").then((r) => r.data.data),
+  restoreContent: (type, id) => api.patch(`/moderation/content/${type}/${id}/restore`).then((r) => r.data.data),
+  removeContent: (type, id, reason) => api.delete(`/moderation/content/${type}/${id}`, { data: { reason } }).then((r) => r.data),
 };
 
 // Settings

@@ -40,7 +40,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
         reason,
         description,
       });
-      toast.success("Report submitted successfully. Our moderators will review it.");
+      toast.success("Your report submitted successfully.");
       onClose();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to submit report");

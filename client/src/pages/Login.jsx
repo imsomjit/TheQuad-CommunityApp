@@ -59,7 +59,7 @@ export default function Login() {
       const from = location.state?.from?.pathname;
       if (from) {
         navigate(from);
-      } else if (loggedInUser.role === "admin" || loggedInUser.role === "moderator") {
+      } else if (loggedInUser.role === "admin") {
         navigate("/admin/reports");
       } else {
         navigate("/");

@@ -21,6 +21,7 @@ import MarkdownEditor from "../components/MarkdownEditor";
 import { MarkdownRenderer, CollapsibleContent } from "../components/MarkdownEditor";
 import CommentSection from "../components/CommentSection";
 import { toast } from "sonner";
+import { adminApi } from "../services/api";
 
 function timeAgo(ts) {
     const diff = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -44,6 +45,7 @@ export default function QuestionDetail() {
         deleteQuestion,
         incrementViews,
         fetchQuestion,
+        openReportModal,
     } = useApp();
     const { isAuthenticated } = useAuth();
 
@@ -88,6 +90,7 @@ export default function QuestionDetail() {
     }
 
     const isOwner = currentUser?.id === question.author.id;
+    const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
 
     const submitAnswer = (e) => {
         e.preventDefault();
@@ -99,9 +102,13 @@ export default function QuestionDetail() {
         toast.success("Answer posted");
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (window.confirm("Delete this question?")) {
-            deleteQuestion(question.id);
+            if (isOwner) {
+                deleteQuestion(question.id);
+            } else if (isModerator) {
+                await adminApi.removeContent("question", question.id, "Moderator deletion");
+            }
             navigate("/questions");
             toast.success("Question deleted");
         }
@@ -149,7 +156,7 @@ export default function QuestionDetail() {
                         {question.answers.length} answers
                     </span>
 
-                    {isOwner && (
+                    {(isOwner || isModerator) && (
                         <div className="ml-auto flex items-center gap-3">
                             <button
                                 data-testid="delete-question-btn"
@@ -160,10 +167,12 @@ export default function QuestionDetail() {
                                 delete
                             </button>
 
-                            <button className="inline-flex items-center gap-1 text-ink-2 transition-colors hover:text-ink">
-                                <Edit3 className="h-3.5 w-3.5" />
-                                edit
-                            </button>
+                            {/* {isOwner && (
+                                <button className="inline-flex items-center gap-1 text-ink-2 transition-colors hover:text-ink">
+                                    <Edit3 className="h-3.5 w-3.5" />
+                                    edit
+                                </button>
+                            )} */}
                         </div>
                     )}
                 </div>
@@ -194,7 +203,14 @@ export default function QuestionDetail() {
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                         <button
                             data-testid="report-question-btn"
-                            onClick={() => toast.info("Reported.")}
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    toast.error("Please log in to report");
+                                    navigate("/login");
+                                    return;
+                                }
+                                openReportModal("question", question.id, question.title);
+                            }}
                             className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
                         >
                             <Flag className="h-3 w-3" />
@@ -297,12 +313,39 @@ export default function QuestionDetail() {
                                     )}
 
                                     <button
-                                        onClick={() => toast.info("Reported.")}
+                                        onClick={() => {
+                                            if (!isAuthenticated) {
+                                                toast.error("Please log in to report");
+                                                navigate("/login");
+                                                return;
+                                            }
+                                            openReportModal("answer", answer.id, `Answer by ${answer.author.name}`);
+                                        }}
                                         className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
                                     >
                                         <Flag className="h-3 w-3" />
                                         report
                                     </button>
+
+                                    {/* Edit / Delete actions for answer owner / moderator */}
+                                    {(currentUser?.id === answer.author.id || isModerator) && (
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm("Delete this answer?")) {
+                                                    if (currentUser?.id === answer.author.id) {
+                                                        deleteAnswer(question.id, answer.id);
+                                                    } else {
+                                                        await adminApi.removeContent("answer", answer.id, "Moderator deletion");
+                                                        // trigger a refetch or optimistic update
+                                                        fetchQuestion(extractedId || id);
+                                                    }
+                                                }
+                                            }}
+                                            className="text-xs text-ink-3 transition-colors hover:text-syntax-rose inline-flex items-center gap-1"
+                                        >
+                                            <Trash2 className="h-3 w-3" /> delete
+                                        </button>
+                                    )}
                                 </div>
 
                                 <Link

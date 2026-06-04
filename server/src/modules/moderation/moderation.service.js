@@ -37,7 +37,7 @@ const listReports = async (query) => {
         targetType: reports.targetType,
         targetId: reports.targetId,
         reason: reports.reason,
-        description: reports.description,
+        description: reports.details,
         status: reports.status,
         contentSnapshot: reports.contentSnapshot,
         assignedToId: reports.assignedToId,
@@ -57,15 +57,74 @@ const listReports = async (query) => {
       .where(where),
   ]);
 
+  const reportsData = rows.map(r => ({
+    ...r,
+    reporter: {
+      id: r.reporterId,
+      name: r.reporterName,
+      username: r.reporterUsername,
+    },
+  }));
+
+  for (const r of reportsData) {
+    let targetPublicId = null;
+    let targetUrl = null;
+    
+    try {
+      switch (r.targetType) {
+        case "resource": {
+          const [res] = await db.select({ publicId: resources.publicId }).from(resources).where(eq(resources.id, r.targetId));
+          if (res) { targetPublicId = res.publicId; targetUrl = `/resources/${res.publicId}`; }
+          break;
+        }
+        case "question": {
+          const [q] = await db.select({ publicId: questions.publicId }).from(questions).where(eq(questions.id, r.targetId));
+          if (q) { targetPublicId = q.publicId; targetUrl = `/questions/${q.publicId}`; }
+          break;
+        }
+        case "answer": {
+          const [a] = await db.select({ publicId: answers.publicId, questionId: answers.questionId }).from(answers).where(eq(answers.id, r.targetId));
+          if (a) {
+            targetPublicId = a.publicId;
+            const [q] = await db.select({ publicId: questions.publicId }).from(questions).where(eq(questions.id, a.questionId));
+            if (q) targetUrl = `/questions/${q.publicId}#answer-${a.id}`;
+          }
+          break;
+        }
+        case "blog": {
+          const [p] = await db.select({ publicId: posts.publicId, slug: posts.slug }).from(posts).where(eq(posts.id, r.targetId));
+          if (p) { targetPublicId = p.publicId; targetUrl = `/blog/${p.slug}`; }
+          break;
+        }
+        case "opportunity": {
+          const [o] = await db.select({ publicId: opportunities.publicId }).from(opportunities).where(eq(opportunities.id, r.targetId));
+          if (o) { targetPublicId = o.publicId; targetUrl = `/opportunities/${o.publicId}`; }
+          break;
+        }
+        case "comment": {
+          const [c] = await db.select({ publicId: comments.publicId }).from(comments).where(eq(comments.id, r.targetId));
+          if (c) { 
+            targetPublicId = c.publicId;
+            targetUrl = '#'; // Comments exist on multiple pages, fallback link
+          }
+          break;
+        }
+        case "user": {
+          const [u] = await db.select({ username: users.username }).from(users).where(eq(users.id, r.targetId));
+          if (u) { targetPublicId = u.username; targetUrl = `/u/${u.username}`; }
+          break;
+        }
+      }
+    } catch (e) {
+      // Ignore errors if target is deleted or table missing publicId
+    }
+    
+    r.targetPublicId = targetPublicId || r.targetId; // fallback to targetId if publicId not found
+    r.targetUrl = targetUrl;
+  }
+
   return {
-    data: rows.map(r => ({
-      ...r,
-      reporter: {
-        id: r.reporterId,
-        name: r.reporterName,
-        username: r.reporterUsername,
-      },
-    })),
+    data: reportsData,
     pagination: meta(totalCount),
   };
 };
@@ -138,7 +197,57 @@ const removeContent = async (type, id, moderatorId, reason) => {
     .set({ status: "resolved", assignedToId: moderatorId })
     .where(and(eq(reports.targetType, type), eq(reports.targetId, id), eq(reports.status, "pending")));
 
-  return { success: true };
+  return { id, type, isDeleted: true };
+};
+
+const getDeletedContent = async () => {
+  const [res, ques, ans, psts, comms] = await Promise.all([
+    db.select({
+      id: resources.id, publicId: resources.publicId, title: resources.title,
+      deletedAt: resources.deletedAt, deletedBy: users.username, type: sql`'resource'`
+    }).from(resources).where(eq(resources.isDeleted, true)).leftJoin(users, eq(resources.deletedById, users.id)),
+    db.select({
+      id: questions.id, publicId: questions.publicId, title: questions.title,
+      deletedAt: questions.deletedAt, deletedBy: users.username, type: sql`'question'`
+    }).from(questions).where(eq(questions.isDeleted, true)).leftJoin(users, eq(questions.deletedById, users.id)),
+    db.select({
+      id: answers.id, publicId: answers.publicId, title: answers.body,
+      deletedAt: answers.deletedAt, deletedBy: users.username, type: sql`'answer'`
+    }).from(answers).where(eq(answers.isDeleted, true)).leftJoin(users, eq(answers.deletedById, users.id)),
+    db.select({
+      id: posts.id, publicId: posts.publicId, title: posts.title,
+      deletedAt: posts.deletedAt, deletedBy: users.username, type: sql`'blog'`
+    }).from(posts).where(eq(posts.isDeleted, true)).leftJoin(users, eq(posts.deletedById, users.id)),
+    db.select({
+      id: comments.id, publicId: comments.publicId, title: comments.body,
+      deletedAt: comments.deletedAt, deletedBy: users.username, type: sql`'comment'`
+    }).from(comments).where(eq(comments.isDeleted, true)).leftJoin(users, eq(comments.deletedById, users.id)),
+  ]);
+
+  const allDeleted = [...res, ...ques, ...ans, ...psts, ...comms];
+  allDeleted.sort((a, b) => new Date(b.deletedAt) - new Date(a.deletedAt));
+  
+  return allDeleted;
+};
+
+const restoreContent = async (type, id, moderatorId) => {
+  const table = getTargetTable(type);
+  if (!table) throw new AppError("Invalid content type", 400, "INVALID_TARGET");
+
+  const [content] = await db.select().from(table).where(eq(table.id, id)).limit(1);
+  if (!content) throw new AppError("Content not found", 404, "NOT_FOUND");
+  if (!content.isDeleted) throw new AppError("Content is not deleted", 400, "NOT_DELETED");
+
+  await db
+    .update(table)
+    .set({
+      isDeleted: false,
+      deletedById: null,
+      deletedAt: null,
+    })
+    .where(eq(table.id, id));
+
+  return { id, type, isDeleted: false };
 };
 
 const warnUser = async (userId, moderatorId, reason) => {
@@ -467,4 +576,6 @@ module.exports = {
   createOpportunity,
   updateOpportunity,
   deleteOpportunity,
+  getDeletedContent,
+  restoreContent,
 };

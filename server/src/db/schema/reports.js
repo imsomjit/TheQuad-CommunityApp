@@ -9,6 +9,7 @@ const {
   timestamp,
   pgEnum,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 
 const reportReasonEnum = pgEnum("report_reason", [
@@ -40,7 +41,7 @@ const reportTargetEnum = pgEnum("report_target_type", [
 ]);
 
 const reports = pgTable("reports", {
-  id: serial("id").primaryKey(),
+  id: varchar("id", { length: 12 }).$defaultFn(() => nanoid(12)).primaryKey(),
   reporterId: integer("reporter_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

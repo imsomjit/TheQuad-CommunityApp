@@ -39,6 +39,7 @@ const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminOpportunities = lazy(() => import("./pages/admin/AdminOpportunities"));
 const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminDeletedContent = lazy(() => import("./pages/admin/AdminDeletedContent"));
 
 // Static pages
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -164,6 +165,10 @@ function App() {
                   <Route
                     path="/admin/featured"
                     element={<AdminFeatured />}
+                  />
+                  <Route
+                    path="/admin/deleted-content"
+                    element={<AdminDeletedContent />}
                   />
                   <Route
                     path="/admin/settings"

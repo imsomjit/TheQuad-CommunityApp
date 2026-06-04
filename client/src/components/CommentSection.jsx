@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MessageCircle, Reply, Trash2, Send, ChevronDown, ChevronUp } from "lucide-react";
-import { commentsApi } from "../services/api";
+import { MessageCircle, Reply, Trash2, Send, ChevronDown, ChevronUp, Flag } from "lucide-react";
+import { commentsApi, adminApi } from "../services/api";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { getAvatarFallback } from "../utils/fallbacks";
@@ -16,7 +16,7 @@ import { toast } from "sonner";
  *   className   - extra wrapper class
  */
 export default function CommentSection({ targetType, targetId, className = "" }) {
-  const { currentUser } = useApp();
+  const { currentUser, openReportModal } = useApp();
   const navigate = useNavigate();
 
   const [comments, setComments] = useState([]);
@@ -73,9 +73,13 @@ export default function CommentSection({ targetType, targetId, className = "" })
     } catch {}
   };
 
-  const handleDelete = async (id, parentId) => {
+  const handleDelete = async (id, parentId, isModeratorAction = false) => {
     try {
-      await commentsApi.delete(id);
+      if (isModeratorAction) {
+        await adminApi.removeContent("comment", id, "Moderator deletion");
+      } else {
+        await commentsApi.delete(id);
+      }
       if (parentId) {
         // Remove from parent's replies
         setComments((prev) =>
@@ -88,7 +92,10 @@ export default function CommentSection({ targetType, targetId, className = "" })
       } else {
         setComments((prev) => prev.filter((c) => c.id !== id));
       }
-    } catch {}
+      toast.success("Comment deleted");
+    } catch {
+      toast.error("Failed to delete comment");
+    }
   };
 
   const commentCount = comments.reduce(
@@ -154,6 +161,7 @@ export default function CommentSection({ targetType, targetId, className = "" })
               currentUser={currentUser}
               onReply={handleReply}
               onDelete={handleDelete}
+              onReport={(id) => openReportModal("comment", id, `Comment by ${comment.author?.name || "user"}`)}
               depth={0}
             />
           ))}
@@ -164,13 +172,14 @@ export default function CommentSection({ targetType, targetId, className = "" })
 }
 
 // ── Single comment (recursive for replies) ────────────────────────────────────
-function CommentItem({ comment, currentUser, onReply, onDelete, depth = 0 }) {
+function CommentItem({ comment, currentUser, onReply, onDelete, onReport, depth = 0 }) {
   const [showReply, setShowReply] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [replying, setReplying] = useState(false);
   const [showReplies, setShowReplies] = useState(true);
 
   const isOwner = currentUser?.id === comment.authorId;
+  const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
   const hasReplies = comment.replies && comment.replies.length > 0;
   const maxDepth = 3; // limit nesting
 
@@ -223,13 +232,23 @@ function CommentItem({ comment, currentUser, onReply, onDelete, depth = 0 }) {
               </button>
             )}
 
-            {isOwner && (
+            {(isOwner || isModerator) && (
               <button
-                onClick={() => onDelete(comment.id, depth > 0 ? comment.parentId : null)}
+                onClick={() => onDelete(comment.id, depth > 0 ? comment.parentId : null, !isOwner && isModerator)}
                 className="flex items-center gap-1 text-[10px] font-mono text-ink-3 transition-colors hover:text-red-400"
               >
                 <Trash2 className="h-3 w-3" />
                 Delete
+              </button>
+            )}
+
+            {currentUser && (
+              <button
+                onClick={() => onReport(comment.id)}
+                className="flex items-center gap-1 text-[10px] font-mono text-ink-3 transition-colors hover:text-red-400"
+              >
+                <Flag className="h-3 w-3" />
+                Report
               </button>
             )}
 
@@ -286,6 +305,7 @@ function CommentItem({ comment, currentUser, onReply, onDelete, depth = 0 }) {
               currentUser={currentUser}
               onReply={onReply}
               onDelete={onDelete}
+              onReport={onReport}
               depth={depth + 1}
             />
           ))}

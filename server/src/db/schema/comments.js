@@ -21,6 +21,7 @@ const {
   pgEnum,
   boolean,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 
 const commentTargetEnum = pgEnum("comment_target_type", [
@@ -32,6 +33,7 @@ const commentTargetEnum = pgEnum("comment_target_type", [
 
 const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
+  publicId: varchar("public_id", { length: 12 }).$defaultFn(() => nanoid(12)).unique(),
   authorId: integer("author_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

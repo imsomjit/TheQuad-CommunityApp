@@ -3,10 +3,11 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronUp, ChevronDown, Bookmark, Share2, Flag, Clock, Eye,
   Edit2, ChevronLeft, ChevronRight, List, Copy, Check,
-  Code2, Briefcase, BookMarked, Layers, ExternalLink,
+  Code2, Briefcase, BookMarked, Layers, ExternalLink, Trash2,
 } from "lucide-react";
-import { postsApi, votesApi, bookmarksApi, reportsApi } from "../services/api";
+import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi } from "../services/api";
 import { useApp } from "../context/AppContext";
+import { toast } from "sonner";
 import { CATEGORY_META } from "../components/PostCard";
 import { MarkdownRenderer } from "../components/MarkdownEditor";
 import CommentSection from "../components/CommentSection";
@@ -199,7 +200,7 @@ function TableOfContents({ body }) {
 export default function PostDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useApp();
+  const { currentUser, openReportModal } = useApp();
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -254,13 +255,29 @@ export default function PostDetail() {
     });
   };
 
-  const handleReport = async () => {
+  const handleReport = () => {
     if (!currentUser) { navigate("/login"); return; }
     if (!post) return;
-    try {
-      await reportsApi.submit({ targetType: "blog", targetId: post.id, reason: "other" });
-      alert("Report submitted. Thank you.");
-    } catch {}
+    openReportModal("blog", post.id, post.title);
+  };
+
+  const isOwner = currentUser?.id === post?.author?.id;
+  const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
+
+  const handleDelete = async () => {
+    if (window.confirm("Delete this post?")) {
+      try {
+        if (isOwner) {
+          await postsApi.delete(post.id);
+        } else if (isModerator) {
+          await adminApi.removeContent("blog", post.id, "Moderator deletion");
+        }
+        toast.success("Post deleted");
+        navigate("/posts");
+      } catch (err) {
+        toast.error("Failed to delete post");
+      }
+    }
   };
 
 
@@ -417,6 +434,15 @@ export default function PostDetail() {
                >
                  <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
                </button>
+               {(isOwner || isModerator) && (
+                 <button
+                   onClick={handleDelete}
+                   title="Delete Post"
+                   className="flex h-9 w-9 items-center justify-center rounded-full border border-error/20 text-error transition-colors hover:bg-error/10"
+                 >
+                   <Trash2 className="h-4 w-4" />
+                 </button>
+               )}
             </div>
           </div>
 

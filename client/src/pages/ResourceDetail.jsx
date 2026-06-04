@@ -21,6 +21,7 @@ import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
 import { extractIdFromSlug } from "../utils/slugify";
+import { adminApi } from "../services/api";
 const RESOURCE_TYPES = [
   { key: "notes", label: "Notes", icon: "BookOpen" },
   { key: "pyq", label: "PYQ", icon: "FileText" },
@@ -70,6 +71,7 @@ export default function ResourceDetail() {
         currentUser,
         deleteResource,
         incrementViews,
+        openReportModal,
     } = useApp();
     const { isAuthenticated } = useAuth();
 
@@ -100,6 +102,7 @@ export default function ResourceDetail() {
     const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
 
     const isMine = currentUser?.id === resource.uploader.id;
+    const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
     const isBookmarked = bookmarks.has(resource.id);
 
     const handleDownload = () => {
@@ -119,9 +122,13 @@ export default function ResourceDetail() {
         toggleBookmark(resource.id);
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (window.confirm("Delete this resource? This cannot be undone.")) {
-            deleteResource(resource.id);
+            if (isMine) {
+                deleteResource(resource.id);
+            } else if (isModerator) {
+                await adminApi.removeContent("resource", resource.id, "Moderator deletion");
+            }
             navigate("/resources");
             toast.success("Resource deleted");
         }
@@ -216,9 +223,14 @@ export default function ResourceDetail() {
 
                     <button
                         data-testid="report-resource-btn"
-                        onClick={() =>
-                            toast.info("Reported. Thanks for keeping the library clean.")
-                        }
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                toast.error("Please log in to report resources");
+                                navigate("/login");
+                                return;
+                            }
+                            openReportModal("resource", resource.id, resource.title);
+                        }}
                         className="ml-auto inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
                     >
                         <Flag className="h-3.5 w-3.5" />
@@ -226,24 +238,24 @@ export default function ResourceDetail() {
                     </button>
 
                     {isMine && (
-                        <>
-                            <Link
-                                to={`/upload?edit=${resource.id}`}
-                                className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink"
-                            >
-                                <Edit3 className="h-3.5 w-3.5" />
-                                Edit
-                            </Link>
+                        <Link
+                            to={`/upload?edit=${resource.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink"
+                        >
+                            <Edit3 className="h-3.5 w-3.5" />
+                            Edit
+                        </Link>
+                    )}
 
-                            <button
-                                data-testid="delete-resource-btn"
-                                onClick={handleDelete}
-                                className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
-                            >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                Delete
-                            </button>
-                        </>
+                    {(isMine || isModerator) && (
+                        <button
+                            data-testid="delete-resource-btn"
+                            onClick={handleDelete}
+                            className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                        >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                        </button>
                     )}
                 </div>
 

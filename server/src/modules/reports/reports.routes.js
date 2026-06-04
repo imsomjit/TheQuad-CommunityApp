@@ -9,10 +9,19 @@ const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
 const submitReportSchema = z.object({
-  targetType: z.enum(["resource", "question", "answer", "blog", "comment", "user"]),
+  targetType: z.enum(["resource", "question", "answer", "blog", "comment", "user", "opportunity"]),
   targetId: z.coerce.number().int().positive(),
-  reason: z.enum(["spam", "abusive", "irrelevant", "copyright", "misinformation", "other"]),
-  details: z.string().max(1000).trim().optional(),
+  reason: z.enum([
+    "spam",
+    "harassment",
+    "abusive",
+    "misleading",
+    "copyright",
+    "inappropriate",
+    "duplicate",
+    "other"
+  ]),
+  description: z.string().max(1000).trim().optional(),
 });
 
 const router = Router();

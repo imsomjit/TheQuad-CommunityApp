@@ -19,6 +19,8 @@ router.patch("/reports/:id/dismiss", controller.reviewReport); // we can map bot
 
 // Content
 router.delete("/content/:type/:id", controller.removeContent);
+router.patch("/content/:type/:id/restore", controller.restoreContent);
+router.get("/deleted-content", controller.getDeletedContent);
 
 // Analytics
 router.get("/analytics", controller.getAnalytics);

@@ -17,7 +17,7 @@ const listReports = asyncHandler(async (req, res) => {
 
 const reviewReport = asyncHandler(async (req, res) => {
   const { action, note } = reportActionSchema.parse(req.body);
-  const reportId = parseInt(req.params.id);
+  const reportId = req.params.id;
   
   let status = "resolved";
   if (action === "dismiss") status = "dismissed";
@@ -44,6 +44,23 @@ const removeContent = asyncHandler(async (req, res) => {
   );
 
   res.json({ success: true, message: "Content removed successfully" });
+});
+
+const restoreContent = asyncHandler(async (req, res) => {
+  const { type, id } = req.params;
+
+  const result = await moderationService.restoreContent(
+    type,
+    parseInt(id),
+    req.user.id
+  );
+
+  res.json({ success: true, data: result, message: "Content restored successfully" });
+});
+
+const getDeletedContent = asyncHandler(async (req, res) => {
+  const data = await moderationService.getDeletedContent();
+  res.json({ success: true, data });
 });
 
 const warnUser = asyncHandler(async (req, res) => {
@@ -161,4 +178,6 @@ module.exports = {
   createOpportunity,
   updateOpportunity,
   deleteOpportunity,
+  restoreContent,
+  getDeletedContent,
 };

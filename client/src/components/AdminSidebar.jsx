@@ -9,7 +9,8 @@ import {
     ArrowLeft,
     BarChart3,
     Briefcase,
-    Star
+    Star,
+    Trash2
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
@@ -42,6 +43,10 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                 <NavLink to="/admin/reports" className={linkClass} title="Moderation Queue">
                     <ShieldAlert className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Reports Queue</span>}
                 </NavLink>
+
+                <NavLink to="/admin/deleted-content" className={linkClass} title="Deleted Content">
+                    <Trash2 className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Deleted Content</span>}
+                </NavLink>
                 
                 {currentUser?.role === 'admin' && (
                     <>
@@ -60,7 +65,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                         <NavLink to="/admin/featured" className={linkClass} title="Featured Content">
                             <Star className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Featured Content</span>}
                         </NavLink>
-                        
+
                         <NavLink to="/admin/settings" className={linkClass} title="Platform Settings">
                             <Settings className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Site Settings</span>}
                         </NavLink>

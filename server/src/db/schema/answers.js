@@ -7,12 +7,15 @@ const {
   integer,
   boolean,
   timestamp,
+  varchar,
 } = require("drizzle-orm/pg-core");
+const { nanoid } = require("nanoid");
 const { users } = require("./users");
 const { questions } = require("./questions");
 
 const answers = pgTable("answers", {
   id: serial("id").primaryKey(),
+  publicId: varchar("public_id", { length: 12 }).$defaultFn(() => nanoid(12)).unique(),
   questionId: integer("question_id")
     .notNull()
     .references(() => questions.id, { onDelete: "cascade" }),

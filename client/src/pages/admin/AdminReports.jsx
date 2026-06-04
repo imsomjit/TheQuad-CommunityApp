@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import api from "../../services/api";
-import { CheckCircle, XCircle, AlertCircle, Eye, Trash2 } from "lucide-react";
+import { XCircle, AlertCircle, Eye, Trash2 } from "lucide-react";
 
 export default function AdminReports() {
   const [reports, setReports] = useState([]);
@@ -98,26 +98,6 @@ export default function AdminReports() {
                     {format(new Date(report.createdAt), "MMM d, yyyy h:mm a")}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  {report.status !== "resolved" && report.status !== "dismissed" && (
-                    <>
-                      <button
-                        onClick={() => handleAction(report.id, "dismiss")}
-                        className="p-1.5 text-ink-3 hover:text-ink hover:bg-paper-2 rounded-md transition-colors"
-                        title="Dismiss Report"
-                      >
-                        <XCircle className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleAction(report.id, "remove_content")}
-                        className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-md transition-colors"
-                        title="Remove Content"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </>
-                  )}
-                </div>
               </div>
 
               <div className="mb-4">
@@ -128,26 +108,52 @@ export default function AdminReports() {
               </div>
 
               <div className="flex items-center justify-between text-sm text-ink-3 border-t border-rule pt-4">
-                <div className="flex gap-4">
-                  <span>Report ID: {report.id}</span>
-                  <span>Target ID: {report.targetId}</span>
-                  <span>Reported by: @{report.reporterUsername || 'unknown'}</span>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-ink-3">
+                  <span>Report ID: <span className="font-mono">{report.id}</span></span>
+                  <span>Target ID: {" "}
+                    {report.targetUrl ? (
+                      <a href={report.targetUrl} target="_blank" rel="noreferrer" className="font-mono text-accent hover:underline">
+                        {report.targetPublicId}
+                      </a>
+                    ) : (
+                      <span className="font-mono">{report.targetPublicId}</span>
+                    )}
+                  </span>
+                  <span>
+                    Reported by:{" "}
+                    <a href={`/u/${report.reporterUsername}`} className="text-accent hover:underline font-medium">
+                      @{report.reporterUsername || 'unknown'}
+                    </a>
+                  </span>
                 </div>
-                {/* 
-                  To actually view the content, we could link to it 
-                  e.g., /resources/123, /questions/456, etc. 
-                  Implementation depends on target type routing logic.
-                */}
-                {report.targetType === "resource" && (
-                  <a href={`/resources/${report.targetId}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-accent hover:underline">
-                    <Eye className="h-4 w-4" /> View Content
-                  </a>
-                )}
-                {report.targetType === "question" && (
-                  <a href={`/questions/${report.targetId}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-accent hover:underline">
-                    <Eye className="h-4 w-4" /> View Content
-                  </a>
-                )}
+                
+                <div className="flex items-center gap-3">
+                  {/* Status Actions */}
+                  {report.status === "pending" && (
+                    <button
+                      onClick={() => handleAction(report.id, "review")}
+                      className="text-xs px-2.5 py-1.5 bg-paper-2 hover:bg-paper-3 text-ink-2 font-medium rounded transition-colors"
+                    >
+                      Mark Under Review
+                    </button>
+                  )}
+                  {(report.status === "pending" || report.status === "under_review") && (
+                    <>
+                      <button
+                        onClick={() => handleAction(report.id, "resolve")}
+                        className="text-xs px-2.5 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 font-medium rounded transition-colors"
+                      >
+                        Resolve
+                      </button>
+                      <button
+                        onClick={() => handleAction(report.id, "dismiss")}
+                        className="text-xs px-2.5 py-1.5 bg-paper-2 hover:bg-paper-3 text-ink-2 font-medium rounded transition-colors"
+                      >
+                        Dismiss
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}
