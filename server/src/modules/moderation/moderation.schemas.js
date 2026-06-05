@@ -17,6 +17,7 @@ const reportActionSchema = z.object({
 const userActionSchema = z.object({
   reason: z.string().min(5),
   durationDays: z.number().int().positive().optional(),
+  contentUrl: z.string().url().optional().or(z.literal("")),
 });
 
 const removeContentSchema = z.object({

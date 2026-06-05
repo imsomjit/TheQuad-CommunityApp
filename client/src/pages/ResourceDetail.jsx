@@ -14,6 +14,7 @@ import {
     Folder,
     Calendar,
     Lock,
+    Eye,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
@@ -71,6 +72,7 @@ export default function ResourceDetail() {
         currentUser,
         deleteResource,
         incrementViews,
+        incrementDownloads,
         openReportModal,
     } = useApp();
     const { isAuthenticated } = useAuth();
@@ -81,9 +83,9 @@ export default function ResourceDetail() {
     );
 
     useEffect(() => {
-        if (resource) incrementViews("resource", id);
+        if (resource) incrementViews("resource", resource.id);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
+    }, [resource?.id]);
 
     if (!resource) {
         return (
@@ -115,10 +117,12 @@ export default function ResourceDetail() {
         try {
             toast.success("Download started", { description: resource.file.name });
             const fileUrl = await resourcesApi.download(resource.id);
+            incrementDownloads("resource", resource.id);
             window.open(fileUrl, "_blank");
         } catch (error) {
             console.error(error);
-            toast.error("Download failed", { description: "Could not retrieve the file." });
+            const msg = error.response?.data?.message || error.message || "Could not retrieve the file.";
+            toast.error("Download failed", { description: msg });
         }
     };
 
@@ -179,12 +183,24 @@ export default function ResourceDetail() {
                         <span>{resource.branch} · Sem {resource.semester}</span>
                     </div>
 
-                    <div className="mt-3 flex items-center gap-2 font-mono text-xs text-ink-3">
-                        <Calendar className="h-3.5 w-3.5" />
-                        uploaded {format(resource.created_at)}
-                        {resource.updated_at !== resource.created_at && (
-                            <> · updated {timeAgo(resource.updated_at)}</>
-                        )}
+                    <div className="mt-3 flex items-center gap-4 font-mono text-xs text-ink-3">
+                        <div className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span>
+                                uploaded {format(resource.createdAt)}
+                                {resource.updatedAt && resource.updatedAt !== resource.createdAt && (
+                                    <> · updated {timeAgo(resource.updatedAt)}</>
+                                )}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Eye className="h-3.5 w-3.5" />
+                            <span>{resource.views || 0} views</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Download className="h-3.5 w-3.5" />
+                            <span>{resource.downloads || 0} downloads</span>
+                        </div>
                     </div>
                 </header>
 

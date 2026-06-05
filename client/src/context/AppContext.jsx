@@ -224,8 +224,14 @@ export function AppProvider({ children }) {
       // Optimistic
       setBookmarks((prev) => {
         const next = new Set(prev);
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
+        const isAdding = !next.has(id);
+        
+        if (isAdding) next.add(id);
+        else next.delete(id);
+        
+        // Optimistically update resource bookmark count
+        setResources(rs => rs.map(r => r.id === id ? { ...r, bookmarks: (r.bookmarks || 0) + (isAdding ? 1 : -1) } : r));
+        
         return next;
       });
 
@@ -234,8 +240,14 @@ export function AppProvider({ children }) {
           // Rollback on failure
           setBookmarks((prev) => {
             const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
+            const isAdding = !next.has(id);
+            
+            if (isAdding) next.add(id);
+            else next.delete(id);
+            
+            // Revert optimistic update
+            setResources(rs => rs.map(r => r.id === id ? { ...r, bookmarks: (r.bookmarks || 0) + (isAdding ? 1 : -1) } : r));
+            
             return next;
           });
         });
@@ -395,13 +407,23 @@ export function AppProvider({ children }) {
   );
 
   const incrementViews = useCallback((kind, id) => {
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (kind === "question") {
       setQuestions((qs) =>
-        qs.map((q) => (q.id === id ? { ...q, views: (q.views || 0) + 1 } : q))
+        qs.map((q) => (q.id === numericId ? { ...q, views: (q.views || 0) + 1 } : q))
       );
     } else if (kind === "resource") {
       setResources((rs) =>
-        rs.map((r) => (r.id === id ? { ...r, views: (r.views || 0) + 1 } : r))
+        rs.map((r) => (r.id === numericId ? { ...r, views: (r.views || 0) + 1 } : r))
+      );
+    }
+  }, []);
+
+  const incrementDownloads = useCallback((kind, id) => {
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    if (kind === "resource") {
+      setResources((rs) =>
+        rs.map((r) => (r.id === numericId ? { ...r, downloads: (r.downloads || 0) + 1 } : r))
       );
     }
   }, []);
@@ -466,6 +488,7 @@ export function AppProvider({ children }) {
       addAnswer,
       acceptAnswer,
       incrementViews,
+      incrementDownloads,
       markNotifRead,
       markAllNotifsRead,
       clearAllNotifs,
@@ -496,9 +519,12 @@ export function AppProvider({ children }) {
       addAnswer,
       acceptAnswer,
       incrementViews,
+      incrementDownloads,
       markNotifRead,
       markAllNotifsRead,
+      clearAllNotifs,
       openReportModal,
+      closeReportModal,
     ]
   );
 

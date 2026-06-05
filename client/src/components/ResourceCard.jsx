@@ -148,7 +148,7 @@ export default function ResourceCard({ resource, variant = "list" }) {
                                 {resource.uploader.name}
                             </span>{" "}
                             <span className="font-mono text-ink-3">
-                                · {timeAgo(resource.created_at)}
+                                · {timeAgo(resource.createdAt)}
                             </span>
                         </span>
                     </div>

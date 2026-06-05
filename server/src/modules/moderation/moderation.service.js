@@ -250,14 +250,14 @@ const restoreContent = async (type, id, moderatorId) => {
   return { id, type, isDeleted: false };
 };
 
-const warnUser = async (userId, moderatorId, reason) => {
+const warnUser = async (userId, moderatorId, reason, contentUrl = null) => {
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) throw new AppError("User not found", 404, "NOT_FOUND");
 
   await db.insert(userActions).values({
     userId,
     actionType: "warn",
-    reason,
+    reason: contentUrl ? `${reason}\n\nSource: ${contentUrl}` : reason,
     issuedById: moderatorId,
   });
 
@@ -265,10 +265,41 @@ const warnUser = async (userId, moderatorId, reason) => {
     recipientId: userId,
     actorId: moderatorId,
     type: "moderation_alert",
-    targetType: "user",
-    targetId: userId,
-    targetTitle: "Warning Received",
+    targetType: contentUrl ? "link" : "user",
+    targetId: contentUrl ? contentUrl : userId,
+    targetTitle: contentUrl ? "Warning Received (Click for Source)" : "Warning Received",
   }).catch(() => {});
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Warning from PeerVerse Moderation",
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fcfcfc; color: #0f172a; padding: 40px 20px; text-align: center;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="padding: 30px; border-bottom: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
+              <h1 style="margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px;">Peer<span style="color: #6366f1;">Verse</span></h1>
+            </div>
+            <div style="padding: 40px 30px;">
+              <h2 style="margin-top: 0; font-size: 20px; color: #f59e0b; font-weight: 700;">Account Warning</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account has received a warning from the PeerVerse moderation team.</p>
+              <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; font-size: 15px; color: #92400e;"><strong>Reason for Warning:</strong><br>${reason}</p>
+                ${contentUrl ? `<p style="margin-top: 8px; font-size: 14px; color: #92400e;"><strong>Source Content:</strong> <a href="${contentUrl}" style="color: #6366f1;">${contentUrl}</a></p>` : ''}
+              </div>
+              <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 0;">Please review our community guidelines. Further violations may result in account suspension.</p>
+            </div>
+            <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      `
+    });
+  } catch (error) {
+    console.error("Failed to send warning email:", error);
+  }
 
   return { success: true };
 };
@@ -289,35 +320,39 @@ const suspendUser = async (userId, moderatorId, reason, durationDays) => {
       issuedById: moderatorId,
     });
 
-    await tx.update(users).set({ suspensionExpiresAt: expiresAt }).where(eq(users.id, userId));
+    await tx.update(users).set({ isSuspended: true, suspensionExpiresAt: expiresAt }).where(eq(users.id, userId));
   });
 
-  await sendEmail({
-    to: user.email,
-    subject: "Your Account Has Been Suspended",
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fcfcfc; color: #0f172a; padding: 40px 20px; text-align: center;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-          <div style="padding: 30px; border-bottom: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px;">Peer<span style="color: #6366f1;">Verse</span></h1>
-          </div>
-          <div style="padding: 40px 30px;">
-            <h2 style="margin-top: 0; font-size: 20px; color: #ef4444; font-weight: 700;">Account Suspended</h2>
-            <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
-            <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on PeerVerse has been suspended for <strong>${durationDays} days</strong>.</p>
-            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
-              <p style="margin: 0; font-size: 15px; color: #991b1b;"><strong>Reason for Suspension:</strong><br>${reason}</p>
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Your Account Has Been Suspended",
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fcfcfc; color: #0f172a; padding: 40px 20px; text-align: center;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="padding: 30px; border-bottom: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
+              <h1 style="margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px;">Peer<span style="color: #6366f1;">Verse</span></h1>
             </div>
-            <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your suspension will automatically expire on <strong>${expiresAt.toLocaleString()}</strong>.</p>
-            <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 0;">If you believe this was a mistake, please reply directly to this email to contact our moderation team.</p>
-          </div>
-          <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-            <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+            <div style="padding: 40px 30px;">
+              <h2 style="margin-top: 0; font-size: 20px; color: #ef4444; font-weight: 700;">Account Suspended</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on PeerVerse has been suspended for <strong>${durationDays} days</strong>.</p>
+              <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; font-size: 15px; color: #991b1b;"><strong>Reason for Suspension:</strong><br>${reason}</p>
+              </div>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your suspension will automatically expire on <strong>${expiresAt.toLocaleString()}</strong>.</p>
+              <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 0;">If you believe this was a mistake, please reply directly to this email to contact our moderation team.</p>
+            </div>
+            <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+            </div>
           </div>
         </div>
-      </div>
-    `
-  });
+      `
+    });
+  } catch (error) {
+    console.error("Failed to send suspension email:", error);
+  }
 
   return { success: true, suspensionExpiresAt: expiresAt };
 };
@@ -337,31 +372,35 @@ const banUser = async (userId, moderatorId, reason) => {
     await tx.update(users).set({ isBanned: true }).where(eq(users.id, userId));
   });
 
-  await sendEmail({
-    to: user.email,
-    subject: "Your Account Has Been Permanently Banned",
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fcfcfc; color: #0f172a; padding: 40px 20px; text-align: center;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-          <div style="padding: 30px; border-bottom: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px;">Peer<span style="color: #6366f1;">Verse</span></h1>
-          </div>
-          <div style="padding: 40px 30px;">
-            <h2 style="margin-top: 0; font-size: 20px; color: #ef4444; font-weight: 700;">Account Permanently Banned</h2>
-            <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
-            <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on PeerVerse has been permanently banned.</p>
-            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
-              <p style="margin: 0; font-size: 15px; color: #991b1b;"><strong>Reason for Ban:</strong><br>${reason}</p>
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "Your Account Has Been Permanently Banned",
+      html: `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fcfcfc; color: #0f172a; padding: 40px 20px; text-align: center;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="padding: 30px; border-bottom: 1px solid #e2e8f0; background-color: #f8fafc; text-align: center;">
+              <h1 style="margin: 0; font-size: 24px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px;">Peer<span style="color: #6366f1;">Verse</span></h1>
             </div>
-            <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">This action is permanent and cannot be undone due to severe or repeated violations of our community guidelines.</p>
-          </div>
-          <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-            <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+            <div style="padding: 40px 30px;">
+              <h2 style="margin-top: 0; font-size: 20px; color: #ef4444; font-weight: 700;">Account Permanently Banned</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on PeerVerse has been permanently banned.</p>
+              <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+                <p style="margin: 0; font-size: 15px; color: #991b1b;"><strong>Reason for Ban:</strong><br>${reason}</p>
+              </div>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">This action is permanent and cannot be undone due to severe or repeated violations of our community guidelines.</p>
+            </div>
+            <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+            </div>
           </div>
         </div>
-      </div>
-    `
-  });
+      `
+    });
+  } catch (error) {
+    console.error("Failed to send ban email:", error);
+  }
 
   return { success: true };
 };

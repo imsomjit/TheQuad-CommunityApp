@@ -178,7 +178,7 @@ const login = async ({ email, password }) => {
     throw new AppError("Your account has been banned", 403, "ACCOUNT_BANNED");
   }
 
-  if (user.isSuspended) {
+  if (user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
     throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
   }
 
@@ -219,7 +219,9 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
 
   if (user) {
     if (user.isBanned) throw new AppError("Your account has been banned", 403, "ACCOUNT_BANNED");
-    if (user.isSuspended) throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
+    if (user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
+      throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
+    }
 
     const { accessToken, refreshToken } = await issueTokens(user);
     return { user: sanitizeUser(user), accessToken, refreshToken };
@@ -234,7 +236,9 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
 
   if (user) {
     if (user.isBanned) throw new AppError("Your account has been banned", 403, "ACCOUNT_BANNED");
-    if (user.isSuspended) throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
+    if (user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
+      throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
+    }
 
     // Link the Google account to the existing user
     const [updated] = await db
@@ -358,7 +362,7 @@ const refresh = async (rawRefreshToken) => {
     .where(eq(users.id, payload.id))
     .limit(1);
 
-  if (!user || user.isBanned || user.isSuspended) {
+  if (!user || user.isBanned || user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
     throw new AppError("Account not accessible", 403, "ACCOUNT_INACCESSIBLE");
   }
 

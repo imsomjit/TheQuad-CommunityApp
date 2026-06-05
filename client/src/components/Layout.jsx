@@ -210,6 +210,8 @@ export default function Layout() {
                                     <li key={link.label}>
                                         <a
                                             href={link.href}
+                                            target={link.href.startsWith("http") ? "_blank" : undefined}
+                                            rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
                                             className="group flex items-center gap-2 text-sm text-ink-2 transition-colors hover:text-ink"
                                         >
                                             <span className="font-mono text-[10px] text-accent opacity-0 transition-opacity group-hover:opacity-100">
@@ -244,7 +246,7 @@ export default function Layout() {
                                 </p>
                                 <p className="mt-1 font-mono text-[10px] text-ink-3">
                                     <span className="text-accent">$</span>{" "}
-                                    build with ❤️ for peers by <span className="text-ink"><a href="https://github.com/soumyajiitdas">me_</a></span>
+                                    build with ❤️ for peers by <span className="text-ink"><a href="https://github.com/soumyajiitdas" target="_blank" rel="noopener noreferrer">me_</a></span>
                                 </p>
                             </div>
                         </div>

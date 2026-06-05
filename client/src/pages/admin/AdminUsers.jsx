@@ -20,6 +20,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionReason, setActionReason] = useState("");
   const [durationDays, setDurationDays] = useState(7);
+  const [contentUrl, setContentUrl] = useState("");
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -71,7 +72,7 @@ export default function AdminUsers() {
 
     try {
       if (action === "warn") {
-        await adminApi.warnUser(selectedUser.id, { reason: actionReason });
+        await adminApi.warnUser(selectedUser.id, { reason: actionReason, contentUrl });
         toast.success(`User ${selectedUser.username} warned.`);
       } else if (action === "suspend") {
         await adminApi.suspendUser(selectedUser.id, { reason: actionReason, durationDays: parseInt(durationDays) });
@@ -82,6 +83,7 @@ export default function AdminUsers() {
       }
       
       setActionReason("");
+      setContentUrl("");
       fetchUsers(search); // Refresh list
     } catch (err) {
       toast.error(err.response?.data?.message || `Failed to ${action} user`);
@@ -269,6 +271,17 @@ export default function AdminUsers() {
                       placeholder="Required. User will be notified."
                       className="w-full resize-none rounded-md border border-rule bg-paper-2 p-2 text-sm text-ink focus:border-accent focus:outline-none"
                       rows={2}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-ink mb-1">Source Content URL (Optional)</label>
+                    <input 
+                      type="url"
+                      value={contentUrl}
+                      onChange={(e) => setContentUrl(e.target.value)}
+                      placeholder="e.g. https://peerverse.com/resources/..."
+                      className="w-full rounded-md border border-rule bg-paper-2 p-2 text-sm text-ink focus:border-accent focus:outline-none"
                     />
                   </div>
 

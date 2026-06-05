@@ -80,12 +80,20 @@ api.interceptors.response.use(
         return api(original);
       } catch {
         clearAccessToken();
-        // Notify AuthContext so React state is cleared and
-        // ProtectedRoute handles the redirect — no page reload.
         if (authFailureCallback) {
           authFailureCallback();
         }
         return Promise.reject(error);
+      }
+    }
+
+    if (error.response?.status === 403) {
+      const code = error.response?.data?.code;
+      if (code === "ACCOUNT_BANNED" || code === "ACCOUNT_SUSPENDED") {
+        clearAccessToken();
+        if (authFailureCallback) {
+          authFailureCallback();
+        }
       }
     }
 

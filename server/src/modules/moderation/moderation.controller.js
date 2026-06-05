@@ -65,9 +65,9 @@ const getDeletedContent = asyncHandler(async (req, res) => {
 
 const warnUser = asyncHandler(async (req, res) => {
   const userId = parseInt(req.params.id);
-  const { reason } = userActionSchema.parse(req.body);
+  const { reason, contentUrl } = userActionSchema.parse(req.body);
 
-  await moderationService.warnUser(userId, req.user.id, reason);
+  await moderationService.warnUser(userId, req.user.id, reason, contentUrl);
 
   res.json({ success: true, message: "User warned successfully" });
 });
