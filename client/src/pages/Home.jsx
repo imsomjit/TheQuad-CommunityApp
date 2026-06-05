@@ -496,13 +496,13 @@ export default function Home() {
                                     <Link
                                         key={user.id}
                                         to={`/u/${user.username}`}
-                                        className="group flex cursor-pointer items-center justify-between border-b border-dotted border-rule pb-3 last:border-0 last:pb-0"
+                                        className="group flex cursor-pointer items-center justify-between last:border-0 last:pb-0"
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
                                             <span className="font-mono text-[10px] font-bold text-ink-3 w-4">#{i + 1}</span>
                                             <img src={user.avatar} alt="" className="h-8 w-8 rounded-md object-cover border border-rule group-hover:border-accent transition-colors shrink-0" />
                                             <div className="flex flex-col overflow-hidden">
-                                                <span className="truncate text-sm font-semibold text-ink transition-colors group-hover:text-accent">
+                                                <span className="truncate text-sm font-medium text-ink transition-colors group-hover:text-accent">
                                                     {user.username} <span className="font-mono text-xs text-ink-3 font-normal ml-1"></span>
                                                 </span>
                                                 {(user.college || user.branch) && (

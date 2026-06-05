@@ -38,7 +38,7 @@ export default function UploadResource() {
     const [type, setType] = useState("notes");
     const [college, setCollege] = useState("");
     const [branch, setBranch] = useState("");
-    const [semester, setSemester] = useState("5");
+    const [semester, setSemester] = useState("all");
     const [subject, setSubject] = useState("");
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState("");
@@ -72,7 +72,7 @@ export default function UploadResource() {
         setTags(tags.filter((t) => t !== tag));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!title.trim() || !description.trim() || !file) {
@@ -82,29 +82,30 @@ export default function UploadResource() {
 
         setSubmitting(true);
 
-        setTimeout(() => {
-            const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-
-            const newResource = addResource({
+        try {
+            const newResource = await addResource({
                 title: title.trim(),
                 description: description.trim(),
                 type,
                 college,
                 branch,
-                semester: Number(semester),
+                semester: semester === "all" ? undefined : Number(semester),
                 subject,
                 tags,
-                file: {
-                    name: file.name,
-                    size: `${sizeMB} MB`,
-                    pages: null,
-                },
-            });
+            }, file);
 
+            if (newResource) {
+                toast.success("Resource published");
+                navigate(`/resources/${newResource.id}`);
+            } else {
+                toast.error("Failed to publish resource.");
+            }
+        } catch (err) {
+            console.error("Resource upload error:", err);
+            toast.error(err.response?.data?.message || "Failed to publish resource.");
+        } finally {
             setSubmitting(false);
-            toast.success("Resource published");
-            navigate(`/resources/${newResource.id}`);
-        }, 700);
+        }
     };
 
     return (
@@ -250,6 +251,7 @@ export default function UploadResource() {
                             </SelectTrigger>
 
                             <SelectContent className="bg-paper border-rule text-ink">
+                                <SelectItem value="all">All Sem</SelectItem>
                                 {SEMESTERS.map((item) => (
                                     <SelectItem key={item} value={String(item)}>
                                         Sem {item}

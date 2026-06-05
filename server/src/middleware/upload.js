@@ -78,7 +78,7 @@ const uploadResourceFile = [
     const result = await uploadToCloudinary(req.file.buffer, {
       folder: "peerverse/resources",
       resource_type: "raw",             // PDFs are "raw" in Cloudinary
-      public_id: `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`,
+      public_id: `${Date.now()}-${req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`,
       format: "pdf",
     });
 

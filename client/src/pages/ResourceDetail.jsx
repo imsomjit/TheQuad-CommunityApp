@@ -21,7 +21,7 @@ import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
 import { extractIdFromSlug } from "../utils/slugify";
-import { adminApi } from "../services/api";
+import { adminApi, resourcesApi } from "../services/api";
 const RESOURCE_TYPES = [
   { key: "notes", label: "Notes", icon: "BookOpen" },
   { key: "pyq", label: "PYQ", icon: "FileText" },
@@ -105,13 +105,21 @@ export default function ResourceDetail() {
     const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
     const isBookmarked = bookmarks.has(resource.id);
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!isAuthenticated) {
             toast.error("Please log in to download resources");
             navigate("/login");
             return;
         }
-        toast.success("Download started", { description: resource.file.name });
+        
+        try {
+            toast.success("Download started", { description: resource.file.name });
+            const fileUrl = await resourcesApi.download(resource.id);
+            window.open(fileUrl, "_blank");
+        } catch (error) {
+            console.error(error);
+            toast.error("Download failed", { description: "Could not retrieve the file." });
+        }
     };
 
     const handleBookmark = () => {
