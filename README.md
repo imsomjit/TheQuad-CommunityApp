@@ -29,6 +29,11 @@ Designed with a premium dark/light mode UI and a focus on speed, PeerVerse combi
 - Rich metadata tagging (Branch, Semester, Subject, College).
 - Upvoting, downvoting, and bookmarking mechanics.
 
+### 📖 The Library
+- Explore free PDF books and study materials across various domains.
+- Read books directly in the browser with a custom-themed built-in PDF viewer.
+- Fullscreen reading mode for a distraction-free experience.
+
 ### 💬 Q&A Forum
 - Tech-focused Q&A system.
 - Accept answers, upvote solutions, and engage in threaded discussions.
