@@ -1,16 +1,17 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { 
-    ShieldAlert, 
-    Users, 
-    Settings, 
-    LogOut, 
-    PanelLeftClose, 
+import {
+    ShieldAlert,
+    Users,
+    Settings,
+    LogOut,
+    PanelLeftClose,
     ArrowLeft,
     BarChart3,
-    Briefcase,
+    Target,
     Star,
-    Trash2
+    Trash2,
+    Library
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
@@ -21,11 +22,11 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
 
     const linkClass = ({ isActive }) => {
         const base = "group flex items-center rounded-xl py-2 text-sm transition-all duration-300";
-        const state = isActive 
-            ? "bg-paper text-accent font-medium hover:bg-paper-2 border border-accent-soft transition-color duration-300" 
+        const state = isActive
+            ? "bg-paper text-accent font-medium hover:bg-paper-2 border border-accent-soft transition-color duration-300"
             : "text-ink-2 hover:bg-paper-2 hover:text-ink";
-        const layout = isCollapsed 
-            ? "justify-center w-12 mx-auto px-0" 
+        const layout = isCollapsed
+            ? "justify-center w-12 mx-auto px-0"
             : "gap-3 px-4 w-full";
         return `${base} ${state} ${layout}`;
     };
@@ -39,7 +40,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                         <PanelLeftClose className={`h-4 w-4 transition-transform duration-700 ${isCollapsed ? 'rotate-180' : ''}`} />
                     </button>
                 </div>
-                
+
                 <NavLink to="/admin/reports" className={linkClass} title="Moderation Queue">
                     <ShieldAlert className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Reports Queue</span>}
                 </NavLink>
@@ -47,7 +48,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                 <NavLink to="/admin/deleted-content" className={linkClass} title="Deleted Content">
                     <Trash2 className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Deleted Content</span>}
                 </NavLink>
-                
+
                 {currentUser?.role === 'admin' && (
                     <>
                         <NavLink to="/admin/users" className={linkClass} title="User Management">
@@ -58,12 +59,28 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                             <BarChart3 className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>System Statistics</span>}
                         </NavLink>
 
-                        <NavLink to="/admin/opportunities" className={linkClass} title="Opportunities">
-                            <Briefcase className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Opportunities</span>}
+                        {/* Upcoming feature */}
+                        <div
+                            className={`${linkClass({ isActive: false })} cursor-not-allowed opacity-60`}
+                            title="Coming Soon"
+                        >
+                            <Star className="h-5 w-5 shrink-0" />
+                            {!isCollapsed && (
+                                <>
+                                    <span>Featured</span>
+                                    <span className="ml-auto rounded-md bg-paper px-2 py-0.5 text-[10px] text-accent">
+                                        Soon
+                                    </span>
+                                </>
+                            )}
+                        </div>
+
+                        <NavLink to="/admin/books/upload" className={linkClass} title="Library Books">
+                            <Library className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Library Books</span>}
                         </NavLink>
 
-                        <NavLink to="/admin/featured" className={linkClass} title="Featured Content">
-                            <Star className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Featured Content</span>}
+                        <NavLink to="/admin/opportunities" className={linkClass} title="Opportunities">
+                            <Target className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Opportunities</span>}
                         </NavLink>
 
                         <NavLink to="/admin/settings" className={linkClass} title="Platform Settings">
@@ -75,13 +92,13 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
 
             <div className="mt-auto flex flex-col gap-2 border-t border-rule pt-4">
                 {!isCollapsed && <p className="px-4 pb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">Account: {currentUser?.username}</p>}
-                
+
                 <NavLink to="/" className={`group flex items-center ${isCollapsed ? 'justify-center w-12 mx-auto px-0' : 'w-full gap-3 px-4'} rounded-xl py-2 text-sm font-medium text-ink-2 hover:text-ink hover:bg-paper transition-all duration-300 mt-1 border border-transparent hover:border-rule`} title="Return to App">
                     <ArrowLeft className={`h-5 w-5 shrink-0 transition-transform ${isCollapsed ? '' : 'group-hover:-translate-x-0.5'}`} />
                     {!isCollapsed && <span>Return to App</span>}
                 </NavLink>
 
-                <button 
+                <button
                     onClick={() => logout()}
                     title="Sign out"
                     className={`group flex items-center ${isCollapsed ? 'justify-center w-12 mx-auto px-0' : 'w-full gap-3 px-4'} rounded-xl py-2.5 text-sm font-medium text-ink-3 transition-all duration-200 hover:bg-red-500/10 hover:text-red-500`}

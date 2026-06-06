@@ -2,7 +2,7 @@
 
 const { eq, and, desc, sql, inArray } = require("drizzle-orm");
 const { db } = require("../../db/index");
-const { bookmarks, resources } = require("../../db/schema/index");
+const { bookmarks, resources, books } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 
 /**
@@ -31,6 +31,11 @@ const toggleBookmark = async (userId, { targetType, targetId }) => {
         .update(resources)
         .set({ bookmarksCount: sql`${resources.bookmarksCount} - 1` })
         .where(eq(resources.id, targetId));
+    } else if (targetType === "book") {
+      await db
+        .update(books)
+        .set({ bookmarksCount: sql`${books.bookmarksCount} - 1` })
+        .where(eq(books.id, targetId));
     }
 
     return { bookmarked: false };
@@ -42,6 +47,11 @@ const toggleBookmark = async (userId, { targetType, targetId }) => {
         .update(resources)
         .set({ bookmarksCount: sql`${resources.bookmarksCount} + 1` })
         .where(eq(resources.id, targetId));
+    } else if (targetType === "book") {
+      await db
+        .update(books)
+        .set({ bookmarksCount: sql`${books.bookmarksCount} + 1` })
+        .where(eq(books.id, targetId));
     }
 
     return { bookmarked: true };

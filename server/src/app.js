@@ -26,6 +26,7 @@ const opportunityRoutes = require("./modules/opportunities/opportunities.routes"
 const settingsRoutes = require("./modules/settings/settings.routes");
 const broadcastsRoutes = require("./modules/settings/broadcasts.routes");
 const moderationRoutes = require("./modules/moderation/moderation.routes");
+const booksRoutes = require("./modules/books/books.routes");
 
 const createApp = () => {
   const app = express();
@@ -81,6 +82,7 @@ const createApp = () => {
   app.use("/api/settings", settingsRoutes);
   app.use("/api/broadcasts", broadcastsRoutes);
   app.use("/api/moderation", moderationRoutes);
+  app.use("/api/books", booksRoutes);
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((req, res) => {

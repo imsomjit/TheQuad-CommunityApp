@@ -35,6 +35,7 @@ const {
 } = require("./opportunities");
 const { siteSettings } = require("./settings");
 const { broadcasts, broadcastTypeEnum } = require("./broadcasts");
+const { books } = require("./books");
 
 module.exports = {
   // Tables
@@ -59,6 +60,7 @@ module.exports = {
   opportunityBookmarks,
   siteSettings,
   broadcasts,
+  books,
 
   // Enums
   userRoleEnum,

@@ -9,15 +9,12 @@ const { Readable } = require("stream");
 /**
  * Multer configured for memory storage.
  * We buffer the file in memory, then stream it to Cloudinary.
- * This avoids writing temp files to disk.
- *
- * Max file sizes:
- * - PDFs: 50 MB (notes can be large)
+ * - PDFs: 10 MB (Cloudinary limit)
  * - Images: 5 MB (avatars, blog covers)
  */
 const ALLOWED_PDF_TYPES = ["application/pdf"];
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50 MB
+const MAX_PDF_SIZE = 10 * 1024 * 1024; // 10 MB (Cloudinary free tier limit)
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const memoryStorage = multer.memoryStorage();

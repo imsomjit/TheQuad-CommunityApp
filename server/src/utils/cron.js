@@ -1,7 +1,7 @@
 "use strict";
 
 const cron = require("node-cron");
-const { sql } = require("drizzle-orm");
+const { sql, and, eq, lte } = require("drizzle-orm");
 const { db } = require("../db/index");
 const { users, notifications, broadcasts } = require("../db/schema/index");
 const { sendEmail } = require("./email");
@@ -67,10 +67,15 @@ const startCronJobs = () => {
   cron.schedule("* * * * *", async () => {
     try {
       // Find broadcasts that are scheduled for now or in the past, and haven't been sent
-      const { rows: pendingBroadcasts } = await db.execute(sql`
-        SELECT * FROM broadcasts
-        WHERE is_sent = false AND scheduled_at <= NOW()
-      `);
+      const pendingBroadcasts = await db
+        .select()
+        .from(broadcasts)
+        .where(
+          and(
+            eq(broadcasts.isSent, false),
+            lte(broadcasts.scheduledAt, new Date())
+          )
+        );
 
       if (!pendingBroadcasts || pendingBroadcasts.length === 0) {
         return; // Nothing to send
@@ -79,16 +84,17 @@ const startCronJobs = () => {
       logger.info(`[Cron] Found ${pendingBroadcasts.length} pending broadcasts.`);
 
       // Get all active users
-      const { rows: activeUsers } = await db.execute(sql`
-        SELECT id FROM users WHERE is_banned = false
-      `);
+      const activeUsers = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.isBanned, false));
 
       for (const broadcast of pendingBroadcasts) {
         if (activeUsers && activeUsers.length > 0) {
           // Prepare notifications for all active users
           const notificationsToInsert = activeUsers.map(user => ({
             recipientId: user.id,
-            actorId: broadcast.created_by, // use the raw DB column
+            actorId: broadcast.createdBy, // use the raw DB column
             type: "system_broadcast",
             targetType: "broadcast",
             targetId: broadcast.id,
@@ -107,7 +113,7 @@ const startCronJobs = () => {
               const payload = {
                 ...notif,
                 actor: {
-                  id: broadcast.created_by,
+                  id: broadcast.createdBy,
                   name: "System", // System fallback, as we don't have the actor object fully populated
                   username: "system",
                   avatarUrl: null
@@ -119,9 +125,7 @@ const startCronJobs = () => {
         }
 
         // Mark broadcast as sent
-        await db.execute(sql`
-          UPDATE broadcasts SET is_sent = true WHERE id = ${broadcast.id}
-        `);
+        await db.update(broadcasts).set({ isSent: true }).where(eq(broadcasts.id, broadcast.id));
         logger.info(`[Cron] Broadcast ${broadcast.id} sent successfully.`);
       }
     } catch (error) {

@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, BookOpen, MessageSquare, FileText, Bell, LogOut, PanelLeftClose, Target, ShieldAlert } from "lucide-react";
+import { Home, BookOpen, MessageSquare, FileText, Bell, LogOut, PanelLeftClose, Target, ShieldAlert, Library } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -31,14 +31,17 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
                 <NavLink to="/" className={linkClass} end title="Feed">
                     <Home className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Feed</span>}
                 </NavLink>
-                <NavLink to="/resources" className={linkClass} title="Library">
-                    <BookOpen className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Library</span>}
+                <NavLink to="/resources" className={linkClass} title="Resources">
+                    <BookOpen className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Resources</span>}
                 </NavLink>
                 <NavLink to="/questions" className={linkClass} title="Q&A">
                     <MessageSquare className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Q&A</span>}
                 </NavLink>
                 <NavLink to="/posts" className={linkClass} title="Posts">
                     <FileText className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Posts</span>}
+                </NavLink>
+                <NavLink to="/library" className={linkClass} title="Library">
+                    <Library className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Library</span>}
                 </NavLink>
                 <NavLink to="/opportunities" className={linkClass} title="Opportunities">
                     <Target className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Opportunities</span>}

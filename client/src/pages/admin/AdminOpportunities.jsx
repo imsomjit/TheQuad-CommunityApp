@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { adminApi, opportunitiesApi } from "../../services/api";
 import { Briefcase, Plus, Trash2, Edit } from "lucide-react";
 import { Input } from "../../components/ui/input";
+import { TableSkeleton } from "../../components/Skeletons";
 
 export default function AdminOpportunities() {
   const [opportunities, setOpportunities] = useState([]);
@@ -171,6 +172,9 @@ export default function AdminOpportunities() {
         </div>
       )}
 
+      {loading && opportunities.length === 0 ? (
+        <TableSkeleton />
+      ) : (
       <div className="border border-rule rounded-xl bg-paper overflow-hidden">
         <table className="w-full text-sm text-left">
           <thead className="bg-paper-2 text-ink border-b border-rule font-medium">
@@ -242,6 +246,7 @@ export default function AdminOpportunities() {
             </button>
           </div>
         </div>
+      )}
     </div>
   );
 }

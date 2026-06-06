@@ -7,6 +7,7 @@ const {
   resources,
   questions,
   answers,
+  books,
 } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const notificationService = require("../notifications/notifications.service");
@@ -99,6 +100,7 @@ const updateTargetCounters = async (targetType, targetId, delta) => {
     resource: resources,
     question: questions,
     answer: answers,
+    book: books,
   };
 
   const table = tableMap[targetType];

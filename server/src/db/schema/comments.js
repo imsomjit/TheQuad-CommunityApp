@@ -29,6 +29,7 @@ const commentTargetEnum = pgEnum("comment_target_type", [
   "question",
   "answer",
   "blog",
+  "book",
 ]);
 
 const comments = pgTable("comments", {

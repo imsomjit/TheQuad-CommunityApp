@@ -18,9 +18,9 @@ export default function MobileNav() {
                     <Home className="h-5 w-5 mb-1" strokeWidth={2.2} />
                     <span className="sr-only">Feed</span>
                 </NavLink>
-                <NavLink to="/resources" className={linkClass} title="Library">
+                <NavLink to="/resources" className={linkClass} title="Resources">
                     <BookOpen className="h-5 w-5 mb-1" strokeWidth={2.2} />
-                    <span className="sr-only">Library</span>
+                    <span className="sr-only">Resources</span>
                 </NavLink>
                 <NavLink to="/questions" className={linkClass} title="Q&A">
                     <MessageSquare className="h-5 w-5 mb-1" strokeWidth={2.2} />

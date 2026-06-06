@@ -22,7 +22,25 @@ export default function AdminAnalytics() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-20 text-ink-3">Loading statistics...</div>;
+    return (
+      <div className="space-y-6 max-w-6xl mx-auto animate-in fade-in">
+        <div>
+          <div className="h-8 w-48 shimmer rounded bg-paper-2 mb-2"></div>
+          <div className="h-4 w-72 shimmer rounded bg-paper-2"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="bg-paper border border-rule rounded-xl p-6 flex items-center gap-4 shadow-sm">
+              <div className="h-16 w-16 shimmer rounded-full bg-paper-2"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-24 shimmer rounded bg-paper-2"></div>
+                <div className="h-8 w-16 shimmer rounded bg-paper-2"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   const statCards = [

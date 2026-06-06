@@ -584,5 +584,18 @@ export const broadcastsApi = {
   delete: (id) => api.delete(`/broadcasts/${id}`).then((r) => r.data),
 };
 
+// Books
+export const booksApi = {
+  list: (params) => api.get("/books", { params }).then((r) => r.data),
+  get: (id) => api.get(`/books/${id}`).then((r) => r.data.data.book),
+  upload: (data) => api.post("/books", data, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data.data.book),
+  update: (id, data) => api.patch(`/books/${id}`, data, {
+    headers: data instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined
+  }).then((r) => r.data.data.book),
+  delete: (id) => api.delete(`/books/${id}`).then((r) => r.data),
+  incrementViews: (id) => api.post(`/books/${id}/views`).then((r) => r.data),
+  incrementDownloads: (id) => api.post(`/books/${id}/downloads`).then((r) => r.data),
+};
+
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };
 export default api;

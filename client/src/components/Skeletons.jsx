@@ -223,3 +223,43 @@ export function LeetcodeStatsSkeleton() {
         </div>
     );
 }
+
+export function PostCardSkeleton() {
+    return (
+        <div className="flex flex-col gap-3 rounded-md border border-rule bg-paper p-5">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <div className="mt-2 flex gap-2">
+                {[1, 2].map((i) => (
+                    <Skeleton key={i} className="h-4 w-16" />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+export function BookCardSkeleton() {
+    return (
+        <div className="group relative flex h-60 overflow-hidden rounded-md border border-rule bg-paper">
+            <div className="flex flex-1 flex-col justify-between p-5 z-10">
+                <div className="space-y-3">
+                    <Skeleton className="h-7 w-full" />
+                    <Skeleton className="h-7 w-2/3" />
+                    <Skeleton className="h-4 w-1/3" />
+                </div>
+                <div className="mt-3 space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                </div>
+                <div className="mt-auto flex items-center justify-between border-t border-rule/50 pt-3">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-16" />
+                </div>
+            </div>
+            <div className="relative w-32 shrink-0 border-l border-rule bg-paper-2 sm:w-40 z-10 shimmer">
+            </div>
+        </div>
+    );
+}

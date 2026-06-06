@@ -85,6 +85,13 @@
       "when": 1780323498475,
       "tag": "0011_numerous_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1780735325965,
+      "tag": "0012_aspiring_bedlam",
+      "breakpoints": true
     }
   ]
 }

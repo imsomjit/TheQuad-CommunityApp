@@ -17,21 +17,26 @@ import {
     Clock,
     Trophy,
     CodeXml,
-    FileText
+    FileText,
+    BookText,
+    Download,
+    Eye
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { usersApi, postsApi, opportunitiesApi } from "../services/api";
+import { usersApi, postsApi, opportunitiesApi, booksApi } from "../services/api";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
+import BookCard from "../components/BookCard";
+import BookmarkButton from "../components/BookmarkButton";
 import TagBadge from "../components/TagBadge";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
-import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton } from "../components/Skeletons";
+import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton, PostCardSkeleton, BookCardSkeleton, OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
-
+import { timeAgo } from "../utils/timeAgo";
 
 const STAT_COLOR = {
     resources: "--syntax-mint",
@@ -96,7 +101,7 @@ function TypewriterEffect() {
             : Math.random() * 40 + 40;
 
         let timer;
-        
+
         if (isPaused) {
             timer = setTimeout(() => {
                 setIsPaused(false);
@@ -140,9 +145,10 @@ export default function Home() {
 
     const [topContributors, setTopContributors] = useState([]);
     const [contributorsLoading, setContributorsLoading] = useState(true);
-    
+
     const [recentPosts, setRecentPosts] = useState([]);
     const [recentOpportunities, setRecentOpportunities] = useState([]);
+    const [recentBooks, setRecentBooks] = useState([]);
     const [extrasLoading, setExtrasLoading] = useState(true);
 
     useEffect(() => {
@@ -162,13 +168,15 @@ export default function Home() {
     useEffect(() => {
         const fetchExtras = async () => {
             try {
-                // Fetch top read posts and recent ongoing opportunities
-                const [postsData, oppsData] = await Promise.all([
+                // Fetch top read posts, recent ongoing opportunities, and recent books
+                const [postsData, oppsData, booksData] = await Promise.all([
                     postsApi.list({ sort: "top", limit: 3 }),
-                    opportunitiesApi.list({ status: "ONGOING", limit: 3 })
+                    opportunitiesApi.list({ status: "ONGOING", limit: 3 }),
+                    booksApi.list({ limit: 4 })
                 ]);
                 setRecentPosts(postsData.data || []);
                 setRecentOpportunities(oppsData.data || []);
+                setRecentBooks(booksData.data || []);
             } catch (err) {
                 console.error("Failed to fetch home extras", err);
             } finally {
@@ -179,7 +187,7 @@ export default function Home() {
     }, []);
 
     const getStatusColor = (s) => {
-        switch(s) {
+        switch (s) {
             case "UPCOMING": return "bg-blue-500/10 text-blue-500 border-blue-500/20";
             case "ONGOING": return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
             case "ENDED": return "bg-ink-3/10 text-ink-3 border-ink-3/20";
@@ -215,7 +223,7 @@ export default function Home() {
 
     const allTags = useMemo(() => {
         const counts = {};
-        
+
         resources.forEach(r => r.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
         questions.forEach(q => q.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
 
@@ -230,7 +238,7 @@ export default function Home() {
                     <section className="relative overflow-hidden rounded-md border border-rule bg-paper-2/40 card-elevated">
                         <div className="aurora" />
                         <div className="absolute inset-0 grid-bg opacity-50" />
-                        
+
                         <div className="relative grid grid-cols-12 gap-0">
                             {/* Left margin like a notebook gutter */}
                             <aside className="hidden sm:block col-span-12 border-b border-rule px-6 py-4 sm:col-span-2 sm:border-b-0 sm:border-r sm:px-4 sm:py-10">
@@ -257,7 +265,7 @@ export default function Home() {
                             <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
                                 <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
                                     <Terminal className="h-3.5 w-3.5 text-accent" />
-                                    PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span> 
+                                    PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
                                 </p>
 
                                 <h1 className="h-[180px] sm:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
@@ -364,14 +372,14 @@ export default function Home() {
                             </p>
 
                             <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-                                {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br className="hidden sm:inline" /><span className="hidden sm:inline">what are you <span className="marker">learning today?</span></span><span className="inline sm:hidden">ready to <span className="marker">explore?</span></span> 
+                                {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br className="hidden sm:inline" /><span className="hidden sm:inline">what are you <span className="marker">learning today?</span></span><span className="inline sm:hidden">ready to <span className="marker">explore?</span></span>
                             </h1>
 
                             <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-2">
                                 Welcome to your learning space. Discover curated resources, engage in meaningful discussions, showcase your work, and stay connected with a community that believes knowledge grows when it's shared.
                             </p>
                         </div>
-                        
+
                         <div className="flex items-center mt-2 gap-3">
                             <Link to="/ask" className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
                                 <MessageSquare className="h-4 w-4" /> Ask Question
@@ -397,7 +405,7 @@ export default function Home() {
             {/* ── EDITORIAL DIVIDER ─────────────────────────────── */}
             <div className="flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                    §02 · the library
+                    §02 · the Resources
                 </span>
                 <span className="h-px flex-1 bg-rule" />
                 <Link
@@ -431,7 +439,7 @@ export default function Home() {
                                 <ResourceCard key={r.id} resource={r} />
                             ))
                         ) : (
-                            <EmptyPlaceholder 
+                            <EmptyPlaceholder
                                 icon={BookOpen}
                                 title="No resources found"
                                 description="The library is currently empty. Be the first to share your notes or past year papers!"
@@ -523,48 +531,48 @@ export default function Home() {
                             )}
                         </ul>
                     </div>
-                    
+
                     {/* Profile card — index-card style */}
                     {isAuthenticated && currentUser && (
-                    <div className="hidden sm:inline relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        <div className="hidden sm:inline relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
+                            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // profile card
-                        </p>
+                            </p>
 
-                        <div className="mt-3 flex items-center gap-3">
-                            <img
-                                src={currentUser.avatar}
-                                alt=""
-                                className="h-14 w-14 rounded-md border border-rule object-cover"
-                            />
+                            <div className="mt-3 flex items-center gap-3">
+                                <img
+                                    src={currentUser.avatar}
+                                    alt=""
+                                    className="h-14 w-14 rounded-md border border-rule object-cover"
+                                />
 
-                            <div>
-                                <div className="font-display text-xl font-semibold text-ink">
-                                    {currentUser.name}
-                                </div>
-                                <div className="font-mono text-xs text-ink-3">
-                                    @{currentUser.username}
+                                <div>
+                                    <div className="font-display text-xl font-semibold text-ink">
+                                        {currentUser.name}
+                                    </div>
+                                    <div className="font-mono text-xs text-ink-3">
+                                        @{currentUser.username}
+                                    </div>
                                 </div>
                             </div>
+
+                            <p className="mt-4 text-sm leading-relaxed text-ink-2">
+                                {currentUser.bio}
+                            </p>
+
+                            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                                <MiniStat value={currentUser.stats?.resources || 0} label="uploads" colorVar="--syntax-mint" />
+                                <MiniStat value={currentUser.stats?.answers || 0} label="answers" colorVar="--syntax-cyan" />
+                                <MiniStat value={currentUser.stats?.upvotes || 0} label="upvotes" colorVar="--syntax-amber" />
+                            </div>
+
+                            <Link
+                                to={`/u/${currentUser.username}`}
+                                className="mt-4 block w-full rounded-md border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                            >
+                                View full profile →
+                            </Link>
                         </div>
-
-                        <p className="mt-4 text-sm leading-relaxed text-ink-2">
-                            {currentUser.bio}
-                        </p>
-
-                        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                            <MiniStat value={currentUser.stats?.resources || 0} label="uploads" colorVar="--syntax-mint" />
-                            <MiniStat value={currentUser.stats?.answers || 0} label="answers" colorVar="--syntax-cyan" />
-                            <MiniStat value={currentUser.stats?.upvotes || 0} label="upvotes" colorVar="--syntax-amber" />
-                        </div>
-
-                        <Link
-                            to={`/u/${currentUser.username}`}
-                            className="mt-4 block w-full rounded-md border border-rule bg-paper py-2 text-center text-sm text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-                        >
-                            View full profile →
-                        </Link>
-                    </div>
                     )}
                 </aside>
             </div>
@@ -603,7 +611,7 @@ export default function Home() {
                             <QuestionCard key={q.id} question={q} />
                         ))
                     ) : (
-                        <EmptyPlaceholder 
+                        <EmptyPlaceholder
                             icon={MessageSquare}
                             title="No questions asked"
                             description="The forum is quiet. Start a discussion or ask a question to the community!"
@@ -642,7 +650,9 @@ export default function Home() {
 
                 <div className="space-y-3">
                     {extrasLoading ? (
-                        <div className="flex justify-center p-4"><span className="text-sm text-ink-3">Loading...</span></div>
+                        <div className="flex flex-col gap-5">
+                            {[1, 2, 3].map((i) => <PostCardSkeleton key={i} />)}
+                        </div>
                     ) : recentPosts.length > 0 ? (
                         <div className="flex flex-col gap-5">
                             {recentPosts.map((p) => (
@@ -650,7 +660,7 @@ export default function Home() {
                             ))}
                         </div>
                     ) : (
-                        <EmptyPlaceholder 
+                        <EmptyPlaceholder
                             icon={FileText}
                             title="No posts found"
                             description="The blog is currently empty."
@@ -664,7 +674,56 @@ export default function Home() {
             {/* ── Divider ─────────────────────────────────────── */}
             <div className="flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
-                    §05 · the board
+                    §05 · the library
+                </span>
+                <span className="h-px flex-1 bg-rule" />
+                <Link
+                    to="/library"
+                    className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-2 transition-colors hover:text-accent"
+                >
+                    all books →
+                </Link>
+            </div>
+
+            {/* ── RECENT BOOKS ────────────────────────────── */}
+            <section className="space-y-4">
+                <header>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        explore new knowledge
+                    </p>
+                    <h2 className="mt-1 flex items-center gap-2 font-display text-4xl font-semibold tracking-tight text-ink">
+                        <BookOpen className="h-7 w-7 text-syntax-mint" />
+                        New arrivals
+                    </h2>
+                </header>
+
+                <div className="space-y-3">
+                    {extrasLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {[1, 2, 3, 4].map((i) => <BookCardSkeleton key={i} />)}
+                        </div>
+                    ) : recentBooks.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {recentBooks.map((book) => (
+                                <BookCard key={book.publicId} book={book} />
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyPlaceholder 
+                            icon={BookText}
+                            title="No books yet"
+                            description="The library is empty."
+                            linkTo="/library"
+                            linkText="Go to Library"
+                        />
+                    )}
+                </div>
+            </section>
+
+            {/* ── Divider ─────────────────────────────────────── */}
+            <div className="flex items-center gap-4">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                    §06 · the board
                 </span>
                 <span className="h-px flex-1 bg-rule" />
                 <Link
@@ -689,7 +748,9 @@ export default function Home() {
 
                 <div className="space-y-3">
                     {extrasLoading ? (
-                        <div className="flex justify-center p-4"><span className="text-sm text-ink-3">Loading...</span></div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {[1, 2, 3].map((i) => <OpportunityCardSkeleton key={i} />)}
+                        </div>
                     ) : recentOpportunities.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {recentOpportunities.map((opp) => (
@@ -699,11 +760,11 @@ export default function Home() {
                                             {opp.status}
                                         </div>
                                     </div>
-                                    
+
                                     <h3 className="font-display font-semibold text-ink text-2xl leading-tight mb-3 group-hover:text-accent transition-colors line-clamp-2">
                                         {opp.title}
                                     </h3>
-                                    
+
                                     <div className="flex flex-wrap items-center gap-2 mb-4">
                                         <div className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
                                             {getSourceLogo(opp.organizer)}
@@ -737,7 +798,7 @@ export default function Home() {
                             ))}
                         </div>
                     ) : (
-                        <EmptyPlaceholder 
+                        <EmptyPlaceholder
                             icon={Target}
                             title="No ongoing opportunities"
                             description="There are no ongoing opportunities at the moment. Check back later!"

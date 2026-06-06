@@ -9,7 +9,7 @@ const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
 const bookmarkSchema = z.object({
-  targetType: z.enum(["resource", "blog"]),
+  targetType: z.enum(["resource", "blog", "book"]),
   targetId: z.coerce.number().int().positive(),
 });
 

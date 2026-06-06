@@ -17,6 +17,8 @@ const Home = lazy(() => import("./pages/Home"));
 const Resources = lazy(() => import("./pages/Resources"));
 const ResourceDetail = lazy(() => import("./pages/ResourceDetail"));
 const UploadResource = lazy(() => import("./pages/UploadResource"));
+const Library = lazy(() => import("./pages/Library"));
+const BookDetail = lazy(() => import("./pages/BookDetail"));
 const Questions = lazy(() => import("./pages/Questions"));
 const QuestionDetail = lazy(() => import("./pages/QuestionDetail"));
 const AskQuestion = lazy(() => import("./pages/AskQuestion"));
@@ -40,6 +42,7 @@ const AdminOpportunities = lazy(() => import("./pages/admin/AdminOpportunities")
 const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminDeletedContent = lazy(() => import("./pages/admin/AdminDeletedContent"));
+const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
 
 // Static pages
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -76,6 +79,9 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+
+                  <Route path="/library" element={<Library />} />
+                  <Route path="/library/:publicId" element={<BookDetail />} />
 
                   <Route path="/questions" element={<Questions />} />
                   <Route path="/questions/:id" element={<QuestionDetail />} />
@@ -173,6 +179,10 @@ function App() {
                   <Route
                     path="/admin/settings"
                     element={<AdminSettings />}
+                  />
+                  <Route
+                    path="/admin/books/upload"
+                    element={<AdminBooks />}
                   />
                 </Route>
               </Routes>

@@ -9,7 +9,7 @@ const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
 const voteSchema = z.object({
-  targetType: z.enum(["resource", "question", "answer", "blog"]),
+  targetType: z.enum(["resource", "question", "answer", "blog", "book"]),
   targetId: z.coerce.number().int().positive(),
   direction: z.enum(["up", "down"]),
 });

@@ -45,15 +45,22 @@ export default function UploadResource() {
     const [file, setFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
+    const handleFile = (f) => {
+        if (!f) return;
+        if (f.size > 10 * 1024 * 1024) {
+            toast.error("File size must be less than 10MB");
+            return;
+        }
+        setFile(f);
+    };
+
     const onDrop = (e) => {
         e.preventDefault();
-        const f = e.dataTransfer.files?.[0];
-        if (f) setFile(f);
+        handleFile(e.dataTransfer.files?.[0]);
     };
 
     const onFileChange = (e) => {
-        const f = e.target.files?.[0];
-        if (f) setFile(f);
+        handleFile(e.target.files?.[0]);
     };
 
     const addTag = (e) => {
@@ -171,7 +178,7 @@ export default function UploadResource() {
                                     Drag & drop or click to upload
                                 </p>
                                 <p className="font-mono text-xs text-ink-3">
-                                    PDF, DOCX, PNG, MD — up to 25 MB
+                                    PDF, DOCX, PNG, MD — up to 10 MB
                                 </p>
                             </>
                         )}

@@ -4,6 +4,7 @@ import { adminApi } from "../../services/api";
 import { Search, ShieldAlert, Ban, UserCog, History, UserPlus } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { useApp } from "../../context/AppContext";
+import { TableSkeleton } from "../../components/Skeletons";
 
 export default function AdminUsers() {
   const { currentUser } = useApp();
@@ -164,8 +165,13 @@ export default function AdminUsers() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User List */}
-        <div className="lg:col-span-2 border border-rule rounded-xl bg-paper overflow-hidden">
-          <table className="w-full text-sm text-left">
+        {loading && users.length === 0 ? (
+          <div className="lg:col-span-2">
+            <TableSkeleton />
+          </div>
+        ) : (
+          <div className="lg:col-span-2 border border-rule rounded-xl bg-paper overflow-hidden">
+            <table className="w-full text-sm text-left">
             <thead className="bg-paper-2 text-ink border-b border-rule font-medium">
               <tr>
                 <th className="px-4 py-3 w-16">S.No.</th>
@@ -251,6 +257,7 @@ export default function AdminUsers() {
             </button>
           </div>
         </div>
+        )}
 
         {/* Action Panel */}
         <div className="lg:col-span-1">

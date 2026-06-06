@@ -9,7 +9,7 @@ const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
 const submitReportSchema = z.object({
-  targetType: z.enum(["resource", "question", "answer", "blog", "comment", "user", "opportunity"]),
+  targetType: z.enum(["resource", "question", "answer", "blog", "comment", "user", "opportunity", "book"]),
   targetId: z.coerce.number().int().positive(),
   reason: z.enum([
     "spam",

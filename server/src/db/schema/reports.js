@@ -38,6 +38,7 @@ const reportTargetEnum = pgEnum("report_target_type", [
   "comment",
   "opportunity",
   "user",
+  "book",
 ]);
 
 const reports = pgTable("reports", {

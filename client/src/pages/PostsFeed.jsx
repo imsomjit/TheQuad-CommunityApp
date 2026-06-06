@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { PenLine, Search, SlidersHorizontal, X, ArrowDownUp } from "lucide-react";
 import { postsApi } from "../services/api";
 import PostCard, { CATEGORY_META } from "../components/PostCard";
+import { PostCardSkeleton } from "../components/Skeletons";
 import { useApp } from "../context/AppContext";
 
 import { Input } from "../components/ui/input";
@@ -230,7 +231,7 @@ export default function PostsFeed() {
         {loading ? (
           <PostsGrid>
             {Array(6).fill(0).map((_, i) => (
-              <PostSkeleton key={i} />
+              <PostCardSkeleton key={i} />
             ))}
           </PostsGrid>
         ) : error ? (
@@ -327,21 +328,7 @@ function Chip({ children, onRemove }) {
   );
 }
 
-function PostSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 rounded-md border border-rule bg-paper p-5">
-      <div className="h-5 w-24 shimmer rounded-md bg-paper-2" />
-      <div className="h-6 w-full shimmer rounded-md bg-paper-2" />
-      <div className="h-4 w-3/4 shimmer rounded-md bg-paper-2" />
-      <div className="h-4 w-1/2 shimmer rounded-md bg-paper-2" />
-      <div className="mt-2 flex gap-2">
-        {[1, 2].map((i) => (
-          <div key={i} className="h-4 w-16 shimmer rounded-md bg-paper-2" />
-        ))}
-      </div>
-    </div>
-  );
-}
+
 
 function EmptyState({ category, currentUser }) {
   const cat = CATEGORY_META[category];

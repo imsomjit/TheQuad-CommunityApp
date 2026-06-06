@@ -10,7 +10,7 @@ const {
 } = require("drizzle-orm/pg-core");
 const { users } = require("./users");
 
-const bookmarkTargetEnum = pgEnum("bookmark_target_type", ["resource", "blog"]);
+const bookmarkTargetEnum = pgEnum("bookmark_target_type", ["resource", "blog", "book"]);
 
 const bookmarks = pgTable(
   "bookmarks",

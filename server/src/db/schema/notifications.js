@@ -22,6 +22,8 @@ const notificationTypeEnum = pgEnum("notification_type", [
   "answer_on_question",
   "like_blog",
   "comment_on_blog",
+  "upvote_book",
+  "comment_on_book",
   "system_welcome",
   "system_broadcast",
 ]);

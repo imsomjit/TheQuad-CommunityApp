@@ -21,6 +21,7 @@ const voteTargetEnum = pgEnum("vote_target_type", [
   "question",
   "answer",
   "blog",
+  "book",
 ]);
 
 const voteDirectionEnum = pgEnum("vote_direction", ["up", "down"]);
