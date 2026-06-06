@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import { useApp } from "../../context/AppContext";
+import { SettingsSkeleton } from "../../components/Skeletons";
 
 export default function AdminSettings() {
   const { siteSettings: globalSettings, setSiteSettings } = useApp();
@@ -111,11 +112,7 @@ export default function AdminSettings() {
   };
 
   if (fetching) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-ink-3" />
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   return (

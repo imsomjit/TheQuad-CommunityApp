@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
-import { Loader2, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { setAccessToken } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import PageLoadingSkeleton from "../components/PageLoadingSkeleton";
 
 /**
  * OAuth Callback Page
@@ -91,12 +92,5 @@ export default function AuthCallback() {
     );
   }
 
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="text-center space-y-3">
-        <Loader2 className="h-8 w-8 animate-spin text-accent mx-auto" />
-        <p className="font-mono text-sm text-ink-2">Signing you in...</p>
-      </div>
-    </div>
-  );
+  return <PageLoadingSkeleton />;
 }

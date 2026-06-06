@@ -330,13 +330,13 @@ function Chip({ children, onRemove }) {
 function PostSkeleton() {
   return (
     <div className="flex flex-col gap-3 rounded-md border border-rule bg-paper p-5">
-      <div className="h-5 w-24 animate-pulse rounded-md bg-paper-2" />
-      <div className="h-6 w-full animate-pulse rounded-md bg-paper-2" />
-      <div className="h-4 w-3/4 animate-pulse rounded-md bg-paper-2" />
-      <div className="h-4 w-1/2 animate-pulse rounded-md bg-paper-2" />
+      <div className="h-5 w-24 shimmer rounded-md bg-paper-2" />
+      <div className="h-6 w-full shimmer rounded-md bg-paper-2" />
+      <div className="h-4 w-3/4 shimmer rounded-md bg-paper-2" />
+      <div className="h-4 w-1/2 shimmer rounded-md bg-paper-2" />
       <div className="mt-2 flex gap-2">
         {[1, 2].map((i) => (
-          <div key={i} className="h-4 w-16 animate-pulse rounded-md bg-paper-2" />
+          <div key={i} className="h-4 w-16 shimmer rounded-md bg-paper-2" />
         ))}
       </div>
     </div>

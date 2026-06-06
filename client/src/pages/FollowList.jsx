@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Users, Loader2 } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 import { usersApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { getAvatarFallback } from "../utils/fallbacks";
+import { UserCardSkeleton } from "../components/Skeletons";
 
 /**
  * Followers/Following list page — only accessible by the profile owner.
@@ -70,8 +71,8 @@ export default function FollowList({ mode = "followers" }) {
 
             {/* List */}
             {loading ? (
-                <div className="flex justify-center py-16">
-                    <Loader2 className="w-7 h-7 animate-spin text-ink-3" />
+                <div className="space-y-2">
+                    {[1, 2, 3, 4, 5].map(i => <UserCardSkeleton key={i} />)}
                 </div>
             ) : error ? (
                 <div className="text-center py-12 text-ink-2 text-sm">{error}</div>

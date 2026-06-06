@@ -144,10 +144,10 @@ export default function CommentSection({ targetType, targetId, className = "" })
         <div className="mt-4 space-y-3">
           {[1, 2].map((i) => (
             <div key={i} className="flex gap-3">
-              <div className="h-7 w-7 animate-pulse rounded-full bg-paper-2" />
+              <div className="h-7 w-7 shimmer rounded-full bg-paper-2" />
               <div className="flex-1 space-y-2 rounded-sm bg-paper-2/40 p-3">
-                <div className="h-3 w-24 animate-pulse rounded-sm bg-paper-2" />
-                <div className="h-3 w-full animate-pulse rounded-sm bg-paper-2" />
+                <div className="h-3 w-24 shimmer rounded-sm bg-paper-2" />
+                <div className="h-3 w-full shimmer rounded-sm bg-paper-2" />
               </div>
             </div>
           ))}

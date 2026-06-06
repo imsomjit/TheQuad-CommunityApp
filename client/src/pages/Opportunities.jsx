@@ -11,7 +11,7 @@ import {
 import { opportunitiesApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
-import Loader from "../components/Loader";
+import { OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
 
@@ -193,8 +193,8 @@ export default function Opportunities() {
 
             {/* Grid */}
             {loading && page === 1 ? (
-                <div className="py-20 flex justify-center">
-                    <Loader text="Loading opportunities..." />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {[1, 2, 3, 4, 5, 6].map(i => <OpportunityCardSkeleton key={i} />)}
                 </div>
             ) : error ? (
                 <div className="py-24 w-full flex justify-center px-4">

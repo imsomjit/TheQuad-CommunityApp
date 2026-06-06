@@ -8,7 +8,7 @@ import { usersApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
 import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
-import Loader from "../components/Loader";
+import { SettingsSkeleton } from "../components/Skeletons";
 import NetworkBanner from "../components/NetworkBanner";
 import { toast } from "sonner";
 
@@ -148,11 +148,7 @@ export default function EditProfile() {
     };
 
     if (loading) {
-        return (
-            <div className="py-60 flex justify-center">
-                <Loader text="Loading profile editor..." />
-            </div>
-        );
+        return <SettingsSkeleton />;
     }
 
     return (

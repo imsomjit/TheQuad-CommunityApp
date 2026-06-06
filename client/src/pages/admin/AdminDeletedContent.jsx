@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Trash2, RefreshCw, Eye } from "lucide-react";
 import { adminApi } from "../../services/api";
 import { toast } from "sonner";
-import Loader from "../../components/Loader";
+import { TableSkeleton } from "../../components/Skeletons";
 
 export default function AdminDeletedContent() {
   const [content, setContent] = useState([]);
@@ -38,11 +38,7 @@ export default function AdminDeletedContent() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader />
-      </div>
-    );
+    return <TableSkeleton />;
   }
 
   return (

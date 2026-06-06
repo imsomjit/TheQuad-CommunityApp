@@ -4,7 +4,7 @@ import { ExternalLink, Target, Bookmark, BookmarkCheck, Calendar, Clock, Trophy,
 import { opportunitiesApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
-import Loader from "../components/Loader";
+import { OpportunityDetailSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -55,7 +55,7 @@ export default function OpportunityDetail() {
         }
     };
 
-    if (loading) return <div className="py-20 flex justify-center"><Loader text="Loading details..." /></div>;
+    if (loading) return <OpportunityDetailSkeleton />;
     if (error) return <div className="py-20 text-center text-red-500">{error}</div>;
     if (!opp) return <div className="py-20 text-center">Not found</div>;
 

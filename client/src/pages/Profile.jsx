@@ -14,6 +14,7 @@ import ContributionGraph from "../components/ContributionGraph";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import Loader from "../components/Loader";
+import { GithubStatsSkeleton, LeetcodeStatsSkeleton } from "../components/Skeletons";
 import TagBadge from "../components/TagBadge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { toast } from "sonner";
@@ -457,9 +458,7 @@ export default function Profile() {
                     </header>
 
                     {leetcodeLoading ? (
-                        <div className="flex items-center justify-center py-16">
-                            <Loader text="fetching leetcode..." size="sm" />
-                        </div>
+                        <LeetcodeStatsSkeleton />
                     ) : leetcodeStats ? (
                         <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
                             {/* Left: Stats */}
@@ -537,9 +536,7 @@ export default function Profile() {
                     </header>
 
                     {ghLoading ? (
-                        <div className="flex items-center justify-center py-16">
-                            <Loader text="fetching github..." size="sm" />
-                        </div>
+                        <GithubStatsSkeleton />
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
                             {/* Stats column */}
@@ -742,7 +739,7 @@ function Empty({ label }) {
 
 function ProfileSkeleton() {
     return (
-        <div className="space-y-6 animate-pulse">
+        <div className="space-y-6 shimmer">
             <div className="h-44 sm:h-56 rounded-t-sm bg-paper-2" />
             <div className="px-4 sm:px-6 space-y-3">
                 <div className="h-10 w-48 rounded-sm bg-paper-2" />

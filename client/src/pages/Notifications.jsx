@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { notificationsApi } from "../services/api";
 import { toast } from "sonner";
-import Loader from "../components/Loader";
+import { NotificationSkeleton } from "../components/Skeletons";
 import { getAvatarFallback } from "../utils/fallbacks";
 import { useApp } from "../context/AppContext";
 
@@ -206,8 +206,8 @@ export default function Notifications() {
 
       {/* List */}
       {loading ? (
-        <div className="py-5 flex justify-center">
-            <Loader text="Loading activities..." />
+        <div className="space-y-1 py-5">
+            {[1, 2, 3, 4, 5].map(i => <NotificationSkeleton key={i} />)}
         </div>
       ) : displayed.length === 0 ? (
         <div className="flex flex-col items-center py-20 text-center">

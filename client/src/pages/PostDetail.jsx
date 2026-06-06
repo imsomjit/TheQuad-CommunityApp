@@ -576,15 +576,15 @@ function PostDetailSkeleton() {
       <div className="flex gap-8">
         <div className="hidden w-9 md:block" />
         <div className="flex-1 space-y-4">
-          <div className="h-4 w-32 animate-pulse rounded-sm bg-paper-2" />
-          <div className="h-10 w-3/4 animate-pulse rounded-sm bg-paper-2" />
-          <div className="h-10 w-1/2 animate-pulse rounded-sm bg-paper-2" />
+          <div className="h-4 w-32 shimmer rounded-sm bg-paper-2" />
+          <div className="h-10 w-3/4 shimmer rounded-sm bg-paper-2" />
+          <div className="h-10 w-1/2 shimmer rounded-sm bg-paper-2" />
           <div className="flex gap-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-4 w-20 animate-pulse rounded-sm bg-paper-2" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-4 w-20 shimmer rounded-sm bg-paper-2" />)}
           </div>
           <div className="mt-6 space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-4 w-full animate-pulse rounded-sm bg-paper-2" style={{ width: `${60 + Math.random() * 40}%` }} />
+              <div key={i} className="h-4 w-full shimmer rounded-sm bg-paper-2" style={{ width: `${60 + Math.random() * 40}%` }} />
             ))}
           </div>
         </div>

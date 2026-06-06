@@ -72,7 +72,7 @@ export default function AdminReports() {
       </div>
 
       {loading ? (
-        <div className="animate-pulse space-y-4">
+        <div className="shimmer space-y-4">
           {[1, 2, 3].map(i => (
             <div key={i} className="h-32 bg-paper-2 rounded-xl border border-rule/50"></div>
           ))}
