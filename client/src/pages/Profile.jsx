@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -441,9 +441,9 @@ export default function Profile() {
             {/* ── Stats bento ─────────────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <StatTile icon={BookOpen} colorVar="--syntax-mint" label="resources uploaded" value={profile.stats?.resources || 0} />
-                <StatTile icon={MessageSquare} colorVar="--syntax-cyan" label="questions asked" value={profile.stats?.questions || 0} />
                 <StatTile icon={Award} colorVar="--syntax-violet" label="questions answered" value={profile.stats?.answers || 0} />
                 <StatTile icon={Sparkles} colorVar="--syntax-amber" label="total upvotes" value={profile.stats?.totalUpvotes || 0} />
+                <StatTile icon={Zap} colorVar="--syntax-cyan" label="contribution points" value={profile.stats?.monthlyPoints || 0} />
             </div>
 
             {/* ── LeetCode bento ──────────────────────────────────────────────── */}

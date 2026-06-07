@@ -42,6 +42,16 @@ router.get(
   })
 );
 
+// GET /api/users/stats/count  — get total users
+router.get(
+  "/stats/count",
+  userReadLimiter,
+  asyncHandler(async (req, res) => {
+    const count = await userService.getTotalUsers();
+    res.json({ success: true, data: count });
+  })
+);
+
 // GET /api/users/:username  — public profile
 router.get(
   "/:username",

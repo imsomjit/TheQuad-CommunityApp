@@ -63,14 +63,14 @@ export default function Library() {
     return (
         <div className="mx-auto max-w-7xl pb-24 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <header className="border-b-2 border-double border-rule pb-8 mb-10">
+            <header className="border-b-2 border-double border-rule pb-8">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-mint">
-                            &sect;05 &middot; the library
+                            &sect;05 &middot; the bookshelf
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Read. <span className="font-display-italic text-accent">Learn.</span> & <span className="italic marker">Grow.</span>
                         </h1>
 
@@ -82,9 +82,9 @@ export default function Library() {
                     {user?.role === "admin" && (
                         <Link
                             to="/admin/books/upload"
-                            className="group flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-paper transition-all hover:bg-accent-2 hover:shadow-lg hover:shadow-accent/20"
+                            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
                         >
-                            <Upload className="h-4 w-4 transition-transform group-hover:-translate-y-1" />
+                            <Upload className="h-4 w-4" />
                             Upload Book
                         </Link>
                     )}
