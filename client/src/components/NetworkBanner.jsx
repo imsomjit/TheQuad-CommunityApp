@@ -22,6 +22,7 @@ function generateGraph(seed) {
     const numNodes = 15 + Math.floor(rand() * 20); // 15 to 34 nodes
     const nodes = [];
     const edges = [];
+    const edgeSet = new Set();
 
     const colors = [
         "#ef4444", "#f97316", "#f59e0b", "#84cc16", "#22c55e", 
@@ -56,13 +57,17 @@ function generateGraph(seed) {
         while (target === source) {
             target = Math.floor(rand() * numNodes);
         }
-        edges.push({
-            id: `e-${source}-${target}`,
-            source: `node-${source}`,
-            target: `node-${target}`,
-            style: { stroke: 'rgba(150, 150, 150, 0.25)', strokeWidth: 1.5 },
-            animated: rand() > 0.5 // animate half of the edges
-        });
+        const edgeId = `e-${source}-${target}`;
+        if (!edgeSet.has(edgeId)) {
+            edgeSet.add(edgeId);
+            edges.push({
+                id: edgeId,
+                source: `node-${source}`,
+                target: `node-${target}`,
+                style: { stroke: 'rgba(150, 150, 150, 0.25)', strokeWidth: 1.5 },
+                animated: rand() > 0.5 // animate half of the edges
+            });
+        }
     }
 
     return { nodes, edges };

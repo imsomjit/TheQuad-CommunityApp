@@ -171,9 +171,9 @@ export default function BookDetail() {
 
             <div className="overflow-hidden rounded-2xl border border-rule bg-paper">
                 <div className="relative p-6 sm:p-8 md:p-10">
-                    <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/5 blur-3xl" />
+                    <div className="pointer-events-none absolute -right-20 -top-20 z-0 h-64 w-64 rounded-full bg-accent/5 blur-3xl" />
 
-                    <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-x-8 gap-y-6 md:gap-y-8 items-start">
+                    <div className="relative z-10 grid grid-cols-1 items-start gap-x-8 gap-y-6 md:grid-cols-[16rem_1fr] md:gap-y-8">
 
                         {/* 1. Cover (Top on mobile, Col 1 on desktop) */}
                         <div className="flex justify-center md:justify-start">

@@ -89,6 +89,9 @@ const getBooks = async ({ page, limit, search, author, subject, sort }) => {
       coverUrl: books.coverUrl,
       views: books.views,
       downloads: books.downloads,
+      upvotes: books.upvotes,
+      downvotes: books.downvotes,
+      bookmarksCount: books.bookmarksCount,
       createdAt: books.createdAt,
     })
     .from(books)
@@ -145,7 +148,12 @@ const getBookById = async (publicId) => {
     })
     .from(books)
     .leftJoin(users, eq(books.uploaderId, users.id))
-    .where(and(eq(books.publicId, publicId), eq(books.isDeleted, false)))
+    .where(
+      and(
+        /^\d+$/.test(publicId) ? eq(books.id, parseInt(publicId, 10)) : eq(books.publicId, publicId),
+        eq(books.isDeleted, false)
+      )
+    )
     .limit(1);
 
   if (!book) throw new AppError("Book not found", 404, "NOT_FOUND");

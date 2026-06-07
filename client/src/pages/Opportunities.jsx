@@ -11,6 +11,7 @@ import {
 import { opportunitiesApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import OpportunityCard from "../components/OpportunityCard";
 import { OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
@@ -241,53 +242,7 @@ export default function Opportunities() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {opportunities.map(opp => (
-                            <Link key={opp.id} to={`/opportunities/${generateSlug(opp.title, opp.publicId || opp.id)}`} className="group flex flex-col p-6 rounded-2xl border border-rule bg-paper hover:bg-paper-2 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wide uppercase border ${getStatusColor(opp.status)}`}>
-                                        {opp.status}
-                                    </div>
-                                    <button 
-                                        onClick={(e) => handleBookmark(e, opp.id)}
-                                        className="p-1.5 rounded-full text-ink-3 hover:text-accent hover:bg-accent/10 transition-colors"
-                                    >
-                                        <Bookmark className="w-4 h-4" />
-                                    </button>
-                                </div>
-                                
-                                <h3 className="font-display font-semibold text-ink text-2xl leading-tight mb-3 group-hover:text-accent transition-colors line-clamp-2">
-                                    {opp.title}
-                                </h3>
-                                
-                                <div className="flex flex-wrap items-center gap-2 mb-4">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
-                                        {getSourceLogo(opp.organizer)}
-                                        <span className="text-ink">{opp.organizer || "Unknown"}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-ink-2 px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
-                                        <Trophy className="w-3.5 h-3.5" fill="var(--accent)" />
-                                        <span>{opp.type === "CODING_CONTEST" ? "Contest" : "Competition"}</span>
-                                    </div>
-                                </div>
-
-                                <p className="text-sm text-ink-2 line-clamp-2 mb-6 leading-relaxed">
-                                    {opp.description || "Gear up and prepare to showcase your problem-solving skills! Join fellow developers in this exciting challenge and climb the leaderboard."}
-                                </p>
-
-                                <div className="mt-auto pt-4 border-t border-rule flex flex-col gap-2.5 text-xs font-medium text-ink-3">
-                                    {opp.startTime && (
-                                        <div className="flex items-center gap-2.5">
-                                            <Calendar className="w-4 h-4 text-ink-2" />
-                                            <span>Starts: {format(new Date(opp.startTime), "MMM d, yyyy h:mm a")}</span>
-                                        </div>
-                                    )}
-                                    {opp.deadline && (
-                                        <div className="flex items-center gap-2.5">
-                                            <Clock className="w-4 h-4 text-ink-2" />
-                                            <span>Deadline: {format(new Date(opp.deadline), "MMM d, yyyy h:mm a")}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </Link>
+                            <OpportunityCard key={opp.id} opportunity={opp} />
                         ))}
                     </div>
 

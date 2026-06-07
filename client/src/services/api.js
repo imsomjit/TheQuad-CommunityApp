@@ -365,6 +365,7 @@ export const commentsApi = {
 // Votes
 export const votesApi = {
   cast: (data) => api.post("/votes", data).then((r) => r.data.data),
+  list: () => api.get("/votes").then((r) => r.data.data),
 };
 
 // Bookmarks

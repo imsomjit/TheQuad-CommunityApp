@@ -64,6 +64,9 @@ export function AppProvider({ children }) {
         if (isAuthenticated && getAccessToken()) {
           promises.push(notificationsApi.list({ page: 1, limit: 20 }));
           promises.push(bookmarksApi.list("resource"));
+          promises.push(bookmarksApi.list("blog"));
+          promises.push(bookmarksApi.list("book"));
+          promises.push(votesApi.list());
         }
 
         const results = await Promise.allSettled(promises);
@@ -82,8 +85,25 @@ export function AppProvider({ children }) {
           if (results[3] && results[3].status === "fulfilled") {
             setNotifications(results[3].value.data);
           }
+          
+          const newBookmarks = new Set();
           if (results[4] && results[4].status === "fulfilled") {
-            setBookmarks(new Set(results[4].value));
+            results[4].value.forEach(id => newBookmarks.add(`resource:${id}`));
+          }
+          if (results[5] && results[5].status === "fulfilled") {
+            results[5].value.forEach(id => newBookmarks.add(`blog:${id}`));
+          }
+          if (results[6] && results[6].status === "fulfilled") {
+            results[6].value.forEach(id => newBookmarks.add(`book:${id}`));
+          }
+          setBookmarks(newBookmarks);
+
+          if (results[7] && results[7].status === "fulfilled") {
+            const userVotes = {};
+            results[7].value.forEach(v => {
+              userVotes[`${v.targetType}_${v.targetId}`] = v.direction;
+            });
+            setVotes(userVotes);
           }
         }
         
@@ -220,34 +240,36 @@ export function AppProvider({ children }) {
 
   // ── Bookmarks ──────────────────────────────────────────────────────────────
   const toggleBookmark = useCallback(
-    async (id) => {
+    async (id, targetType = "resource") => {
+      const key = `${targetType}:${id}`;
       // Optimistic
       setBookmarks((prev) => {
         const next = new Set(prev);
-        const isAdding = !next.has(id);
+        const isAdding = !next.has(key);
         
-        if (isAdding) next.add(id);
-        else next.delete(id);
+        if (isAdding) next.add(key);
+        else next.delete(key);
         
         // Optimistically update resource bookmark count
-        setResources(rs => rs.map(r => r.id === id ? { ...r, bookmarks: (r.bookmarks || 0) + (isAdding ? 1 : -1) } : r));
+        if (targetType === "resource") {
+            setResources(rs => rs.map(r => r.id === id ? { ...r, bookmarks: (r.bookmarks || 0) + (isAdding ? 1 : -1) } : r));
+        }
         
         return next;
       });
 
       if (isAuthenticated) {
-        bookmarksApi.toggle({ targetType: "resource", targetId: id }).catch(() => {
-          // Rollback on failure
+        bookmarksApi.toggle({ targetType, targetId: id }).catch(() => {
+          // Rollback
           setBookmarks((prev) => {
             const next = new Set(prev);
-            const isAdding = !next.has(id);
+            const isAdding = !next.has(key); // If it doesn't have it now, it means we tried to delete it and failed, so add it back
+            if (isAdding) next.add(key);
+            else next.delete(key);
             
-            if (isAdding) next.add(id);
-            else next.delete(id);
-            
-            // Revert optimistic update
-            setResources(rs => rs.map(r => r.id === id ? { ...r, bookmarks: (r.bookmarks || 0) + (isAdding ? 1 : -1) } : r));
-            
+            if (targetType === "resource") {
+                setResources(rs => rs.map(r => r.id === id ? { ...r, bookmarks: (r.bookmarks || 0) + (isAdding ? 1 : -1) } : r));
+            }
             return next;
           });
         });

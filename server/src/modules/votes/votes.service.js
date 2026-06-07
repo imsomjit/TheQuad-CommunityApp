@@ -8,6 +8,7 @@ const {
   questions,
   answers,
   books,
+  posts,
 } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const notificationService = require("../notifications/notifications.service");
@@ -101,10 +102,11 @@ const updateTargetCounters = async (targetType, targetId, delta) => {
     question: questions,
     answer: answers,
     book: books,
+    blog: posts,
   };
 
   const table = tableMap[targetType];
-  if (!table) return; // blog handled when blog module is added
+  if (!table) return;
 
   const updates = {};
   if (upDelta !== 0) {
@@ -119,4 +121,20 @@ const updateTargetCounters = async (targetType, targetId, delta) => {
   }
 };
 
-module.exports = { castVote, getUserVote };
+const getUserVotes = async (userId) => {
+  const rows = await db
+    .select({
+      targetType: votes.targetType,
+      targetId: votes.targetId,
+      direction: votes.direction,
+    })
+    .from(votes)
+    .where(eq(votes.userId, userId));
+  return rows;
+};
+
+module.exports = {
+  castVote,
+  getUserVote,
+  getUserVotes,
+};

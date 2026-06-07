@@ -28,4 +28,14 @@ router.post(
   })
 );
 
+// GET /api/votes  — get all user votes
+router.get(
+  "/",
+  auth,
+  asyncHandler(async (req, res) => {
+    const result = await voteService.getUserVotes(req.user.id);
+    res.json({ success: true, data: result });
+  })
+);
+
 module.exports = router;

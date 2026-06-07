@@ -200,14 +200,15 @@ function TableOfContents({ body }) {
 export default function PostDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { currentUser, openReportModal } = useApp();
+  const { currentUser, openReportModal, bookmarks, toggleBookmark } = useApp();
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userVote, setUserVote] = useState(null);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+
+  const isBookmarked = post ? bookmarks.has(`blog:${post.id}`) : false;
 
   useEffect(() => {
     const load = async () => {
@@ -227,7 +228,7 @@ export default function PostDetail() {
       }
     };
     load();
-  }, [slug]);
+  }, [slug, currentUser]);
 
   const handleVote = async (direction) => {
     if (!currentUser) { navigate("/login"); return; }
@@ -239,17 +240,30 @@ export default function PostDetail() {
     } catch {}
   };
 
-  const handleBookmark = async () => {
+  const handleBookmarkClick = async () => {
     if (!currentUser) { navigate("/login"); return; }
     if (!post) return;
     try {
-      await bookmarksApi.toggle({ targetType: "blog", targetId: post.id });
-      setIsBookmarked((b) => !b);
+      await toggleBookmark(post.id, "blog");
     } catch {}
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const url = window.location.href;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post?.title || "Check this out",
+          url: url
+        });
+        return;
+      } catch (err) {
+        // User cancelled or share failed, fallback to copy
+        if (err.name !== "AbortError") console.error(err);
+      }
+    }
+
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(url).then(() => {
         setShareToast(true);
@@ -352,7 +366,7 @@ export default function PostDetail() {
             <div className="my-1 h-px w-full bg-rule" />
 
             <button
-              onClick={handleBookmark}
+              onClick={handleBookmarkClick}
               title="Bookmark"
               className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
                 ${isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
@@ -445,7 +459,7 @@ export default function PostDetail() {
                  {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
                </button>
                <button
-                 onClick={handleBookmark}
+                 onClick={handleBookmarkClick}
                  title="Bookmark"
                  className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
                    isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:bg-paper-2 hover:text-ink"
@@ -501,7 +515,7 @@ export default function PostDetail() {
               <ChevronUp className="h-4 w-4" />
               {(post.upvotes || 0) - (post.downvotes || 0)}
             </button>
-            <button onClick={handleBookmark} className={`flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm transition-colors ${isBookmarked ? "border-amber-400 text-amber-500" : "border-rule text-ink-2"}`}>
+            <button onClick={handleBookmarkClick} className={`flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm transition-colors ${isBookmarked ? "border-amber-400 text-amber-500" : "border-rule text-ink-2"}`}>
               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
               Save
             </button>

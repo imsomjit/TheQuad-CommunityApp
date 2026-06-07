@@ -19,7 +19,28 @@ export default function VoteButtons({
 
     const key = `${kind}_${id}`;
     const myVote = votes[key];
-    const score = (upvotes || 0) - (downvotes || 0);
+
+    // Capture the vote state when this component mounts
+    const [initialVote] = React.useState(myVote);
+    
+    // Calculate visual score delta
+    let delta = 0;
+    if (myVote !== initialVote) {
+        if (!initialVote && myVote === "up") delta = 1;
+        if (!initialVote && myVote === "down") delta = -1;
+        if (initialVote === "up" && !myVote) delta = -1;
+        if (initialVote === "down" && !myVote) delta = 1;
+        if (initialVote === "up" && myVote === "down") delta = -2;
+        if (initialVote === "down" && myVote === "up") delta = 2;
+    }
+
+    const baseScore = (upvotes || 0) - (downvotes || 0);
+    // If kind is resource/question/answer, AppContext handles the baseScore change.
+    // So we don't apply delta for those, OR we stop AppContext from doing it.
+    // For now, we apply delta ONLY if it's NOT resource/question/answer (since AppContext handles those)
+    // Wait, let's just make it universally handled here by ignoring AppContext mutations if they happen.
+    // Actually, it's safer to only apply delta if kind is book or blog.
+    const score = ["book", "blog"].includes(kind) ? baseScore + delta : baseScore;
 
     const sizes = {
         sm: { btn: "h-7 w-7", icon: "h-3.5 w-3.5", text: "text-xs" },
