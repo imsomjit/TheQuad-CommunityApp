@@ -4,15 +4,18 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
     Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { generateSlug } from "../utils/slugify";
-import { usersApi, githubApi, leetcodeApi } from "../services/api";
+import { usersApi, githubApi, leetcodeApi, postsApi, booksApi, opportunitiesApi, bookmarksApi } from "../services/api";
 import ContributionGraph from "../components/ContributionGraph";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
+import PostCard from "../components/PostCard";
+import BookCard from "../components/BookCard";
+import OpportunityCard from "../components/OpportunityCard";
 import Loader from "../components/Loader";
 import { GithubStatsSkeleton, LeetcodeStatsSkeleton } from "../components/Skeletons";
 import TagBadge from "../components/TagBadge";
@@ -438,9 +441,9 @@ export default function Profile() {
             {/* ── Stats bento ─────────────────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <StatTile icon={BookOpen} colorVar="--syntax-mint" label="resources uploaded" value={profile.stats?.resources || 0} />
-                <StatTile icon={MessageSquare} colorVar="--syntax-cyan" label="questions asked" value={profile.stats?.questions || 0} />
                 <StatTile icon={Award} colorVar="--syntax-violet" label="questions answered" value={profile.stats?.answers || 0} />
                 <StatTile icon={Sparkles} colorVar="--syntax-amber" label="total upvotes" value={profile.stats?.totalUpvotes || 0} />
+                <StatTile icon={Zap} colorVar="--syntax-cyan" label="contribution points" value={profile.stats?.monthlyPoints || 0} />
             </div>
 
             {/* ── LeetCode bento ──────────────────────────────────────────────── */}
@@ -650,7 +653,44 @@ function ActivityTabs({ profile }) {
         if (a.author?.id === profile.id || a.author?.username === profile.username)
             myAnswers.push({ ...a, question: q });
     }));
-    const savedResources = resources.filter(r => bookmarks.has(r.id));
+    const savedResources = resources.filter(r => bookmarks.has(`resource:${r.id}`));
+
+    // State for other saved items
+    const [savedPosts, setSavedPosts] = useState([]);
+    const [savedBooks, setSavedBooks] = useState([]);
+    const [savedOpps, setSavedOpps] = useState([]);
+    const [savedLoading, setSavedLoading] = useState(false);
+    const [savedTab, setSavedTab] = useState("resources");
+
+    useEffect(() => {
+        if (!isOwnProfile) return;
+        const loadSaved = async () => {
+            setSavedLoading(true);
+            try {
+                // Fetch bookmarked IDs
+                const [postIds, bookIds] = await Promise.all([
+                    bookmarksApi.list("blog").catch(() => []),
+                    bookmarksApi.list("book").catch(() => [])
+                ]);
+
+                // Fetch actual items
+                const [postsData, booksData, oppsData] = await Promise.all([
+                    Promise.all(postIds.map(id => postsApi.getById(id).catch(() => null))),
+                    Promise.all(bookIds.map(id => booksApi.get(id).catch(() => null))),
+                    opportunitiesApi.getBookmarked({ limit: 50 }).then(res => res.data).catch(() => [])
+                ]);
+
+                setSavedPosts(postsData.filter(Boolean));
+                setSavedBooks(booksData.filter(Boolean));
+                setSavedOpps(oppsData);
+            } catch (err) {
+                console.error("Failed to load saved items", err);
+            } finally {
+                setSavedLoading(false);
+            }
+        };
+        loadSaved();
+    }, [isOwnProfile]);
 
     return (
         <Tabs defaultValue="resources" className="w-full">
@@ -666,7 +706,7 @@ function ActivityTabs({ profile }) {
                 </TabsTrigger>
                 {isOwnProfile && (
                     <TabsTrigger value="saved" className="data-[state=active]:bg-paper data-[state=active]:text-accent px-4 py-2 text-sm">
-                        Saved ({savedResources.length})
+                        Saved
                     </TabsTrigger>
                 )}
             </TabsList>
@@ -691,8 +731,41 @@ function ActivityTabs({ profile }) {
                 ))}
             </TabsContent>
             {isOwnProfile && (
-                <TabsContent value="saved" className="mt-5 space-y-3">
-                    {savedResources.length === 0 ? <Empty label="Bookmarked resources will show here." /> : savedResources.map(r => <ResourceCard key={r.id} resource={r} />)}
+                <TabsContent value="saved" className="mt-5">
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                        {["resources", "posts", "books", "opportunities"].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setSavedTab(tab)}
+                                className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
+                                    savedTab === tab 
+                                    ? "bg-accent text-paper" 
+                                    : "bg-paper-2 border border-rule text-ink-2 hover:text-ink"
+                                }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {savedLoading ? (
+                        <div className="py-12 flex justify-center"><Loader /></div>
+                    ) : (
+                        <div className="space-y-3">
+                            {savedTab === "resources" && (
+                                savedResources.length === 0 ? <Empty label="Bookmarked resources will show here." /> : savedResources.map(r => <ResourceCard key={r.id} resource={r} />)
+                            )}
+                            {savedTab === "posts" && (
+                                savedPosts.length === 0 ? <Empty label="Bookmarked posts will show here." /> : savedPosts.map(p => <PostCard key={p.id} post={p} />)
+                            )}
+                            {savedTab === "books" && (
+                                savedBooks.length === 0 ? <Empty label="Bookmarked books will show here." /> : savedBooks.map(b => <BookCard key={b.id} book={b} />)
+                            )}
+                            {savedTab === "opportunities" && (
+                                savedOpps.length === 0 ? <Empty label="Bookmarked opportunities will show here." /> : savedOpps.map(o => <OpportunityCard key={o.id} opportunity={o} />)
+                            )}
+                        </div>
+                    )}
                 </TabsContent>
             )}
         </Tabs>

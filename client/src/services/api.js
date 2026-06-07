@@ -365,6 +365,7 @@ export const commentsApi = {
 // Votes
 export const votesApi = {
   cast: (data) => api.post("/votes", data).then((r) => r.data.data),
+  list: () => api.get("/votes").then((r) => r.data.data),
 };
 
 // Bookmarks
@@ -416,6 +417,7 @@ export const usersApi = {
   unfollow: (username) => api.delete(`/users/${username}/follow`).then((r) => r.data.data),
   getFollowers: (username) => api.get(`/users/${username}/followers`).then((r) => r.data.data),
   getFollowing: (username) => api.get(`/users/${username}/following`).then((r) => r.data.data),
+  getTotalUsers: () => api.get("/users/stats/count").then((r) => r.data.data),
 };
 
 // Reports

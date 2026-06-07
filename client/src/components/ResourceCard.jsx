@@ -53,15 +53,14 @@ function timeAgo(ts) {
 }
 
 export default function ResourceCard({ resource, variant = "list" }) {
-    const { bookmarks, toggleBookmark } = useApp();
-
     const type =
         RESOURCE_TYPES.find((t) => t.key === resource.type) ||
         RESOURCE_TYPES[4];
 
-    const Icon = ICONS[type.icon] || Folder;
-    const isBookmarked = bookmarks.has(resource.id);
+    const { bookmarks, toggleBookmark } = useApp();
+    const isBookmarked = bookmarks.has(`resource:${resource.id}`);
     const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
+    const Icon = ICONS[type.icon] || Folder;
 
     return (
         <article

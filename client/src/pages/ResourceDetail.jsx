@@ -105,7 +105,7 @@ export default function ResourceDetail() {
 
     const isMine = currentUser?.id === resource.uploader.id;
     const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
-    const isBookmarked = bookmarks.has(resource.id);
+    const isBookmarked = bookmarks.has(`resource:${resource.id}`);
 
     const handleDownload = async () => {
         if (!isAuthenticated) {

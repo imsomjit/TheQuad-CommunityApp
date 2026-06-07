@@ -39,6 +39,7 @@ const getPublicProfile = async (username, viewerUserId = null) => {
     [{ followerCount }],
     [{ followingCount }],
     [{ totalUpvotes }],
+    [{ monthlyPoints }],
   ] = await Promise.all([
     db.select({ resourceCount: sql`count(*)`.mapWith(Number) })
       .from(resources).where(eq(resources.uploaderId, user.id)),
@@ -66,6 +67,39 @@ const getPublicProfile = async (username, viewerUserId = null) => {
         SELECT upvotes FROM answers WHERE author_id = ${user.id}
       ) t
     `).then((r) => [{ totalUpvotes: Number(r.rows[0]?.totalUpvotes ?? 0) }]),
+
+    // Monthly contribution points
+    db.execute(sql`
+      WITH 
+      month_start AS (SELECT date_trunc('month', CURRENT_DATE) as start_date),
+      month_questions AS (SELECT COUNT(*) as count FROM questions CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false AND author_id = ${user.id}),
+      month_answers AS (SELECT COUNT(*) as count FROM answers CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false AND author_id = ${user.id}),
+      month_resources AS (SELECT COUNT(*) as count FROM resources CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false AND uploader_id = ${user.id}),
+      month_posts AS (SELECT COUNT(*) as count FROM posts CROSS JOIN month_start WHERE created_at >= start_date AND status = 'published' AND is_deleted = false AND author_id = ${user.id}),
+      month_comments AS (SELECT COUNT(*) as count FROM comments CROSS JOIN month_start WHERE created_at >= start_date AND is_deleted = false AND author_id = ${user.id}),
+      month_votes AS (
+        SELECT v.target_id as id, v.target_type as type
+        FROM votes v CROSS JOIN month_start
+        WHERE v.created_at >= start_date AND v.direction = 'up'
+      ),
+      vote_authors AS (
+        SELECT r.uploader_id as user_id FROM month_votes v JOIN resources r ON v.id = r.id WHERE v.type = 'resource' AND r.uploader_id = ${user.id}
+        UNION ALL
+        SELECT q.author_id as user_id FROM month_votes v JOIN questions q ON v.id = q.id WHERE v.type = 'question' AND q.author_id = ${user.id}
+        UNION ALL
+        SELECT a.author_id as user_id FROM month_votes v JOIN answers a ON v.id = a.id WHERE v.type = 'answer' AND a.author_id = ${user.id}
+        UNION ALL
+        SELECT p.author_id as user_id FROM month_votes v JOIN posts p ON v.id = p.id WHERE v.type = 'blog' AND p.author_id = ${user.id}
+      ),
+      month_received_upvotes AS (SELECT COUNT(*) as count FROM vote_authors)
+      SELECT 
+        (SELECT count FROM month_questions) * 4 + 
+        (SELECT count FROM month_answers) * 15 + 
+        (SELECT count FROM month_resources) * 10 + 
+        (SELECT count FROM month_posts) * 10 + 
+        (SELECT count FROM month_comments) * 2 + 
+        (SELECT count FROM month_received_upvotes) * 3 AS score
+    `).then((r) => [{ monthlyPoints: Number(r.rows[0]?.score ?? 0) }]),
   ]);
 
   // Check if viewer follows this user
@@ -83,6 +117,7 @@ const getPublicProfile = async (username, viewerUserId = null) => {
       followers: followerCount,
       following: followingCount,
       totalUpvotes,
+      monthlyPoints,
     },
     viewerFollows,
   };
@@ -233,4 +268,9 @@ const getTopContributors = async () => {
   }));
 };
 
-module.exports = { getPublicProfile, updateProfile, updateAvatar, updateBanner, getTopContributors };
+const getTotalUsers = async () => {
+  const [result] = await db.select({ count: sql`count(*)`.mapWith(Number) }).from(users).where(eq(users.isBanned, false));
+  return result.count;
+};
+
+module.exports = { getPublicProfile, updateProfile, updateAvatar, updateBanner, getTopContributors, getTotalUsers };

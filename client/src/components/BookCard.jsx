@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Eye, BookText } from "lucide-react";
+import { Eye, BookText, ChevronUp } from "lucide-react";
 import BookmarkButton from "./BookmarkButton";
 import { generateSlug } from "../utils/slugify";
 import { timeAgo } from "../utils/timeAgo";
@@ -34,11 +34,15 @@ export default function BookCard({ book }) {
                             <Eye className="h-4 w-4" />
                             {book.views}
                         </span>
+                        <span className="flex items-center gap-1" title={`${(book.upvotes || 0) - (book.downvotes || 0)} score`}>
+                            <ChevronUp className="h-4 w-4" />
+                            {(book.upvotes || 0) - (book.downvotes || 0)}
+                        </span>
                         <div onClick={e => e.preventDefault()}>
                             <BookmarkButton 
-                                targetType="BOOK" 
+                                targetType="book" 
                                 targetId={book.id} 
-                                initialCount={book.bookmarks || 0} 
+                                initialCount={book.bookmarksCount} 
                             />
                         </div>
                     </div>

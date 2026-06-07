@@ -25,7 +25,7 @@ import {
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { usersApi, postsApi, opportunitiesApi, booksApi } from "../services/api";
+import { usersApi, postsApi, opportunitiesApi, booksApi, resourcesApi } from "../services/api";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
@@ -151,6 +151,10 @@ export default function Home() {
     const [recentBooks, setRecentBooks] = useState([]);
     const [extrasLoading, setExtrasLoading] = useState(true);
 
+    const [totalUsersCount, setTotalUsersCount] = useState(0);
+    const [opportunitiesCount, setOpportunitiesCount] = useState(0);
+    const [contentsCount, setContentsCount] = useState(0);
+
     useEffect(() => {
         const fetchContributors = async () => {
             try {
@@ -169,14 +173,35 @@ export default function Home() {
         const fetchExtras = async () => {
             try {
                 // Fetch top read posts, recent ongoing opportunities, and recent books
-                const [postsData, oppsData, booksData] = await Promise.all([
+                const [postsData, oppsData, booksData, usersCount, ongoingOpps, upcomingOpps, resourcesData, allBooksData] = await Promise.all([
                     postsApi.list({ sort: "top", limit: 3 }),
                     opportunitiesApi.list({ status: "ONGOING", limit: 3 }),
-                    booksApi.list({ limit: 4 })
+                    booksApi.list({ limit: 4 }),
+                    usersApi.getTotalUsers().catch(() => 0),
+                    opportunitiesApi.list({ status: "ONGOING", limit: 1 }).catch((err) => { console.error(err); return null; }),
+                    opportunitiesApi.list({ status: "UPCOMING", limit: 1 }).catch((err) => { console.error(err); return null; }),
+                    resourcesApi.list({ limit: 1 }).catch(() => null),
+                    booksApi.list({ limit: 1 }).catch(() => null)
                 ]);
-                setRecentPosts(postsData.data || []);
-                setRecentOpportunities(oppsData.data || []);
-                setRecentBooks(booksData.data || []);
+
+                setRecentPosts(postsData?.data || []);
+                setRecentOpportunities(oppsData?.data || []);
+                setRecentBooks(booksData?.data || []);
+                setTotalUsersCount(usersCount || 0);
+
+                const getCount = (res) => {
+                    if (!res) return 0;
+                    if (res.pagination?.total) return Number(res.pagination.total);
+                    if (res.data?.pagination?.total) return Number(res.data.pagination.total);
+                    return 0;
+                };
+                
+                setOpportunitiesCount(getCount(ongoingOpps) + getCount(upcomingOpps));
+
+                const resourcesCount = getCount(resourcesData);
+                const booksCount = getCount(allBooksData);
+                setContentsCount(resourcesCount + booksCount);
+
             } catch (err) {
                 console.error("Failed to fetch home extras", err);
             } finally {
@@ -308,8 +333,8 @@ export default function Home() {
                                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mt-9">
                                     <StatTile
                                         icon={BookOpen}
-                                        label="resources"
-                                        value={resources.length.toLocaleString()}
+                                        label="contents"
+                                        value={contentsCount.toLocaleString()}
                                         colorKey="resources"
                                     />
                                     <StatTile
@@ -320,14 +345,14 @@ export default function Home() {
                                     />
                                     <StatTile
                                         icon={Users}
-                                        label="students"
-                                        value="2.4k"
+                                        label="learners"
+                                        value={totalUsersCount.toLocaleString()}
                                         colorKey="students"
                                     />
                                     <StatTile
-                                        icon={Award}
-                                        label="answers"
-                                        value={questions.reduce((a, q) => a + (q.answers?.length || q.answerCount || 0), 0)}
+                                        icon={Target}
+                                        label="opportunities"
+                                        value={opportunitiesCount.toLocaleString()}
                                         colorKey="answers"
                                     />
                                 </div>

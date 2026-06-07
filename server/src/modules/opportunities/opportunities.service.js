@@ -134,7 +134,7 @@ const getBookmarkedOpportunities = async (userId, page = 1, limit = 10) => {
     .where(eq(opportunityBookmarks.userId, userId));
 
   return {
-    data: data.map((d) => d.opportunity),
+    data: data.map((d) => ({ ...d.opportunity, isBookmarked: true })),
     pagination: {
       total: count,
       page: Number(page),

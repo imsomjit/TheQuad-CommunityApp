@@ -2,14 +2,24 @@ import React, { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { bookmarksApi } from "../services/api";
+import { useApp } from "../context/AppContext";
 import { toast } from "sonner";
 
 export default function BookmarkButton({ targetType, targetId, initialCount = 0 }) {
     const { isAuthenticated } = useAuth();
+    const { bookmarks, toggleBookmark } = useApp();
     const navigate = useNavigate();
-    const [isBookmarked, setIsBookmarked] = useState(false);
-    const [count, setCount] = useState(initialCount || 0);
+    
+    // We can't rely on global state for count (unless we add it there), so we keep a local delta.
+    const isBookmarked = bookmarks.has(`${targetType}:${targetId}`);
+    const [localCount, setLocalCount] = useState(initialCount || 0);
+    const [prevBookmarked, setPrevBookmarked] = useState(isBookmarked);
+
+    // Sync count if isBookmarked changes externally
+    if (isBookmarked !== prevBookmarked) {
+        setLocalCount((prev) => prev + (isBookmarked ? 1 : -1));
+        setPrevBookmarked(isBookmarked);
+    }
 
     const handleToggle = async (e) => {
         e.preventDefault();
@@ -21,16 +31,9 @@ export default function BookmarkButton({ targetType, targetId, initialCount = 0 
             return;
         }
 
-        const prevBookmarked = isBookmarked;
-        setIsBookmarked(!prevBookmarked);
-        setCount((prev) => prev + (prevBookmarked ? -1 : 1));
-
         try {
-            await bookmarksApi.toggle({ targetType, targetId });
+            await toggleBookmark(targetId, targetType);
         } catch (err) {
-            // Revert on failure
-            setIsBookmarked(prevBookmarked);
-            setCount((prev) => prev + (prevBookmarked ? 1 : -1));
             toast.error("Failed to update bookmark");
         }
     };
@@ -46,7 +49,7 @@ export default function BookmarkButton({ targetType, targetId, initialCount = 0 
             }`}
         >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-            <span className="font-mono tabular-nums">{count}</span>
+            <span className="font-mono tabular-nums">{localCount}</span>
         </button>
     );
 }
