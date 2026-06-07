@@ -63,7 +63,7 @@ export default function Library() {
     return (
         <div className="mx-auto max-w-7xl pb-24 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <header className="border-b-2 border-double border-rule pb-8">
+            <header className="border-b-2 border-double border-rule pb-8 mb-8">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-mint">
@@ -93,7 +93,7 @@ export default function Library() {
 
             {/* Filters */}
             <div className="flex flex-col gap-3 mb-8 bg-paper sm:flex-row">
-                <div className="relative flex-1">
+                <div className="relative flex-1 border border-accent-soft rounded-md">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
                     <Input
                         placeholder="Search title, author..."
@@ -113,7 +113,7 @@ export default function Library() {
 
                 <div className="flex gap-2 sm:w-auto">
                     <Select value={subject} onValueChange={setSubject}>
-                        <SelectTrigger className="w-full sm:w-[150px] bg-paper-2 border-transparent">
+                        <SelectTrigger className="w-full sm:w-[150px] bg-paper-2 border border-accent-soft rounded-md">
                             <SelectValue placeholder="Subject" />
                         </SelectTrigger>
                         <SelectContent>
@@ -125,7 +125,7 @@ export default function Library() {
                     </Select>
 
                     <Select value={sort} onValueChange={setSort}>
-                        <SelectTrigger className="w-[130px] bg-paper-2 border-transparent">
+                        <SelectTrigger className="w-[130px] bg-paper-2 border border-accent-soft rounded-md">
                             <div className="flex items-center gap-2">
                                 <ArrowDownUp className="h-4 w-4 shrink-0 text-ink-3" />
                                 <SelectValue placeholder="Sort" />

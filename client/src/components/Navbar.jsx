@@ -101,28 +101,6 @@ export default function Navbar({ scrolled }) {
                                 Upload
                             </Link>
 
-                            <DropdownMenu modal={false}>
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        data-testid="nav-add-dropdown"
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-accent text-paper sm:hidden"
-                                    >
-                                        <Plus className="h-4 w-4" strokeWidth={2.5} />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40">
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/ask" className="cursor-pointer">Ask a Question</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/upload" className="cursor-pointer">Upload Resource</Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/posts/new" className="cursor-pointer">Write a Post</Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-
                             <Link
                                 to="/ask"
                                 data-testid="nav-ask-btn"
@@ -177,7 +155,7 @@ export default function Navbar({ scrolled }) {
                                 <button
                                     data-testid="notifications-bell"
                                     aria-label="Notifications"
-                                    className="relative flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                                    className="relative flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-accent transition-colors hover:border-accent"
                                 >
                                     <Bell className="h-4 w-4" />
 
@@ -196,7 +174,7 @@ export default function Navbar({ scrolled }) {
                             <Link
                                 to={`/u/${currentUser?.username || ''}`}
                                 data-testid="nav-avatar-link"
-                                className="relative"
+                                className="relative hidden sm:inline"
                             >
                                 <img
                                     src={currentUser?.avatar || getAvatarFallback(currentUser?.name, currentUser?.username)}

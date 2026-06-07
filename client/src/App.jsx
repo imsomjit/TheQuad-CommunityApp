@@ -18,6 +18,7 @@ const Resources = lazy(() => import("./pages/Resources"));
 const ResourceDetail = lazy(() => import("./pages/ResourceDetail"));
 const UploadResource = lazy(() => import("./pages/UploadResource"));
 const Library = lazy(() => import("./pages/Library"));
+const Explore = lazy(() => import("./pages/Explore"));
 const BookDetail = lazy(() => import("./pages/BookDetail"));
 const Questions = lazy(() => import("./pages/Questions"));
 const QuestionDetail = lazy(() => import("./pages/QuestionDetail"));
@@ -49,6 +50,16 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 
+import { useAuth } from "./context/AuthContext";
+
+function AuthWrapper({ children }) {
+  const { loading } = useAuth();
+  if (loading) {
+    return <PageLoadingSkeleton />;
+  }
+  return children;
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -56,7 +67,8 @@ function App() {
         <AppProvider>
           <BrowserRouter>
             <Suspense fallback={<PageLoadingSkeleton />}>
-              <Routes>
+              <AuthWrapper>
+                <Routes>
                 {/* Public routes without layout */}
                 <Route path="/verify-email" element={<VerifyEmail />} />
 
@@ -68,6 +80,7 @@ function App() {
                   <Route path="/register" element={<Register />} />
 
                   <Route path="/" element={<Home />} />
+                  <Route path="/explore" element={<Explore />} />
 
                   <Route path="/resources" element={<Resources />} />
                   <Route path="/resources/:id" element={<ResourceDetail />} />
@@ -186,6 +199,7 @@ function App() {
                   />
                 </Route>
               </Routes>
+              </AuthWrapper>
             </Suspense>
           </BrowserRouter>
         </AppProvider>
