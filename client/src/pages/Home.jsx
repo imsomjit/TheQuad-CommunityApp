@@ -173,15 +173,13 @@ export default function Home() {
         const fetchExtras = async () => {
             try {
                 // Fetch top read posts, recent ongoing opportunities, and recent books
-                const [postsData, oppsData, booksData, usersCount, ongoingOpps, upcomingOpps, resourcesData, allBooksData] = await Promise.all([
+                const [postsData, oppsData, booksData, usersCount, upcomingOpps, resourcesData] = await Promise.all([
                     postsApi.list({ sort: "top", limit: 3 }),
                     opportunitiesApi.list({ status: "ONGOING", limit: 3 }),
                     booksApi.list({ limit: 4 }),
                     usersApi.getTotalUsers().catch(() => 0),
-                    opportunitiesApi.list({ status: "ONGOING", limit: 1 }).catch((err) => { console.error(err); return null; }),
                     opportunitiesApi.list({ status: "UPCOMING", limit: 1 }).catch((err) => { console.error(err); return null; }),
-                    resourcesApi.list({ limit: 1 }).catch(() => null),
-                    booksApi.list({ limit: 1 }).catch(() => null)
+                    resourcesApi.list({ limit: 1 }).catch(() => null)
                 ]);
 
                 setRecentPosts(postsData?.data || []);
@@ -196,10 +194,10 @@ export default function Home() {
                     return 0;
                 };
                 
-                setOpportunitiesCount(getCount(ongoingOpps) + getCount(upcomingOpps));
+                setOpportunitiesCount(getCount(oppsData) + getCount(upcomingOpps));
 
                 const resourcesCount = getCount(resourcesData);
-                const booksCount = getCount(allBooksData);
+                const booksCount = getCount(booksData);
                 setContentsCount(resourcesCount + booksCount);
 
             } catch (err) {
@@ -242,7 +240,7 @@ export default function Home() {
 
     const recentQuestions = useMemo(() => {
         return [...questions]
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 3);
     }, [questions]);
 
@@ -317,7 +315,7 @@ export default function Home() {
                                     </Link>
 
                                     <Link
-                                        to="/ask"
+                                        to="/posts"
                                         data-testid="hero-ask-btn"
                                         className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                                     >
@@ -421,6 +419,11 @@ export default function Home() {
                         <input
                             type="text"
                             placeholder="Search notes, papers, questions…"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && e.target.value.trim()) {
+                                    window.location.href = `/resources?q=${encodeURIComponent(e.target.value.trim())}`;
+                                }
+                            }}
                             className="w-full h-10 rounded-md border border-rule bg-paper-2/60 pl-9 pr-4 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30"
                         />
                     </div>
@@ -654,7 +657,7 @@ export default function Home() {
                 </span>
                 <span className="h-px flex-1 bg-rule" />
                 <Link
-                    to="/blog"
+                    to="/posts"
                     className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-2 transition-colors hover:text-accent"
                 >
                     all posts →
@@ -689,7 +692,7 @@ export default function Home() {
                             icon={FileText}
                             title="No posts found"
                             description="The blog is currently empty."
-                            linkTo="/blog/write"
+                            linkTo="/posts/new"
                             linkText="Write a Post"
                         />
                     )}
@@ -738,7 +741,7 @@ export default function Home() {
                             icon={BookText}
                             title="No books yet"
                             description="The library is empty."
-                            linkTo="/library"
+                            linkTo="/posts/new"
                             linkText="Go to Library"
                         />
                     )}

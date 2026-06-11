@@ -45,7 +45,14 @@ export default function Resources() {
     const activeBranches = useMemo(() => Array.from(new Set(resources.map(r => r.branch).filter(Boolean))).sort(), [resources]);
     const activeSubjects = useMemo(() => Array.from(new Set(resources.map(r => r.subject).filter(Boolean))).sort(), [resources]);
 
-    const [q, setQ] = useState("");
+    const [q, setQ] = useState(params.get("q") || "");
+    
+    React.useEffect(() => {
+        if (params.get("q") !== null && params.get("q") !== q) {
+            setQ(params.get("q"));
+        }
+    }, [params.get("q")]);
+
     const [type, setType] = useState(ALL);
     const [college, setCollege] = useState(ALL);
     const [branch, setBranch] = useState(ALL);

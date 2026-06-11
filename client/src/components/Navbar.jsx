@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
     Search,
     Bell,
@@ -29,6 +29,27 @@ export default function Navbar({ scrolled }) {
     const { currentUser, unreadCount } = useApp();
     const { isAuthenticated } = useAuth();
     const { theme, toggle } = useTheme();
+    const searchInputRef = React.useRef(null);
+
+    const navigate = useNavigate();
+
+    const handleSearch = (e) => {
+        if (e.key === "Enter" && e.target.value.trim()) {
+            navigate(`/resources?q=${encodeURIComponent(e.target.value.trim())}`);
+            e.target.blur();
+        }
+    };
+
+    React.useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     return (
         <header
@@ -53,8 +74,8 @@ export default function Navbar({ scrolled }) {
                         />
                     </span>
 
-                    <span className="flex items-baseline gap-0.5">
-                        <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink">
+                    <span className="hidden sm:flex items-baseline">
+                        <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
                             Peer
                         </span>
 
@@ -76,7 +97,9 @@ export default function Navbar({ scrolled }) {
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
 
                         <Input
+                            ref={searchInputRef}
                             data-testid="navbar-search-input"
+                            onKeyDown={handleSearch}
                             placeholder="search notes, papers, questions…"
                             className="h-9 rounded-sm border-rule rounded-md bg-paper pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
                         />

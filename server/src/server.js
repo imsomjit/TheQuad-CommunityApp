@@ -7,6 +7,7 @@ const { pool } = require("./db/index");
 const logger = require("./utils/logger");
 const { startSyncJobs } = require("./modules/opportunities/sync/sync.service");
 const { startCronJobs } = require("./utils/cron");
+const sseManager = require("./config/sse");
 
 const start = async () => {
   try {
@@ -36,6 +37,7 @@ const start = async () => {
     const shutdown = async (signal) => {
       logger.info(`${signal} received — shutting down gracefully`);
       server.close(async () => {
+        sseManager.closeAll();
         await pool.end();
         logger.info("PostgreSQL pool closed");
         process.exit(0);

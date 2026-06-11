@@ -9,10 +9,17 @@ const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
 const addCommentSchema = z.object({
-  targetType: z.enum(["resource", "question", "answer", "blog"]),
+  targetType: z.enum(["resource", "question", "answer", "blog", "book"]),
   targetId: z.coerce.number().int().positive(),
   body: z.string().min(1, "Comment cannot be empty").max(2000).trim(),
   parentId: z.coerce.number().int().positive().optional().or(z.null()),
+});
+
+const getCommentsSchema = z.object({
+  query: z.object({
+    targetType: z.enum(["resource", "question", "answer", "blog", "book"]),
+    targetId: z.coerce.number().int().positive(),
+  })
 });
 
 const router = Router();
@@ -33,9 +40,10 @@ router.post(
 router.get(
   "/",
   apiLimiter,
+  validate(getCommentsSchema),
   asyncHandler(async (req, res) => {
     const { targetType, targetId } = req.query;
-    const rows = await commentService.getComments(targetType, targetId);
+    const rows = await commentService.getComments(targetType, parseInt(targetId));
     res.json({ success: true, data: rows });
   })
 );

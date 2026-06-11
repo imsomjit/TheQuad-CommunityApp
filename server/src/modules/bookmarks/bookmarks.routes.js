@@ -13,6 +13,12 @@ const bookmarkSchema = z.object({
   targetId: z.coerce.number().int().positive(),
 });
 
+const getBookmarksSchema = z.object({
+  query: z.object({
+    targetType: z.enum(["resource", "blog", "book"]).optional(),
+  })
+});
+
 const router = Router();
 
 // POST /api/bookmarks  — toggle
@@ -32,6 +38,7 @@ router.get(
   "/",
   auth,
   bookmarkLimiter,
+  validate(getBookmarksSchema),
   asyncHandler(async (req, res) => {
     const ids = await bookmarkService.getUserBookmarkIds(
       req.user.id,

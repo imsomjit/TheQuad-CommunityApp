@@ -1,6 +1,7 @@
 "use strict";
 
 const express = require("express");
+const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const logger = require("./utils/logger");
@@ -30,6 +31,8 @@ const booksRoutes = require("./modules/books/books.routes");
 
 const createApp = () => {
   const app = express();
+
+  app.use(helmet());
 
   // ── Trust proxy (needed for rate limiters behind Render/Nginx) ────────────
   app.set("trust proxy", 1);

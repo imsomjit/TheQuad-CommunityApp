@@ -71,8 +71,8 @@ export function AuthProvider({ children }) {
     return data.data.user;
   }, []);
 
-  const register = useCallback(async ({ name, username, email, password }) => {
-    const { data } = await authApi.register({ name, username, email, password });
+  const register = useCallback(async ({ name, username, email, password, gender, dateOfBirth }) => {
+    const { data } = await authApi.register({ name, username, email, password, gender, dateOfBirth });
     // Registration no longer logs the user in automatically, it just returns email
     return data.data.email;
   }, []);

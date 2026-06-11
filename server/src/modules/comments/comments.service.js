@@ -6,7 +6,7 @@ const { comments, users } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const notificationService = require("../notifications/notifications.service");
 
-const VALID_TARGETS = ["resource", "question", "answer", "blog"];
+const VALID_TARGETS = ["resource", "question", "answer", "blog", "book"];
 
 const addComment = async (authorId, { targetType, targetId, body, parentId }) => {
   if (!VALID_TARGETS.includes(targetType)) {

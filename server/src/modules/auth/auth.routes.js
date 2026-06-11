@@ -3,11 +3,12 @@
 const { Router } = require("express");
 const controller = require("./auth.controller");
 const validate = require("../../middleware/validate");
-const { auth } = require("../../middleware/auth");
+const { auth, requireCsrf } = require("../../middleware/auth");
 const { registerSchema, loginSchema, verifyOtpSchema, resendOtpSchema } = require("./auth.schemas");
 const {
   authLimiter,
   registerLimiter,
+  refreshLimiter,
   userReadLimiter,
 } = require("../../middleware/rateLimiter");
 
@@ -55,10 +56,10 @@ router.get("/google/callback", authLimiter, controller.googleCallback);
 
 // POST /api/auth/refresh
 // Rate-limited to prevent brute-force refresh token guessing
-router.post("/refresh", authLimiter, controller.refresh);
+router.post("/refresh", requireCsrf, refreshLimiter, controller.refresh);
 
 // POST /api/auth/logout
-router.post("/logout", authLimiter, controller.logout);
+router.post("/logout", requireCsrf, refreshLimiter, controller.logout);
 
 // GET /api/auth/me
 // Protected — must have valid access token

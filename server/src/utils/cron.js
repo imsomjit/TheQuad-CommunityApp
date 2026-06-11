@@ -83,46 +83,48 @@ const startCronJobs = () => {
 
       logger.info(`[Cron] Found ${pendingBroadcasts.length} pending broadcasts.`);
 
-      // Get all active users
-      const activeUsers = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.isBanned, false));
-
       for (const broadcast of pendingBroadcasts) {
-        if (activeUsers && activeUsers.length > 0) {
-          // Prepare notifications for all active users
-          const notificationsToInsert = activeUsers.map(user => ({
-            recipientId: user.id,
-            actorId: broadcast.createdBy, // use the raw DB column
+        const targetTitle = `[${broadcast.type}] ${broadcast.title}: ${broadcast.message}`;
+
+      // 1. Raw SQL insert for ALL active users directly in Postgres (zero memory overhead)
+      await db.execute(sql`
+        INSERT INTO notifications (
+          recipient_id, actor_id, type, target_type, target_id, target_title, is_read, created_at
+        )
+        SELECT 
+          id, 
+          ${broadcast.createdBy}, 
+          'system_broadcast', 
+          'broadcast', 
+          ${broadcast.id}, 
+          ${targetTitle}, 
+          false, 
+          NOW()
+        FROM users 
+        WHERE is_banned = false
+      `);
+
+      // 2. Push via SSE to ONLY currently connected clients
+      if (sseManager.clients && sseManager.clients.size > 0) {
+        sseManager.clients.forEach((_, userId) => {
+          const payload = {
+            recipientId: userId,
+            actorId: broadcast.createdBy,
             type: "system_broadcast",
             targetType: "broadcast",
             targetId: broadcast.id,
-            targetTitle: `[${broadcast.type}] ${broadcast.title}: ${broadcast.message}`,
+            targetTitle,
             isRead: false,
-          }));
-
-          // Insert in chunks to avoid blowing up the query size
-          const chunkSize = 1000;
-          for (let i = 0; i < notificationsToInsert.length; i += chunkSize) {
-            const chunk = notificationsToInsert.slice(i, i + chunkSize);
-            const inserted = await db.insert(notifications).values(chunk).returning();
-            
-            // Push via SSE to connected clients
-            for (const notif of inserted) {
-              const payload = {
-                ...notif,
-                actor: {
-                  id: broadcast.createdBy,
-                  name: "System", // System fallback, as we don't have the actor object fully populated
-                  username: "system",
-                  avatarUrl: null
-                }
-              };
-              sseManager.send(notif.recipientId, "notification", payload);
+            actor: {
+              id: broadcast.createdBy,
+              name: "System",
+              username: "system",
+              avatarUrl: null
             }
-          }
-        }
+          };
+          sseManager.send(userId, "notification", payload);
+        });
+      }
 
         // Mark broadcast as sent
         await db.update(broadcasts).set({ isSent: true }).where(eq(broadcasts.id, broadcast.id));
