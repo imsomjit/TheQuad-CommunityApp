@@ -83,4 +83,11 @@ const heartbeat = () => {
 // Send heartbeat every 25 seconds
 setInterval(heartbeat, 25_000);
 
-module.exports = { addClient, removeClient, send, clients };
+const closeAll = () => {
+  clients.forEach((res) => {
+    try { res.end(); } catch {}
+  });
+  clients.clear();
+};
+
+module.exports = { addClient, removeClient, send, clients, closeAll };

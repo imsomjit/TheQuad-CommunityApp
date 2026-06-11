@@ -31,7 +31,7 @@ export const useApp = () => {
 };
 
 export function AppProvider({ children }) {
-  const { user: authUser, isAuthenticated } = useAuth();
+  const { user: currentUser, isAuthenticated } = useAuth();
 
   const [resources, setResources] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -49,15 +49,15 @@ export function AppProvider({ children }) {
     targetTitle: "",
   });
 
-  const currentUser = authUser;
+  // Global report modal state
 
   // ── Fetch real data ────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
         const promises = [
-          resourcesApi.list({ sort: "newest", limit: 50 }),
-          questionsApi.list({ sort: "newest", limit: 50 }),
+          resourcesApi.list({ sort: "newest", limit: 20 }),
+          questionsApi.list({ sort: "newest", limit: 20 }),
           settingsApi.get()
         ];
 
@@ -123,41 +123,54 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated || !getAccessToken()) return;
 
-    const token = getAccessToken();
-    const eventSource = new EventSource(`${API_BASE}/notifications/stream?token=${token}`, {
-      withCredentials: true,
-    });
+    let eventSource;
+    let reconnectTimeout;
 
-    eventSource.addEventListener("connected", (e) => {
-      // Just log connection, unreadCount is computed dynamically
-      console.log("SSE connected!");
-    });
+    const connectSSE = () => {
+      const token = getAccessToken();
+      eventSource = new EventSource(`${API_BASE}/notifications/stream?token=${token}`, {
+        withCredentials: true,
+      });
 
-    eventSource.addEventListener("notification", (e) => {
-      try {
-        const rawNotif = JSON.parse(e.data);
-        const newNotif = mapNotification(rawNotif);
-        
-        // Add to notifications list safely
-        setNotifications((prev) => {
-          // Prevent duplicates
-          if (prev.find((n) => n.id === newNotif.id)) return prev;
+      eventSource.addEventListener("connected", (e) => {
+        // Just log connection, unreadCount is computed dynamically
+        if (import.meta.env.DEV) {
+          console.log("SSE connected!");
+        }
+      });
+
+      eventSource.addEventListener("notification", (e) => {
+        try {
+          const rawNotif = JSON.parse(e.data);
+          const newNotif = mapNotification(rawNotif);
           
-          return [newNotif, ...prev];
-        });
+          // Add to notifications list safely
+          setNotifications((prev) => {
+            // Prevent duplicates
+            if (prev.find((n) => n.id === newNotif.id)) return prev;
+            
+            return [newNotif, ...prev];
+          });
 
-      } catch (err) {
-        console.error("SSE notification parse error", err);
-      }
-    });
+        } catch (err) {
+          console.error("SSE notification parse error", err);
+        }
+      });
 
-    eventSource.onerror = (error) => {
-      console.error("SSE connection error", error);
-      eventSource.close();
+      eventSource.onerror = (error) => {
+        if (import.meta.env.DEV) {
+          console.error("SSE connection error", error);
+        }
+        eventSource.close();
+        reconnectTimeout = setTimeout(connectSSE, 5000); // Reconnect after 5s
+      };
     };
 
+    connectSSE();
+
     return () => {
-      eventSource.close();
+      if (eventSource) eventSource.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
   }, [isAuthenticated]);
 
@@ -295,7 +308,7 @@ export function AppProvider({ children }) {
 
       return null;
     },
-    [currentUser, isAuthenticated]
+    [isAuthenticated]
   );
 
   const updateResource = useCallback(
@@ -340,7 +353,7 @@ export function AppProvider({ children }) {
       );
       return comment;
     },
-    [currentUser, isAuthenticated]
+    [isAuthenticated]
   );
 
   // ── Questions ──────────────────────────────────────────────────────────────
@@ -352,7 +365,7 @@ export function AppProvider({ children }) {
       setQuestions((qs) => [q, ...qs]);
       return q;
     },
-    [currentUser, isAuthenticated]
+    [isAuthenticated]
   );
 
   const updateQuestion = useCallback(
@@ -409,7 +422,7 @@ export function AppProvider({ children }) {
       );
       return answer;
     },
-    [currentUser, isAuthenticated]
+    [isAuthenticated]
   );
 
   const acceptAnswer = useCallback(

@@ -14,11 +14,11 @@ const env = require("../config/env");
  * - Drizzle/pg errors → 400 or 409 (constraint violations)
  * - Unknown errors → 500 with generic message
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   // Default values
   let statusCode = err.statusCode || 500;
   let message = err.message || "Something went wrong";
-  let code = err.code || null;
+  let code = err.code || "INTERNAL_ERROR";
 
   // ── JWT errors ─────────────────────────────────────────────────────────────
   if (err.name === "JsonWebTokenError") {
@@ -87,7 +87,7 @@ const errorHandler = (err, req, res, next) => {
     message: statusCode >= 500 && env.NODE_ENV === "production"
       ? "An unexpected error occurred. Please try again."
       : message,
-    ...(code && { code }),
+    code,
     ...(env.NODE_ENV !== "production" && statusCode >= 500 && { stack: err.stack }),
   };
 

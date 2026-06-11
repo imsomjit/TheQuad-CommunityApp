@@ -177,8 +177,8 @@ router.get(
 
     const result = await resourceService.listResources({
       sort: "newest",
-      page: parseInt(req.query.page) || 1,
-      limit: parseInt(req.query.limit) || 20,
+      page: Math.max(1, parseInt(req.query.page, 10) || 1),
+      limit: Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20)),
       uploaderId: user.id,
     });
     res.json({ success: true, ...result });

@@ -17,7 +17,10 @@ export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "
 const api = axios.create({
   baseURL: API_BASE,
   withCredentials: true, // send httpOnly cookie on every request
-  headers: { "Content-Type": "application/json" },
+  headers: { 
+    "Content-Type": "application/json",
+    "X-Requested-With": "XMLHttpRequest" 
+  },
 });
 
 // ── Token management ─────────────────────────────────────────────────────────
@@ -374,8 +377,6 @@ export const bookmarksApi = {
   list: (targetType = "resource") =>
     api.get("/bookmarks", { params: { targetType } }).then((r) => r.data.data),
 };
-
-// Follows (deprecated — use usersApi.follow/unfollow below)
 
 // Notifications
 export const notificationsApi = {

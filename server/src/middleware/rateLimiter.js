@@ -46,6 +46,15 @@ const registerLimiter = rateLimit({
   handler: rateLimitResponse,
 });
 
+// Refresh token limiter - much more generous since multiple tabs/users behind NAT can hit this often
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
 // ── Resources ─────────────────────────────────────────────────────────────────
 // List/search resources: 120 req/min (public browsing)
 const resourceReadLimiter = rateLimit({
@@ -221,6 +230,7 @@ const autosaveLimiter = rateLimit({
 module.exports = {
   authLimiter,
   registerLimiter,
+  refreshLimiter,
   resourceReadLimiter,
   resourceWriteLimiter,
   uploadLimiter,

@@ -66,6 +66,7 @@ const googleRedirect = (req, res) => {
     scope: "openid email profile",
     access_type: "offline",
     prompt: "select_account",
+    state: require("crypto").randomUUID(), // Add state parameter for CSRF protection
   });
 
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);

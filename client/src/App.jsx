@@ -36,6 +36,7 @@ const FollowList = lazy(() => import("./pages/FollowList"));
 const EditProfile = lazy(() => import("./pages/EditProfile"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
@@ -135,16 +136,8 @@ function App() {
 
                   {/* Static informational pages */}
 
-                  {/* Catch-all for non-admin pages */}
-                  <Route path="*" element={<Home />} />
-
                   {/* Posts — Knowledge Publishing */}
                   <Route path="/posts" element={<PostsFeed />} />
-
-                  {/* Opportunities */}
-                  <Route path="/opportunities" element={<Opportunities />} />
-                  <Route path="/opportunities/:id" element={<OpportunityDetail />} />
-                  <Route path="/posts/:slug" element={<PostDetail />} />
                   <Route
                     path="/posts/new"
                     element={
@@ -153,6 +146,11 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+
+                  {/* Opportunities */}
+                  <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+                  <Route path="/posts/:slug" element={<PostDetail />} />
                   <Route
                     path="/posts/:id/edit"
                     element={
@@ -161,6 +159,9 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
+
+                  {/* Catch-all for non-admin pages */}
+                  <Route path="*" element={<NotFound />} />
                   </Route>
 
                 {/* Admin Routes (with Dedicated AdminLayout) */}
