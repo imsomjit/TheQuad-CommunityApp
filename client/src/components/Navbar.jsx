@@ -18,12 +18,6 @@ import { useTheme } from "../context/ThemeContext";
 import { getAvatarFallback } from "../utils/fallbacks";
 import NotificationDropdown from "./NotificationDropdown";
 import { Input } from "./ui/input";
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem,
-} from "./ui/dropdown-menu";
 
 export default function Navbar({ scrolled }) {
     const { currentUser, unreadCount } = useApp();
@@ -35,7 +29,7 @@ export default function Navbar({ scrolled }) {
 
     const handleSearch = (e) => {
         if (e.key === "Enter" && e.target.value.trim()) {
-            navigate(`/resources?q=${encodeURIComponent(e.target.value.trim())}`);
+            navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
             e.target.blur();
         }
     };
@@ -74,7 +68,7 @@ export default function Navbar({ scrolled }) {
                         />
                     </span>
 
-                    <span className="hidden sm:flex items-baseline">
+                    <span className="flex items-baseline">
                         <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
                             Peer
                         </span>

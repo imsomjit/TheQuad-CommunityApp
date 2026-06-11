@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Braces,
@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { toast } from "sonner";
+import { usersApi } from "../services/api";
 
 export default function Register() {
   const { register } = useAuth();
@@ -40,6 +41,25 @@ export default function Register() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [accountExistsError, setAccountExistsError] = useState(false);
+
+  const [topContributors, setTopContributors] = useState([]);
+  const [totalUsersCount, setTotalUsersCount] = useState(0);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [usersCount, contributors] = await Promise.all([
+          usersApi.getTotalUsers().catch(() => 0),
+          usersApi.getTopContributors().catch(() => [])
+        ]);
+        setTotalUsersCount(usersCount || 0);
+        setTopContributors(contributors || []);
+      } catch (err) {
+        console.error("Failed to fetch stats", err);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -157,19 +177,37 @@ export default function Register() {
           <div className="flex items-center gap-3">
             {/* Stacked avatars */}
             <div className="flex -space-x-2">
-              {["SK", "DP", "PI", "MC"].map((initials, i) => (
-                <div
-                  key={initials}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 font-mono text-[10px] font-bold text-ink-2"
-                  style={{ zIndex: 4 - i }}
-                >
-                  {initials}
-                </div>
-              ))}
+              {topContributors && topContributors.length > 0 ? (
+                topContributors.slice(0, 4).map((user, i) => (
+                  <div
+                    key={user.id || i}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 font-mono text-[10px] font-bold text-ink-2 overflow-hidden"
+                    style={{ zIndex: 4 - i }}
+                    title={user.name}
+                  >
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                    ) : (
+                      user.name.slice(0, 2).toUpperCase()
+                    )}
+                  </div>
+                ))
+              ) : (
+                ["SK", "DP", "PI", "MC"].map((initials, i) => (
+                  <div
+                    key={initials}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 font-mono text-[10px] font-bold text-ink-2"
+                    style={{ zIndex: 4 - i }}
+                  >
+                    {initials}
+                  </div>
+                ))
+              )}
             </div>
             <p className="text-sm text-ink-2">
-              <span className="font-semibold text-ink">1,200+</span> students
-              already joined
+              <span className="font-semibold text-ink">
+                {totalUsersCount > 0 ? totalUsersCount.toLocaleString() : "1,200+"}
+              </span> students already joined
             </p>
           </div>
         </div>

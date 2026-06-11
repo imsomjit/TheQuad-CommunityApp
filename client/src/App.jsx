@@ -45,6 +45,7 @@ const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminDeletedContent = lazy(() => import("./pages/admin/AdminDeletedContent"));
 const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
+const Search = lazy(() => import("./pages/Search"));
 
 // Static pages
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -82,6 +83,7 @@ function App() {
 
                   <Route path="/" element={<Home />} />
                   <Route path="/explore" element={<Explore />} />
+                  <Route path="/search" element={<Search />} />
 
                   <Route path="/resources" element={<Resources />} />
                   <Route path="/resources/:id" element={<ResourceDetail />} />

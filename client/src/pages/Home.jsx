@@ -323,7 +323,7 @@ export default function Home() {
                                     </Link>
 
                                     <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
-                                        press <kbd className="font-bold text-ink-2">⌘ K</kbd> to jump anywhere
+                                        press <kbd className="font-bold text-ink-2">⌘ K</kbd> to search anything
                                     </span>
                                 </div>
 
@@ -421,7 +421,7 @@ export default function Home() {
                             placeholder="Search notes, papers, questions…"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter" && e.target.value.trim()) {
-                                    window.location.href = `/resources?q=${encodeURIComponent(e.target.value.trim())}`;
+                                    window.location.href = `/search?q=${encodeURIComponent(e.target.value.trim())}`;
                                 }
                             }}
                             className="w-full h-10 rounded-md border border-rule bg-paper-2/60 pl-9 pr-4 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30"

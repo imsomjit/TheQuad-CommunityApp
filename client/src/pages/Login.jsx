@@ -14,6 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
+import { resourcesApi, questionsApi, usersApi } from "../services/api";
 
 export default function Login() {
   const { login } = useAuth();
@@ -26,6 +27,48 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleAuthRequired, setGoogleAuthRequired] = useState(false);
+
+  const [stats, setStats] = useState({
+    resources: "2.4k",
+    questions: "860",
+    students: "1.2k"
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [resRes, qRes, usersCount] = await Promise.all([
+          resourcesApi.list({ limit: 1 }).catch(() => null),
+          questionsApi.list({ limit: 1 }).catch(() => null),
+          usersApi.getTotalUsers().catch(() => 0)
+        ]);
+
+        const getCount = (res) => {
+          if (!res) return null;
+          if (res.pagination?.total) return Number(res.pagination.total);
+          if (res.data?.pagination?.total) return Number(res.data.pagination.total);
+          return null;
+        };
+
+        const resCount = getCount(resRes);
+        const qCount = getCount(qRes);
+
+        const formatNumber = (num) => {
+          if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+          return num.toString();
+        };
+
+        setStats(prev => ({
+          resources: resCount !== null ? formatNumber(resCount) : prev.resources,
+          questions: qCount !== null ? formatNumber(qCount) : prev.questions,
+          students: usersCount > 0 ? formatNumber(usersCount) : prev.students
+        }));
+      } catch (error) {
+        console.error("Failed to fetch login stats", error);
+      }
+    };
+    fetchStats();
+  }, []);
 
   // Show error toasts from OAuth redirects
   useEffect(() => {
@@ -132,26 +175,22 @@ export default function Login() {
 
             {/* Stats strip */}
             <div className="mt-10 flex gap-8">
-              <StatPill icon={BookOpen} value="2.4k" label="resources" />
-              <StatPill icon={MessageSquare} value="860" label="questions" />
-              <StatPill icon={Users} value="1.2k" label="students" />
+              <StatPill icon={BookOpen} value={stats.resources} label="resources" />
+              <StatPill icon={MessageSquare} value={stats.questions} label="questions" />
+              <StatPill icon={Users} value={stats.students} label="students" />
             </div>
           </div>
 
-          {/* Bottom — Testimonial */}
-          <div className="rounded-sm border border-rule/60 bg-paper-2/40 p-5 backdrop-blur-sm">
-            <p className="text-sm leading-relaxed text-ink-2 italic">
-              "PeerVerse is like if GitHub, Stack Overflow, and a really good study
-              group had a baby. I use it every day."
+          {/* Bottom — Quote */}
+          <div className="rounded-sm border border-rule bg-paper p-5 backdrop-blur-sm">
+            <p className="text-sm leading-relaxed text-ink italic">
+              <span className="text-accent">❝</span> Live as if you were to die tomorrow. Learn as if you were to live forever. <span className="text-accent">❞</span>
             </p>
-            <div className="mt-3 flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-accent-soft border border-accent/30 flex items-center justify-center font-mono text-xs font-bold text-accent">
-                SK
-              </div>
+            <div className="w-full text-right">
               <div>
-                <p className="text-sm font-medium text-ink">Sara Krishnan</p>
-                <p className="font-mono text-[10px] text-ink-3">
-                  ECE · NIT Trichy
+                <p className="text-sm font-medium text-accent font-mono">Mahatma Gandhi</p>
+                <p className="font-mono text-[10px] text-ink-2">
+                  Indian Leader
                 </p>
               </div>
             </div>
