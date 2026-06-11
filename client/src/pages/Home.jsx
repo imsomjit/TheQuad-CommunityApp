@@ -291,7 +291,7 @@ export default function Home() {
                                     PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
                                 </p>
 
-                                <h1 className="h-[180px] sm:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
+                                <h1 className="h-[180px] sm:h-[200px] md:h-[220px] lg:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
                                     A <span className="font-display-italic text-accent">learning</span>{" "}
                                     <span className="font-display-italic">space</span>
                                     <br />

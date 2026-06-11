@@ -43,7 +43,7 @@ const createApp = () => {
       origin: env.CLIENT_URL,
       credentials: true, // allow cookies to be sent cross-origin
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     })
   );
 
