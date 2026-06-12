@@ -179,7 +179,7 @@ export default function Navbar({ scrolled }) {
                         data-testid="theme-toggle"
                         aria-label="Toggle theme"
                         title={theme === "light" ? "Switch to ink (dark)" : "Switch to paper (light)"}
-                        className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                        className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-cyan transition-colors hover:border-accent"
                     >
                         {theme === "light" ? (
                             <Moon className="h-4 w-4" />
@@ -192,11 +192,11 @@ export default function Navbar({ scrolled }) {
                         <>
                             {/* Bookmarks */}
                             <Link
-                                to={`/u/${currentUser?.username}?tab=saved`}
+                                to={`/u/${currentUser?.username}/bookmarks`}
                                 data-testid="nav-bookmarks-link"
                                 aria-label="Bookmarks"
                                 title="Saved Bookmarks"
-                                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-rose transition-colors hover:border-accent"
                             >
                                 <Bookmark className="h-4 w-4" />
                             </Link>
@@ -206,7 +206,7 @@ export default function Navbar({ scrolled }) {
                                 <button
                                     data-testid="notifications-bell"
                                     aria-label="Notifications"
-                                    className="relative flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-accent transition-colors hover:border-accent"
+                                    className="relative flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-lime transition-colors hover:border-accent"
                                 >
                                     <Bell className="h-4 w-4" />
 

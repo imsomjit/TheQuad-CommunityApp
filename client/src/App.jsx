@@ -45,6 +45,7 @@ const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminDeletedContent = lazy(() => import("./pages/admin/AdminDeletedContent"));
 const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
 const Search = lazy(() => import("./pages/Search"));
+const Bookmarks = lazy(() => import("./pages/Bookmarks"));
 
 // Static pages
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -124,6 +125,10 @@ function App() {
                   <Route
                     path="/u/:username/following"
                     element={<ProtectedRoute><FollowList mode="following" /></ProtectedRoute>}
+                  />
+                  <Route
+                    path="/u/:username/bookmarks"
+                    element={<ProtectedRoute><Bookmarks /></ProtectedRoute>}
                   />
 
                   <Route

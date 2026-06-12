@@ -156,8 +156,8 @@ export default function Notifications() {
               // notifications
             </p>
             <h1 className="font-display text-5xl font-bold tracking-tight text-ink flex items-center gap-3">
-              <Bell className="h-8 w-8 text-accent-2" />
-              Recent <span className="font-display-italic text-accent">Activities</span>
+              <Bell className="h-8 w-8 text-syntax-lime" />
+              Recent <span className="marker">Activities.</span>
             </h1>
           </div>
 

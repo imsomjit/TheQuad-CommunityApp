@@ -3,19 +3,17 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom"
 import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
-    Bookmark, Edit3, Linkedin, Twitter, Instagram, Code2,
+    FolderOpen, Edit3, Linkedin, Twitter, Instagram, Code2,
     Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { generateSlug } from "../utils/slugify";
-import { usersApi, githubApi, leetcodeApi, postsApi, booksApi, opportunitiesApi, bookmarksApi } from "../services/api";
+import { usersApi, githubApi, leetcodeApi, postsApi } from "../services/api";
 import ContributionGraph from "../components/ContributionGraph";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
-import BookCard from "../components/BookCard";
-import OpportunityCard from "../components/OpportunityCard";
 import Loader from "../components/Loader";
 import { GithubStatsSkeleton, LeetcodeStatsSkeleton } from "../components/Skeletons";
 import TagBadge from "../components/TagBadge";
@@ -641,7 +639,7 @@ export default function Profile() {
 
 // ── Activity tabs (async-loaded) ─────────────────────────────────────────────
 function ActivityTabs({ profile }) {
-    const { resources, questions, bookmarks } = useApp();
+    const { resources, questions } = useApp();
     const { isAuthenticated } = useAuth();
     const { currentUser } = useApp();
     const [searchParams] = useSearchParams();
@@ -654,44 +652,25 @@ function ActivityTabs({ profile }) {
         if (a.author?.id === profile.id || a.author?.username === profile.username)
             myAnswers.push({ ...a, question: q });
     }));
-    const savedResources = resources.filter(r => bookmarks.has(`resource:${r.id}`));
 
-    // State for other saved items
-    const [savedPosts, setSavedPosts] = useState([]);
-    const [savedBooks, setSavedBooks] = useState([]);
-    const [savedOpps, setSavedOpps] = useState([]);
-    const [savedLoading, setSavedLoading] = useState(false);
-    const [savedTab, setSavedTab] = useState("resources");
+    const [myPosts, setMyPosts] = useState([]);
+    const [postsLoading, setPostsLoading] = useState(true);
 
     useEffect(() => {
-        if (!isOwnProfile) return;
-        const loadSaved = async () => {
-            setSavedLoading(true);
+        if (!profile?.username) return;
+        const loadPosts = async () => {
+            setPostsLoading(true);
             try {
-                // Fetch bookmarked IDs
-                const [postIds, bookIds] = await Promise.all([
-                    bookmarksApi.list("blog").catch(() => []),
-                    bookmarksApi.list("book").catch(() => [])
-                ]);
-
-                // Fetch actual items
-                const [postsData, booksData, oppsData] = await Promise.all([
-                    Promise.all(postIds.map(id => postsApi.getById(id).catch(() => null))),
-                    Promise.all(bookIds.map(id => booksApi.get(id).catch(() => null))),
-                    opportunitiesApi.getBookmarked({ limit: 50 }).then(res => res.data).catch(() => [])
-                ]);
-
-                setSavedPosts(postsData.filter(Boolean));
-                setSavedBooks(booksData.filter(Boolean));
-                setSavedOpps(oppsData);
+                const res = await postsApi.list({ authorUsername: profile.username });
+                setMyPosts(res.data || []);
             } catch (err) {
-                console.error("Failed to load saved items", err);
+                console.error("Failed to load user posts", err);
             } finally {
-                setSavedLoading(false);
+                setPostsLoading(false);
             }
         };
-        loadSaved();
-    }, [isOwnProfile]);
+        loadPosts();
+    }, [profile?.username]);
 
     return (
         <Tabs defaultValue={searchParams.get("tab") || "resources"} className="w-full">
@@ -705,11 +684,9 @@ function ActivityTabs({ profile }) {
                 <TabsTrigger value="answers" className="data-[state=active]:bg-paper data-[state=active]:text-accent px-4 py-2 text-sm">
                     Answered ({myAnswers.length})
                 </TabsTrigger>
-                {isOwnProfile && (
-                    <TabsTrigger value="saved" className="data-[state=active]:bg-paper data-[state=active]:text-accent px-4 py-2 text-sm">
-                        Saved
-                    </TabsTrigger>
-                )}
+                <TabsTrigger value="posted" className="data-[state=active]:bg-paper data-[state=active]:text-accent px-4 py-2 text-sm">
+                    Posted ({postsLoading ? "..." : myPosts.length})
+                </TabsTrigger>
             </TabsList>
 
             <TabsContent value="resources" className="mt-5 space-y-3">
@@ -731,44 +708,17 @@ function ActivityTabs({ profile }) {
                     </Link>
                 ))}
             </TabsContent>
-            {isOwnProfile && (
-                <TabsContent value="saved" className="mt-5">
-                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-                        {["resources", "posts", "books", "opportunities"].map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setSavedTab(tab)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-colors ${
-                                    savedTab === tab 
-                                    ? "bg-accent text-paper" 
-                                    : "bg-paper-2 border border-rule text-ink-2 hover:text-ink"
-                                }`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
+            <TabsContent value="posted" className="mt-5 space-y-4">
+                {postsLoading ? (
+                    <div className="py-12 flex justify-center"><Loader /></div>
+                ) : myPosts.length === 0 ? (
+                    <Empty label="No posts published yet." />
+                ) : (
+                    <div className="flex flex-col gap-6">
+                        {myPosts.map(p => <PostCard key={p.id} post={p} />)}
                     </div>
-
-                    {savedLoading ? (
-                        <div className="py-12 flex justify-center"><Loader /></div>
-                    ) : (
-                        <div className="space-y-3">
-                            {savedTab === "resources" && (
-                                savedResources.length === 0 ? <Empty label="Bookmarked resources will show here." /> : savedResources.map(r => <ResourceCard key={r.id} resource={r} />)
-                            )}
-                            {savedTab === "posts" && (
-                                savedPosts.length === 0 ? <Empty label="Bookmarked posts will show here." /> : savedPosts.map(p => <PostCard key={p.id} post={p} />)
-                            )}
-                            {savedTab === "books" && (
-                                savedBooks.length === 0 ? <Empty label="Bookmarked books will show here." /> : savedBooks.map(b => <BookCard key={b.id} book={b} />)
-                            )}
-                            {savedTab === "opportunities" && (
-                                savedOpps.length === 0 ? <Empty label="Bookmarked opportunities will show here." /> : savedOpps.map(o => <OpportunityCard key={o.id} opportunity={o} />)
-                            )}
-                        </div>
-                    )}
-                </TabsContent>
-            )}
+                )}
+            </TabsContent>
         </Tabs>
     );
 }
@@ -805,7 +755,7 @@ function MiniStat({ icon: Icon, label, value }) {
 function Empty({ label }) {
     return (
         <div className="text-center py-12 border border-dashed border-rule rounded-md">
-            <Bookmark className="w-7 h-7 text-ink-3 mx-auto mb-2" />
+            <FolderOpen className="w-7 h-7 text-ink-3 mx-auto mb-2" />
             <p className="text-ink-2 text-sm">{label}</p>
         </div>
     );
@@ -813,15 +763,44 @@ function Empty({ label }) {
 
 function ProfileSkeleton() {
     return (
-        <div className="space-y-6 shimmer">
-            <div className="h-44 sm:h-56 rounded-t-sm bg-paper-2" />
-            <div className="px-4 sm:px-6 space-y-3">
-                <div className="h-10 w-48 rounded-sm bg-paper-2" />
-                <div className="h-4 w-32 rounded-sm bg-paper-2" />
-                <div className="h-4 w-72 rounded-sm bg-paper-2" />
+        <div className="space-y-8">
+            {/* Banner + Header */}
+            <div>
+                <div className="h-44 sm:h-56 rounded-t-md bg-paper-2 border border-rule shimmer" />
+                <div className="relative px-4 sm:px-6 border border-t-0 border-rule rounded-b-md bg-paper-2/20 pb-5">
+                    {/* Avatar Overlap */}
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 sm:-mt-16 mb-4">
+                        <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-xl bg-paper-2 border-4 border-paper shadow-sm shimmer" />
+                        <div className="h-10 w-32 rounded-md bg-paper-2 mb-2 shimmer" />
+                    </div>
+                    {/* Info */}
+                    <div className="space-y-3 mt-4">
+                        <div className="h-8 w-48 rounded-md bg-paper-2 shimmer" />
+                        <div className="h-4 w-32 rounded-md bg-paper-2 shimmer" />
+                        <div className="h-4 w-full max-w-xl rounded-md bg-paper-2 mt-4 shimmer" />
+                        <div className="h-4 w-2/3 max-w-md rounded-md bg-paper-2 shimmer" />
+                        <div className="flex gap-3 mt-4 pt-2">
+                            <div className="h-6 w-24 rounded-full bg-paper-2 shimmer" />
+                            <div className="h-6 w-24 rounded-full bg-paper-2 shimmer" />
+                            <div className="h-6 w-24 rounded-full bg-paper-2 shimmer" />
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[1,2,3,4].map(i => <div key={i} className="h-28 rounded-sm bg-paper-2" />)}
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-[120px] rounded-xl bg-paper-2/40 border border-rule shimmer" />)}
+            </div>
+            
+            {/* Tabs Area */}
+            <div className="flex gap-2 border border-rule p-1 rounded-md w-fit mt-8">
+                <div className="h-9 w-28 rounded-md bg-paper-2 shimmer" />
+                <div className="h-9 w-28 rounded-md bg-paper shimmer" />
+                <div className="h-9 w-28 rounded-md bg-paper shimmer" />
+            </div>
+            <div className="space-y-4">
+                {[1, 2].map(i => <div key={i} className="h-32 rounded-xl bg-paper-2/40 border border-rule shimmer" />)}
             </div>
         </div>
     );
