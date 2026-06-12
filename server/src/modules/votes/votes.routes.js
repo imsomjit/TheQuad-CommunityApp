@@ -3,7 +3,7 @@
 const { Router } = require("express");
 const asyncHandler = require("../../utils/asyncHandler");
 const { auth } = require("../../middleware/auth");
-const { voteLimiter } = require("../../middleware/rateLimiter");
+const { voteLimiter, voteReadLimiter } = require("../../middleware/rateLimiter");
 const voteService = require("./votes.service");
 const { z } = require("zod");
 const validate = require("../../middleware/validate");
@@ -32,6 +32,7 @@ router.post(
 router.get(
   "/",
   auth,
+  voteReadLimiter,
   asyncHandler(async (req, res) => {
     const result = await voteService.getUserVotes(req.user.id);
     res.json({ success: true, data: result });

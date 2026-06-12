@@ -4,6 +4,7 @@ const express = require("express");
 const multer = require("multer");
 const booksController = require("./books.controller");
 const { auth, restrictTo } = require("../../middleware/auth");
+const { bookReadLimiter, adminLimiter, uploadLimiter } = require("../../middleware/rateLimiter");
 const AppError = require("../../utils/AppError");
 
 const router = express.Router();
@@ -26,10 +27,10 @@ const upload = multer({
 });
 
 // Public routes
-router.get("/", booksController.getBooks);
-router.get("/:publicId", booksController.getBookById);
-router.post("/:id/views", booksController.incrementViews);
-router.post("/:id/downloads", booksController.incrementDownloads);
+router.get("/", bookReadLimiter, booksController.getBooks);
+router.get("/:publicId", bookReadLimiter, booksController.getBookById);
+router.post("/:id/views", bookReadLimiter, booksController.incrementViews);
+router.post("/:id/downloads", bookReadLimiter, booksController.incrementDownloads);
 
 // Admin only routes
 router.use(auth);
@@ -37,6 +38,7 @@ router.use(restrictTo("admin"));
 
 router.post(
   "/",
+  uploadLimiter,
   upload.fields([
     { name: "file", maxCount: 1 },
     { name: "cover", maxCount: 1 },
@@ -44,7 +46,7 @@ router.post(
   booksController.uploadBook
 );
 
-router.delete("/:id", booksController.deleteBook);
-router.patch("/:id", upload.single("cover"), booksController.updateBook);
+router.delete("/:id", adminLimiter, booksController.deleteBook);
+router.patch("/:id", adminLimiter, upload.single("cover"), booksController.updateBook);
 
 module.exports = router;

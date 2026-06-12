@@ -45,6 +45,15 @@ const createAnswerSchema = z.object({
     .trim(),
 });
 
+const updateAnswerSchema = z.object({
+  body: z
+    .string()
+    .min(10, "Answer must be at least 10 characters")
+    .max(20000)
+    .trim()
+    .optional(),
+});
+
 const questionQuerySchema = z.object({
   q: z.string().optional(),
   tag: z.string().optional(),
@@ -57,5 +66,6 @@ module.exports = {
   createQuestionSchema,
   updateQuestionSchema,
   createAnswerSchema,
+  updateAnswerSchema,
   questionQuerySchema,
 };

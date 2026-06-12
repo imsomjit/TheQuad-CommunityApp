@@ -4,6 +4,7 @@ const { eq, desc } = require("drizzle-orm");
 const { db } = require("../../db/index");
 const { broadcasts } = require("../../db/schema/index");
 const logger = require("../../utils/logger");
+const AppError = require("../../utils/AppError");
 
 class BroadcastsService {
   /**
@@ -38,11 +39,11 @@ class BroadcastsService {
   async deleteBroadcast(id) {
     const existing = await db.select().from(broadcasts).where(eq(broadcasts.id, id)).limit(1);
     if (existing.length === 0) {
-      throw Object.assign(new Error("Broadcast not found"), { status: 404 });
+      throw new AppError("Broadcast not found", 404, "NOT_FOUND");
     }
     
     if (existing[0].isSent) {
-      throw Object.assign(new Error("Cannot delete a broadcast that has already been sent"), { status: 400 });
+      throw new AppError("Cannot delete a broadcast that has already been sent", 400, "BAD_REQUEST");
     }
 
     await db.delete(broadcasts).where(eq(broadcasts.id, id));

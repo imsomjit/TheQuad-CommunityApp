@@ -107,14 +107,19 @@ const verifyOtp = async ({ email, otp }) => {
   if (!user) throw new AppError("User not found", 404, "NOT_FOUND");
   if (user.isVerified) throw new AppError("User is already verified", 400, "ALREADY_VERIFIED");
 
+  if (user.otpAttempts >= 5) {
+    throw new AppError("Too many failed attempts. Please request a new OTP.", 403, "TOO_MANY_ATTEMPTS");
+  }
+
   if (user.otp !== otp || new Date() > user.otpExpiresAt) {
+    await db.update(users).set({ otpAttempts: user.otpAttempts + 1 }).where(eq(users.id, user.id));
     throw new AppError("Invalid or expired OTP", 400, "INVALID_OTP");
   }
 
   // Update user
   const [updated] = await db
     .update(users)
-    .set({ isVerified: true, otp: null, otpExpiresAt: null, updatedAt: new Date() })
+    .set({ isVerified: true, otp: null, otpExpiresAt: null, otpAttempts: 0, updatedAt: new Date() })
     .where(eq(users.id, user.id))
     .returning();
 
@@ -148,7 +153,7 @@ const resendOtp = async ({ email }) => {
   const otp = generateOtp();
   const otpExpiresAt = getOtpExpiry();
 
-  await db.update(users).set({ otp, otpExpiresAt }).where(eq(users.id, user.id));
+  await db.update(users).set({ otp, otpExpiresAt, otpAttempts: 0 }).where(eq(users.id, user.id));
 
   await sendEmail({
     to: email,
@@ -178,7 +183,7 @@ const login = async ({ email, password }) => {
     throw new AppError("Your account has been banned", 403, "ACCOUNT_BANNED");
   }
 
-  if (user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
+  if (user.isSuspended && (!user.suspensionExpiresAt || new Date() < new Date(user.suspensionExpiresAt))) {
     throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
   }
 
@@ -219,7 +224,7 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
 
   if (user) {
     if (user.isBanned) throw new AppError("Your account has been banned", 403, "ACCOUNT_BANNED");
-    if (user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
+    if (user.isSuspended && (!user.suspensionExpiresAt || new Date() < new Date(user.suspensionExpiresAt))) {
       throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
     }
 
@@ -236,7 +241,7 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
 
   if (user) {
     if (user.isBanned) throw new AppError("Your account has been banned", 403, "ACCOUNT_BANNED");
-    if (user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
+    if (user.isSuspended && (!user.suspensionExpiresAt || new Date() < new Date(user.suspensionExpiresAt))) {
       throw new AppError("Your account is suspended", 403, "ACCOUNT_SUSPENDED");
     }
 
@@ -362,7 +367,7 @@ const refresh = async (rawRefreshToken) => {
     .where(eq(users.id, payload.id))
     .limit(1);
 
-  if (!user || user.isBanned || user.isSuspended || (user.suspensionExpiresAt && new Date() < new Date(user.suspensionExpiresAt))) {
+  if (!user || user.isBanned || (user.isSuspended && (!user.suspensionExpiresAt || new Date() < new Date(user.suspensionExpiresAt)))) {
     throw new AppError("Account not accessible", 403, "ACCOUNT_INACCESSIBLE");
   }
 

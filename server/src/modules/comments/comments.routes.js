@@ -4,7 +4,7 @@ const { Router } = require("express");
 const asyncHandler = require("../../utils/asyncHandler");
 const { auth } = require("../../middleware/auth");
 const commentService = require("./comments.service");
-const { commentLimiter, apiLimiter } = require("../../middleware/rateLimiter");
+const { commentLimiter, commentReadLimiter } = require("../../middleware/rateLimiter");
 const { z } = require("zod");
 const validate = require("../../middleware/validate");
 
@@ -16,10 +16,8 @@ const addCommentSchema = z.object({
 });
 
 const getCommentsSchema = z.object({
-  query: z.object({
-    targetType: z.enum(["resource", "question", "answer", "blog", "book"]),
-    targetId: z.coerce.number().int().positive(),
-  })
+  targetType: z.enum(["resource", "question", "answer", "blog", "book"]),
+  targetId: z.coerce.number().int().positive(),
 });
 
 const router = Router();
@@ -39,8 +37,8 @@ router.post(
 // GET /api/comments?targetType=resource&targetId=5
 router.get(
   "/",
-  apiLimiter,
-  validate(getCommentsSchema),
+  commentReadLimiter,
+  validate(getCommentsSchema, "query"),
   asyncHandler(async (req, res) => {
     const { targetType, targetId } = req.query;
     const rows = await commentService.getComments(targetType, parseInt(targetId));

@@ -18,6 +18,7 @@ const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
 const notificationService = require("../notifications/notifications.service");
 const { sendEmail } = require("../../utils/email");
+const { invalidateUserCache } = require("../../middleware/auth");
 
 const listReports = async (query) => {
   const { status, type, page, limit: lim } = query;
@@ -323,6 +324,8 @@ const suspendUser = async (userId, moderatorId, reason, durationDays) => {
     await tx.update(users).set({ isSuspended: true, suspensionExpiresAt: expiresAt }).where(eq(users.id, userId));
   });
 
+  invalidateUserCache(userId);
+
   try {
     await sendEmail({
       to: user.email,
@@ -371,6 +374,8 @@ const banUser = async (userId, moderatorId, reason) => {
 
     await tx.update(users).set({ isBanned: true }).where(eq(users.id, userId));
   });
+
+  invalidateUserCache(userId);
 
   try {
     await sendEmail({
@@ -530,6 +535,7 @@ const updateUserRole = async (userId, newRole) => {
   if (user.role === "admin") throw new AppError("Cannot change admin role", 403, "FORBIDDEN");
   
   await db.update(users).set({ role: newRole }).where(eq(users.id, userId));
+  invalidateUserCache(userId);
   
   await notificationService.create({
     recipientId: userId,

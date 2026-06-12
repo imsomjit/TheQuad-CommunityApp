@@ -3,7 +3,24 @@
 const express = require("express");
 const { auth, restrictTo } = require("../../middleware/auth");
 const settingsService = require("./settings.service");
-const { apiLimiter, adminLimiter } = require("../../middleware/rateLimiter");
+const { userReadLimiter, adminLimiter } = require("../../middleware/rateLimiter");
+const asyncHandler = require("../../utils/asyncHandler");
+const validate = require("../../middleware/validate");
+const { z } = require("zod");
+
+const updateSettingsSchema = z.object({
+  registrationEnabled: z.boolean().optional(),
+  announcementActive: z.boolean().optional(),
+  announcementType: z.enum(["INFO", "WARNING", "SUCCESS", "ERROR"]).optional(),
+  announcementText: z.string().max(500).optional(),
+  socialLinks: z.object({
+    linkedin: z.string().url().optional().or(z.literal("")),
+    instagram: z.string().url().optional().or(z.literal("")),
+    twitter: z.string().url().optional().or(z.literal("")),
+    discord: z.string().url().optional().or(z.literal("")),
+    email: z.string().email().optional().or(z.literal(""))
+  }).optional()
+});
 
 const router = express.Router();
 
@@ -12,27 +29,19 @@ const router = express.Router();
  * @desc    Get global site settings (Public)
  * @access  Public
  */
-router.get("/", apiLimiter, async (req, res, next) => {
-  try {
-    const settings = await settingsService.getSettings();
-    res.json(settings);
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/", userReadLimiter, asyncHandler(async (req, res) => {
+  const settings = await settingsService.getSettings();
+  res.json(settings);
+}));
 
 /**
  * @route   PUT /api/settings
  * @desc    Update global site settings
  * @access  Admin only
  */
-router.put("/", auth, restrictTo("admin"), adminLimiter, async (req, res, next) => {
-  try {
-    const updated = await settingsService.updateSettings(req.body);
-    res.json(updated);
-  } catch (error) {
-    next(error);
-  }
-});
+router.put("/", auth, restrictTo("admin"), adminLimiter, validate(updateSettingsSchema), asyncHandler(async (req, res) => {
+  const updated = await settingsService.updateSettings(req.body);
+  res.json(updated);
+}));
 
 module.exports = router;

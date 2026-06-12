@@ -59,6 +59,14 @@ const googleRedirect = (req, res) => {
     });
   }
 
+  const state = require("crypto").randomUUID();
+  res.cookie("oauth_state", state, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 10 * 60 * 1000, // 10 minutes
+  });
+
   const params = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID,
     redirect_uri: env.GOOGLE_CALLBACK_URL,
@@ -66,7 +74,7 @@ const googleRedirect = (req, res) => {
     scope: "openid email profile",
     access_type: "offline",
     prompt: "select_account",
-    state: require("crypto").randomUUID(), // Add state parameter for CSRF protection
+    state, // Add state parameter for CSRF protection
   });
 
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
@@ -74,7 +82,20 @@ const googleRedirect = (req, res) => {
 
 // GET /api/auth/google/callback
 const googleCallback = asyncHandler(async (req, res) => {
-  const { code, error } = req.query;
+  const { code, error, state } = req.query;
+  const storedState = req.cookies?.oauth_state;
+
+  // Clear state cookie as it's single-use
+  res.clearCookie("oauth_state", {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
+  });
+
+  if (!state || state !== storedState) {
+    logger.warn("Google OAuth CSRF state mismatch");
+    return res.redirect(`${env.CLIENT_URL}/login?error=google_failed`);
+  }
 
   if (error || !code) {
     logger.warn("Google OAuth denied or no code received", { error });
@@ -123,9 +144,8 @@ const googleCallback = asyncHandler(async (req, res) => {
     // Set refresh cookie
     setRefreshCookie(res, refreshToken);
 
-    // Redirect to client with access token in URL fragment (hash)
-    // The client will extract it and store in memory (not in URL bar)
-    res.redirect(`${env.CLIENT_URL}/auth/callback#token=${accessToken}`);
+    // Redirect to client (AuthCallback page will read cookie via /api/auth/refresh)
+    res.redirect(`${env.CLIENT_URL}/auth/callback`);
   } catch (err) {
     logger.error("Google OAuth callback error", { error: err.message });
 

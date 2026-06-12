@@ -62,6 +62,15 @@ const createAnswer = asyncHandler(async (req, res) => {
 
 
 
+const updateAnswer = asyncHandler(async (req, res) => {
+  const answer = await questionService.updateAnswer(
+    parseInt(req.params.answerId),
+    req.user.id,
+    req.body.body
+  );
+  res.json({ success: true, data: answer });
+});
+
 const deleteAnswer = asyncHandler(async (req, res) => {
   await questionService.deleteAnswer(
     parseInt(req.params.answerId),
@@ -87,6 +96,7 @@ module.exports = {
   update,
   remove,
   createAnswer,
+  updateAnswer,
   deleteAnswer,
   acceptAnswer,
 };

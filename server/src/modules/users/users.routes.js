@@ -10,6 +10,9 @@ const followService = require("../follows/follows.service");
 const resourceService = require("../resources/resources.service");
 const { z } = require("zod");
 const validate = require("../../middleware/validate");
+const { db } = require("../../db/index");
+const { users } = require("../../db/schema/index");
+const { eq } = require("drizzle-orm");
 
 const updateProfileSchema = z.object({
   name: z.string().min(2).max(120).trim().optional(),
@@ -108,27 +111,7 @@ router.patch(
   })
 );
 
-// POST /api/users/:username/follow  — follow a user
-router.post(
-  "/:username/follow",
-  auth,
-  userWriteLimiter,
-  asyncHandler(async (req, res) => {
-    const result = await followService.followUser(req.user.id, req.params.username);
-    res.json({ success: true, data: result });
-  })
-);
 
-// DELETE /api/users/:username/follow  — unfollow a user
-router.delete(
-  "/:username/follow",
-  auth,
-  userWriteLimiter,
-  asyncHandler(async (req, res) => {
-    const result = await followService.unfollowUser(req.user.id, req.params.username);
-    res.json({ success: true, data: result });
-  })
-);
 
 // GET /api/users/:username/followers  — own profile only (checked on client)
 router.get(
@@ -164,9 +147,6 @@ router.get(
   "/:username/resources",
   userReadLimiter,
   asyncHandler(async (req, res) => {
-    const { eq } = require("drizzle-orm");
-    const { db } = require("../../db/index");
-    const { users } = require("../../db/schema/index");
     const [user] = await db
       .select({ id: users.id })
       .from(users)

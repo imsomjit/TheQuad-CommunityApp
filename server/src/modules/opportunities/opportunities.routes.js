@@ -3,7 +3,7 @@
 const { Router } = require("express");
 const controller = require("./opportunities.controller");
 const { auth, optionalAuth } = require("../../middleware/auth");
-const { apiLimiter } = require("../../middleware/rateLimiter");
+const { opportunityReadLimiter, opportunityWriteLimiter } = require("../../middleware/rateLimiter");
 const { db } = require("../../db/index");
 const { opportunities } = require("../../db/schema/index");
 const { eq } = require("drizzle-orm");
@@ -35,15 +35,15 @@ router.param("id", async (req, res, next, val) => {
 });
 
 // GET /api/opportunities
-router.get("/", apiLimiter, controller.listOpportunities);
+router.get("/", opportunityReadLimiter, controller.listOpportunities);
 
 // GET /api/opportunities/bookmarked
-router.get("/bookmarked", auth, apiLimiter, controller.getBookmarkedOpportunities);
+router.get("/bookmarked", auth, opportunityReadLimiter, controller.getBookmarkedOpportunities);
 
 // GET /api/opportunities/:id
-router.get("/:id", optionalAuth, apiLimiter, controller.getOpportunityById);
+router.get("/:id", optionalAuth, opportunityReadLimiter, controller.getOpportunityById);
 
 // POST /api/opportunities/:id/bookmark
-router.post("/:id/bookmark", auth, apiLimiter, controller.toggleBookmark);
+router.post("/:id/bookmark", auth, opportunityWriteLimiter, controller.toggleBookmark);
 
 module.exports = router;

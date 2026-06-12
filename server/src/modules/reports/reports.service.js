@@ -5,6 +5,7 @@ const { db } = require("../../db/index");
 const { reports, users } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
+const { invalidateUserCache } = require("../../middleware/auth");
 
 const submitReport = async (reporterId, { targetType, targetId, reason, description }) => {
   const [report] = await db
@@ -62,6 +63,7 @@ const suspendUser = async (targetUserId, adminId) => {
     .update(users)
     .set({ isSuspended: true, updatedAt: new Date() })
     .where(eq(users.id, targetUserId));
+  invalidateUserCache(targetUserId);
 };
 
 const banUser = async (targetUserId, adminId) => {
@@ -69,6 +71,7 @@ const banUser = async (targetUserId, adminId) => {
     .update(users)
     .set({ isBanned: true, updatedAt: new Date() })
     .where(eq(users.id, targetUserId));
+  invalidateUserCache(targetUserId);
 };
 
 const reinstateUser = async (targetUserId) => {
@@ -76,6 +79,7 @@ const reinstateUser = async (targetUserId) => {
     .update(users)
     .set({ isSuspended: false, isBanned: false, updatedAt: new Date() })
     .where(eq(users.id, targetUserId));
+  invalidateUserCache(targetUserId);
 };
 
 module.exports = { submitReport, listReports, reviewReport, suspendUser, banUser, reinstateUser };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
-import { setAccessToken } from "../services/api";
+import { authApi, setAccessToken } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import PageLoadingSkeleton from "../components/PageLoadingSkeleton";
@@ -41,18 +41,16 @@ export default function AuthCallback() {
       return;
     }
 
-    // Extract token from URL hash fragment
-    const hash = window.location.hash;
-    const tokenMatch = hash.match(/token=([^&]+)/);
+    // We just arrived from the server redirect. The server has set the pv_refresh cookie.
+    // We call refresh() to exchange the cookie for an access token.
+    window.history.replaceState(null, "", "/auth/callback");
 
-    if (tokenMatch && tokenMatch[1]) {
-      const token = tokenMatch[1];
-      setAccessToken(token);
-
-      // Clean the URL
-      window.history.replaceState(null, "", "/auth/callback");
-
-      fetchMe().then((user) => {
+    authApi.refresh()
+      .then(({ data }) => {
+        setAccessToken(data.data.accessToken);
+        return fetchMe();
+      })
+      .then((user) => {
         toast.success("Signed in with Google!");
         const from = location.state?.from?.pathname;
         if (from) {
@@ -62,10 +60,10 @@ export default function AuthCallback() {
         } else {
           navigate("/", { replace: true });
         }
+      })
+      .catch(() => {
+        setError("Failed to obtain access token. Please try signing in again.");
       });
-    } else {
-      setError("No authentication token received. Please try signing in again.");
-    }
   }, [navigate, searchParams, fetchMe]);
 
   if (error) {

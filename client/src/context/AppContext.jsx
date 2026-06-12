@@ -49,8 +49,6 @@ export function AppProvider({ children }) {
     targetTitle: "",
   });
 
-  // Global report modal state
-
   // ── Fetch real data ────────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
@@ -127,8 +125,7 @@ export function AppProvider({ children }) {
     let reconnectTimeout;
 
     const connectSSE = () => {
-      const token = getAccessToken();
-      eventSource = new EventSource(`${API_BASE}/notifications/stream?token=${token}`, {
+      eventSource = new EventSource(`${API_BASE}/notifications/stream`, {
         withCredentials: true,
       });
 

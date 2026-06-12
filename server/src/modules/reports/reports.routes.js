@@ -38,74 +38,8 @@ router.post(
   })
 );
 
-// GET /api/reports  — moderator/admin only
-router.get(
-  "/",
-  auth,
-  restrictTo("moderator", "admin"),
-  adminLimiter,
-  asyncHandler(async (req, res) => {
-    const { status, page = 1, limit = 20 } = req.query;
-    const result = await reportService.listReports({
-      status,
-      page: parseInt(page),
-      limit: parseInt(limit),
-    });
-    res.json({ success: true, ...result });
-  })
-);
-
-// PATCH /api/reports/:id  — moderator/admin: review/dismiss
-router.patch(
-  "/:id",
-  auth,
-  restrictTo("moderator", "admin"),
-  adminLimiter,
-  asyncHandler(async (req, res) => {
-    const { status } = req.body; // "reviewed" | "dismissed"
-    const report = await reportService.reviewReport(
-      parseInt(req.params.id),
-      req.user.id,
-      status
-    );
-    res.json({ success: true, data: report });
-  })
-);
-
-// PATCH /api/reports/users/:id/suspend  — admin only
-router.patch(
-  "/users/:id/suspend",
-  auth,
-  restrictTo("admin"),
-  adminLimiter,
-  asyncHandler(async (req, res) => {
-    await reportService.suspendUser(parseInt(req.params.id), req.user.id);
-    res.json({ success: true, message: "User suspended" });
-  })
-);
-
-// PATCH /api/reports/users/:id/ban  — admin only
-router.patch(
-  "/users/:id/ban",
-  auth,
-  restrictTo("admin"),
-  adminLimiter,
-  asyncHandler(async (req, res) => {
-    await reportService.banUser(parseInt(req.params.id), req.user.id);
-    res.json({ success: true, message: "User banned" });
-  })
-);
-
-// PATCH /api/reports/users/:id/reinstate  — admin only
-router.patch(
-  "/users/:id/reinstate",
-  auth,
-  restrictTo("admin"),
-  adminLimiter,
-  asyncHandler(async (req, res) => {
-    await reportService.reinstateUser(parseInt(req.params.id));
-    res.json({ success: true, message: "User reinstated" });
-  })
-);
+// The admin-specific moderation routes (list/review reports, suspend/ban users) 
+// have been removed from here because they are already implemented and 
+// consumed by the frontend via moderation.routes.js.
 
 module.exports = router;

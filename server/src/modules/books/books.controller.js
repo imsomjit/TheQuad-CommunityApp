@@ -2,7 +2,7 @@
 
 const asyncHandler = require("../../utils/asyncHandler");
 const booksService = require("./books.service");
-const { uploadBookSchema, getBooksQuerySchema } = require("./books.schemas");
+const { uploadBookSchema, getBooksQuerySchema, updateBookSchema } = require("./books.schemas");
 const AppError = require("../../utils/AppError");
 
 exports.uploadBook = asyncHandler(async (req, res) => {
@@ -62,11 +62,12 @@ exports.incrementDownloads = asyncHandler(async (req, res) => {
 exports.deleteBook = asyncHandler(async (req, res) => {
   const { id } = req.params;
   await booksService.deleteBook(Number(id));
-  res.status(204).json({ status: "success", data: null });
+  res.status(204).send();
 });
 
 exports.updateBook = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const book = await booksService.updateBook(Number(id), req.body, req.file);
+  const data = updateBookSchema.parse(req.body);
+  const book = await booksService.updateBook(Number(id), data, req.file);
   res.status(200).json({ status: "success", data: { book } });
 });

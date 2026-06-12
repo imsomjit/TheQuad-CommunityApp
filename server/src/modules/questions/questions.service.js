@@ -288,7 +288,22 @@ const createAnswer = async (questionId, authorId, body) => {
 };
 
 const updateAnswer = async (id, userId, body) => {
-  throw new AppError("Answers cannot be edited", 403, "FORBIDDEN");
+  const [answer] = await db
+    .select()
+    .from(answers)
+    .where(eq(answers.id, id))
+    .limit(1);
+
+  if (!answer) throw new AppError("Answer not found", 404, "NOT_FOUND");
+  if (answer.authorId !== userId) throw new AppError("You can only edit your own answers", 403, "FORBIDDEN");
+
+  const [updated] = await db
+    .update(answers)
+    .set({ body, updatedAt: new Date() })
+    .where(eq(answers.id, id))
+    .returning();
+
+  return updated;
 };
 
 const deleteAnswer = async (id, userId, userRole) => {

@@ -1,20 +1,8 @@
 "use strict";
 
-const { verifyAccessToken } = require("../utils/jwt");
+const { verifyAccessToken, verifyRefreshToken } = require("../utils/jwt");
 const AppError = require("../utils/AppError");
 const asyncHandler = require("../utils/asyncHandler");
-
-/**
- * auth middleware — verifies the JWT access token from Authorization header.
- *
- * On success: attaches decoded payload to req.user
- *   req.user = { id, username, role }
- *
- * On failure: passes a 401 AppError to next()
- *
- * Usage:
- *   router.get('/protected', auth, controller.action);
- */
 const { db } = require("../db/index");
 const { users } = require("../db/schema/index");
 const { eq } = require("drizzle-orm");
@@ -39,22 +27,23 @@ const checkUserStatus = async (userId) => {
   return user;
 };
 
+const invalidateUserCache = (userId) => {
+  banCache.delete(userId);
+};
+
 const auth = asyncHandler(async (req, _res, next) => {
-  let token;
+  let decoded;
   const header = req.headers.authorization;
 
   if (header && header.startsWith("Bearer ")) {
-    token = header.slice(7);
-  } else if (req.query.token && req.originalUrl.includes("/api/notifications/stream")) {
-    token = req.query.token;
-  }
-
-  if (!token) {
+    const token = header.slice(7);
+    decoded = verifyAccessToken(token);
+  } else if (req.cookies?.pv_refresh && req.originalUrl.includes("/api/notifications/stream")) {
+    decoded = verifyRefreshToken(req.cookies.pv_refresh);
+  } else {
     throw new AppError("Authentication required", 401, "MISSING_TOKEN");
   }
 
-  const decoded = verifyAccessToken(token);
-  
   // Check DB to ensure user is not suspended or banned
   const user = await checkUserStatus(decoded.id);
 
@@ -70,29 +59,31 @@ const auth = asyncHandler(async (req, _res, next) => {
   next();
 });
 
-/**
- * optionalAuth — same as auth but doesn't fail if no token is present.
- * Useful for routes that are public but show extra data when authenticated.
- */
 const optionalAuth = async (req, _res, next) => {
-  let token;
+  let decoded;
   const header = req.headers.authorization;
 
   if (header && header.startsWith("Bearer ")) {
-    token = header.slice(7);
-  } else if (req.query.token && req.originalUrl.includes("/api/notifications/stream")) {
-    token = req.query.token;
+    const token = header.slice(7);
+    try {
+      decoded = verifyAccessToken(token);
+    } catch {
+      // Ignore
+    }
+  } else if (req.cookies?.pv_refresh && req.originalUrl.includes("/api/notifications/stream")) {
+    try {
+      decoded = verifyRefreshToken(req.cookies.pv_refresh);
+    } catch {
+      // Ignore
+    }
   }
 
-  if (!token) {
+  if (!decoded) {
     req.user = null;
     return next();
   }
 
   try {
-    const decoded = verifyAccessToken(token);
-    
-    // Check DB to ensure user is not suspended or banned
     const user = await checkUserStatus(decoded.id);
 
     if (!user || user.isBanned || (user.isSuspended && (!user.suspensionExpiresAt || new Date() < new Date(user.suspensionExpiresAt)))) {
@@ -125,4 +116,4 @@ const requireCsrf = (req, _res, next) => {
   next();
 };
 
-module.exports = { auth, optionalAuth, restrictTo, requireCsrf };
+module.exports = { auth, optionalAuth, restrictTo, requireCsrf, invalidateUserCache };

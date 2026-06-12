@@ -8,6 +8,7 @@ const {
   createQuestionSchema,
   updateQuestionSchema,
   createAnswerSchema,
+  updateAnswerSchema,
 } = require("./questions.schemas");
 const {
   questionReadLimiter,
@@ -55,6 +56,7 @@ router.delete("/:id", auth, questionWriteLimiter, controller.remove);
 
 // Answers (nested under questions)
 router.post("/:id/answers", auth, questionWriteLimiter, validate(createAnswerSchema), controller.createAnswer);
+router.patch("/:id/answers/:answerId", auth, questionWriteLimiter, validate(updateAnswerSchema), controller.updateAnswer);
 router.delete("/:id/answers/:answerId", auth, questionWriteLimiter, controller.deleteAnswer);
 router.post("/:id/answers/:answerId/accept", auth, questionWriteLimiter, controller.acceptAnswer);
 

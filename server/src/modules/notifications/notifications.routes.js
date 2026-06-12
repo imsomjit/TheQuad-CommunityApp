@@ -14,12 +14,12 @@ const router = Router();
  * Server-Sent Events endpoint.
  * Client connects once and receives push events.
  *
- * The client is identified by their JWT access token (Authorization header
- * is readable on the initial SSE HTTP request).
+ * The client is authenticated via the HTTP-only pv_refresh cookie 
+ * which is read by the auth middleware.
  */
 router.get(
   "/stream",
-  auth,         // reads Authorization header — works on GET for SSE
+  auth,
   sseLimiter,
   (req, res) => {
     // Set SSE headers

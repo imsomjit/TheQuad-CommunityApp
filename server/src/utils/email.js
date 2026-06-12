@@ -40,19 +40,30 @@ const sendEmail = async ({ to, subject, html, text }) => {
   }
 
   const mailTransporter = getTransporter();
+  let retries = 3;
 
-  try {
-    await mailTransporter.sendMail({
-      from: `"PeerVerse Community" <${env.GMAIL_USER}>`,
-      to,
-      subject,
-      html,
-      text: text || html.replace(/<[^>]*>/g, ""),
-    });
-    logger.info("Email sent", { to, subject });
-  } catch (err) {
-    logger.error("Failed to send email", { to, subject, error: err.message });
-    // We don't throw — email failure shouldn't crash the request
+  while (retries > 0) {
+    try {
+      await mailTransporter.sendMail({
+        from: `"PeerVerse Community" <${env.GMAIL_USER}>`,
+        to,
+        subject,
+        html,
+        text: text || html.replace(/<[^>]*>/g, ""),
+      });
+      logger.info("Email sent", { to, subject });
+      return; // Success, exit loop
+    } catch (err) {
+      retries -= 1;
+      logger.warn(`Email sending failed (retries left: ${retries})`, { to, subject, error: err.message });
+      if (retries === 0) {
+        logger.error("Failed to send email after all retries", { to, subject, error: err.message });
+        // We don't throw — email failure shouldn't crash the request
+      } else {
+        // Wait 2 seconds before retrying
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
   }
 };
 

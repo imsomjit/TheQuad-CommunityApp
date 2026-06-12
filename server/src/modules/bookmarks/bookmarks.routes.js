@@ -14,9 +14,7 @@ const bookmarkSchema = z.object({
 });
 
 const getBookmarksSchema = z.object({
-  query: z.object({
-    targetType: z.enum(["resource", "blog", "book"]).optional(),
-  })
+  targetType: z.enum(["resource", "blog", "book"]).optional(),
 });
 
 const router = Router();
@@ -38,7 +36,7 @@ router.get(
   "/",
   auth,
   bookmarkLimiter,
-  validate(getBookmarksSchema),
+  validate(getBookmarksSchema, "query"),
   asyncHandler(async (req, res) => {
     const ids = await bookmarkService.getUserBookmarkIds(
       req.user.id,

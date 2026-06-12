@@ -227,6 +227,68 @@ const autosaveLimiter = rateLimit({
   handler: rateLimitResponse,
 });
 
+// ── Opportunities ─────────────────────────────────────────────────────────────
+// Read: 120/min
+const opportunityReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+// Write: 30/15min
+const opportunityWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+// ── External APIs (GitHub, LeetCode) ──────────────────────────────────────────
+const githubLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+const leetcodeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+// ── Books ─────────────────────────────────────────────────────────────────────
+const bookReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+// ── Additional Specific Read Limiters ─────────────────────────────────────────
+const commentReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+const voteReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
 module.exports = {
   authLimiter,
   registerLimiter,
@@ -249,5 +311,11 @@ module.exports = {
   postReadLimiter,
   postWriteLimiter,
   autosaveLimiter,
-  apiLimiter: postReadLimiter, // alias for github module
+  opportunityReadLimiter,
+  opportunityWriteLimiter,
+  githubLimiter,
+  leetcodeLimiter,
+  bookReadLimiter,
+  commentReadLimiter,
+  voteReadLimiter,
 };

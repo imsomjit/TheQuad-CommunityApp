@@ -414,8 +414,8 @@ export const usersApi = {
     api.patch("/users/me/banner", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     }).then((r) => mapUser(r.data.data)),
-  follow: (username) => api.post(`/users/${username}/follow`).then((r) => r.data.data),
-  unfollow: (username) => api.delete(`/users/${username}/follow`).then((r) => r.data.data),
+  follow: (username) => api.post(`/follows/${username}`).then((r) => r.data.data),
+  unfollow: (username) => api.delete(`/follows/${username}`).then((r) => r.data.data),
   getFollowers: (username) => api.get(`/users/${username}/followers`).then((r) => r.data.data),
   getFollowing: (username) => api.get(`/users/${username}/following`).then((r) => r.data.data),
   getTotalUsers: () => api.get("/users/stats/count").then((r) => r.data.data),

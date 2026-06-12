@@ -2,11 +2,11 @@
 
 const { Router } = require("express");
 const controller = require("./leetcode.controller");
-const { apiLimiter } = require("../../middleware/rateLimiter");
+const { leetcodeLimiter } = require("../../middleware/rateLimiter");
 
 const router = Router();
 
 // GET /api/leetcode/:username
-router.get("/:username", apiLimiter, controller.getProfileStats);
+router.get("/:username", leetcodeLimiter, controller.getProfileStats);
 
 module.exports = router;

@@ -10,6 +10,14 @@ const uploadBookSchema = z.object({
   subject: z.string().max(200).optional(),
 });
 
+const updateBookSchema = z.object({
+  title: z.string().min(3).max(300).optional(),
+  description: z.string().optional(),
+  author: z.string().min(2).max(200).optional(),
+  isbn: z.string().max(50).optional(),
+  subject: z.string().max(200).optional(),
+});
+
 const getBooksQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).transform(Number).optional().default("1"),
   limit: z.string().regex(/^\d+$/).transform(Number).optional().default("20"),
@@ -21,5 +29,6 @@ const getBooksQuerySchema = z.object({
 
 module.exports = {
   uploadBookSchema,
+  updateBookSchema,
   getBooksQuerySchema,
 };

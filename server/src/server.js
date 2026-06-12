@@ -36,6 +36,13 @@ const start = async () => {
     // ── Graceful shutdown ────────────────────────────────────────────────────
     const shutdown = async (signal) => {
       logger.info(`${signal} received — shutting down gracefully`);
+      
+      // Force shutdown after 10 seconds if graceful shutdown hangs
+      setTimeout(() => {
+        logger.error("Could not close connections in time, forcefully shutting down");
+        process.exit(1);
+      }, 10000).unref();
+
       server.close(async () => {
         sseManager.closeAll();
         await pool.end();
@@ -47,9 +54,14 @@ const start = async () => {
     process.on("SIGTERM", () => shutdown("SIGTERM"));
     process.on("SIGINT", () => shutdown("SIGINT"));
 
-    // ── Unhandled rejections → log and exit ──────────────────────────────────
+    // ── Unhandled rejections & exceptions → log and exit ─────────────────────
     process.on("unhandledRejection", (reason) => {
       logger.error("Unhandled promise rejection", { reason });
+      process.exit(1);
+    });
+
+    process.on("uncaughtException", (error) => {
+      logger.error("Uncaught exception", { error: error.message, stack: error.stack });
       process.exit(1);
     });
 
