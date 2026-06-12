@@ -13,6 +13,7 @@ const {
   posts,
   comments,
   opportunities,
+  books,
 } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
@@ -100,6 +101,11 @@ const listReports = async (query) => {
         case "opportunity": {
           const [o] = await db.select({ publicId: opportunities.publicId }).from(opportunities).where(eq(opportunities.id, r.targetId));
           if (o) { targetPublicId = o.publicId; targetUrl = `/opportunities/${o.publicId}`; }
+          break;
+        }
+        case "book": {
+          const [b] = await db.select({ publicId: books.publicId, title: books.title }).from(books).where(eq(books.id, r.targetId));
+          if (b) { targetPublicId = b.publicId; targetUrl = `/library/${b.publicId}`; }
           break;
         }
         case "comment": {

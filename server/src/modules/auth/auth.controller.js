@@ -11,15 +11,18 @@ const REFRESH_COOKIE_OPTIONS = {
   secure: env.NODE_ENV === "production", // HTTPS only in prod
   sameSite: env.NODE_ENV === "production" ? "none" : "lax", // "none" required for cross-domain in prod
   maxAge: parseDurationMs(env.JWT_REFRESH_EXPIRES_IN),
-  path: "/api/auth",          // Only sent to auth routes (minimizes exposure)
+  path: "/api",               // Allow SSE stream at /api/notifications to read this cookie
 };
 
 const setRefreshCookie = (res, token) => {
+  // Clear the legacy cookie that had path="/api/auth" to prevent browser conflicts
+  res.clearCookie("pv_refresh", { ...REFRESH_COOKIE_OPTIONS, path: "/api/auth", maxAge: 0 });
   res.cookie("pv_refresh", token, REFRESH_COOKIE_OPTIONS);
 };
 
 const clearRefreshCookie = (res) => {
   res.clearCookie("pv_refresh", { ...REFRESH_COOKIE_OPTIONS, maxAge: 0 });
+  res.clearCookie("pv_refresh", { ...REFRESH_COOKIE_OPTIONS, path: "/api/auth", maxAge: 0 });
 };
 
 // POST /api/auth/register
