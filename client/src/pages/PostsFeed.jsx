@@ -108,7 +108,7 @@ export default function PostsFeed() {
             </p>
 
             <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
-              Blogs & <span className="font-display-italic text-accent">editorials</span>, shared <span className="italic marker">by peers.</span>
+              Write. <span className="font-display-italic text-accent">Read. </span>&amp; <span className="italic marker">Inspire. </span>
             </h1>
 
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
@@ -119,10 +119,10 @@ export default function PostsFeed() {
           {currentUser && (
             <Link
               to="/posts/new"
-              className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+              className="hidden md:inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
             >
               <PenLine className="h-4 w-4" />
-              Write a post
+              Write a Post
             </Link>
           )}
         </div>

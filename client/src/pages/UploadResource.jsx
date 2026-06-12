@@ -116,7 +116,7 @@ export default function UploadResource() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Back button */}
             <button
                 onClick={() => navigate(-1)}

@@ -108,7 +108,7 @@ export default function AdminOpportunities() {
           onClick={() => { setShowForm(!showForm); setEditingId(null); }}
           className="flex items-center gap-2 px-4 py-2 bg-accent text-paper font-medium rounded-md hover:bg-accent-2"
         >
-          <Plus className="h-4 w-4" /> Add Opportunity
+          <Plus className="h-4 w-4" /> Add
         </button>
       </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Home, Compass, Plus, Library, User } from "lucide-react";
+import { Home, Compass, Plus, Search, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MobileAddMenu from "./MobileAddMenu";
 
@@ -37,9 +37,9 @@ export default function MobileNav() {
                         </button>
                     </div>
 
-                    <NavLink to="/library" className={linkClass} title="Library">
-                        <Library className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
-                        <span className="sr-only">Library</span>
+                    <NavLink to="/search" className={linkClass} title="Search">
+                        <Search className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
+                        <span className="sr-only">Search</span>
                     </NavLink>
                     <NavLink
                         to={user ? `/u/${user.username}` : "/login"}

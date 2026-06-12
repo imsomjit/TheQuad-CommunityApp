@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams, useLocation } from "react-router-do
 import {
   Braces,
   ArrowRight,
+  ArrowLeft,
   Eye,
   EyeOff,
   Loader2,
@@ -200,6 +201,14 @@ export default function Login() {
 
       {/* ──── RIGHT PANEL — Form ─────────────────────────────────────── */}
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-16 xl:px-24">
+        {/* Mobile Back Button */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-6 right-6 lg:hidden flex h-10 w-10 items-center justify-center rounded-full border border-rule bg-paper-2/60 text-ink-2 hover:text-ink hover:border-accent transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+
         <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
           {/* Header */}

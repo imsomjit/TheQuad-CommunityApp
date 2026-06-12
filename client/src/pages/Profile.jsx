@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
@@ -644,6 +644,7 @@ function ActivityTabs({ profile }) {
     const { resources, questions, bookmarks } = useApp();
     const { isAuthenticated } = useAuth();
     const { currentUser } = useApp();
+    const [searchParams] = useSearchParams();
     const isOwnProfile = isAuthenticated && currentUser?.username === profile.username;
 
     const myResources = resources.filter(r => r.uploader?.id === profile.id || r.uploader?.username === profile.username);
@@ -693,7 +694,7 @@ function ActivityTabs({ profile }) {
     }, [isOwnProfile]);
 
     return (
-        <Tabs defaultValue="resources" className="w-full">
+        <Tabs defaultValue={searchParams.get("tab") || "resources"} className="w-full">
             <TabsList className="bg-paper-2/60 border border-rule p-1 h-auto flex-wrap">
                 <TabsTrigger value="resources" className="data-[state=active]:bg-paper data-[state=active]:text-accent px-4 py-2 text-sm">
                     Uploaded ({myResources.length})

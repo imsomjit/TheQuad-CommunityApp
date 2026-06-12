@@ -10,6 +10,9 @@ import {
     Moon,
     Braces,
     LogIn,
+    MessageSquare,
+    PenLine,
+    Bookmark
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
@@ -18,6 +21,12 @@ import { useTheme } from "../context/ThemeContext";
 import { getAvatarFallback } from "../utils/fallbacks";
 import NotificationDropdown from "./NotificationDropdown";
 import { Input } from "./ui/input";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "./ui/dropdown-menu";
 
 export default function Navbar({ scrolled }) {
     const { currentUser, unreadCount } = useApp();
@@ -109,23 +118,37 @@ export default function Navbar({ scrolled }) {
                 <div className="ml-auto flex items-center gap-2.5">
                     {isAuthenticated ? (
                         <>
-                            <Link
-                                to="/upload"
-                                data-testid="nav-upload-btn"
-                                className="hidden h-9 items-center gap-1.5 rounded-md border border-rule bg-paper-2 px-3 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink sm:inline-flex"
-                            >
-                                <Upload className="h-3.5 w-3.5" />
-                                Upload
-                            </Link>
-
-                            <Link
-                                to="/ask"
-                                data-testid="nav-ask-btn"
-                                className="hidden h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper sm:inline-flex"
-                            >
-                                <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                                Ask
-                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        data-testid="nav-add-btn"
+                                        className="hidden h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-paper sm:inline-flex hover:brightness-110 active:scale-95 transition-all"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                        Create
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/ask" className="cursor-pointer flex items-center gap-2">
+                                            <MessageSquare className="h-4 w-4" />
+                                            <span>Ask Question</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/upload" className="cursor-pointer flex items-center gap-2">
+                                            <Upload className="h-4 w-4" />
+                                            <span>Share Resource</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/posts/new" className="cursor-pointer flex items-center gap-2">
+                                            <PenLine className="h-4 w-4" />
+                                            <span>Write Post</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </>
                     ) : (
                         <>
@@ -167,6 +190,17 @@ export default function Navbar({ scrolled }) {
 
                     {isAuthenticated && (
                         <>
+                            {/* Bookmarks */}
+                            <Link
+                                to={`/u/${currentUser?.username}?tab=saved`}
+                                data-testid="nav-bookmarks-link"
+                                aria-label="Bookmarks"
+                                title="Saved Bookmarks"
+                                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                            >
+                                <Bookmark className="h-4 w-4" />
+                            </Link>
+
                             {/* Notifications */}
                             <NotificationDropdown>
                                 <button

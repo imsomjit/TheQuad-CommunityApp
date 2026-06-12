@@ -7,7 +7,12 @@ import {
   FileText,
   Target,
   ArrowRight,
-  Loader2
+  Loader2,
+  TrendingUp,
+  Code,
+  Palette,
+  BrainCircuit,
+  Zap
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { resourcesApi, questionsApi, postsApi, booksApi, opportunitiesApi } from "../services/api";
@@ -21,9 +26,23 @@ import EmptyPlaceholder from "../components/EmptyPlaceholder";
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const [searchInput, setSearchInput] = useState(query);
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
+
+  useEffect(() => {
+    setSearchInput(query);
+  }, [query]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchInput.trim()) {
+      setSearchParams({ q: searchInput.trim() });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const [results, setResults] = useState({
     resources: [],
@@ -86,66 +105,144 @@ export default function Search() {
 
   return (
     <div className="w-full min-h-screen pb-24 px-4 sm:px-8 xl:px-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="mb-8 pt-8">
-        <h1 className="font-display text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-          Search Results
-        </h1>
-        <p className="mt-2 text-ink-2 flex items-center gap-2">
-          <SearchIcon className="h-4 w-4" />
-          {query ? (
-            <>
-              Showing results for <span className="font-semibold text-ink">"{query}"</span>
-            </>
-          ) : (
-            "Enter a search query to explore the platform."
-          )}
-        </p>
+      <header className="mb-10 pt-2 sm:pt-12 relative z-10">
+        <div className="max-w-3xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl mb-4 flex items-center gap-3">
+            <SearchIcon className="w-8 h-8 sm:w-10 sm:h-10 text-accent drop-shadow-md" strokeWidth={2.5} />
+            <span className="bg-gradient-to-br from-ink via-ink to-ink-3 bg-clip-text text-transparent drop-shadow-sm pb-1">
+              Search
+            </span>
+          </h1>
+          <p className="text-ink-2 text-lg mb-10 max-w-2xl leading-relaxed">
+            Discover resources, community questions, books, and exciting new opportunities.
+          </p>
+
+          <form onSubmit={handleSearchSubmit} className="relative w-full mb-6 group">
+            {/* Animated Glow Behind Search Bar */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-accent via-syntax-purple to-syntax-cyan rounded-3xl blur-md opacity-20 group-hover:opacity-40 group-focus-within:opacity-60 transition duration-500"></div>
+            
+            <div className="relative bg-paper backdrop-blur-xl border-2 border-rule hover:border-rule-2 focus-within:border-accent rounded-2xl shadow-sm hover:shadow-lg focus-within:shadow-lg transition-all duration-300 flex items-center">
+              <div className="pl-5 flex items-center pointer-events-none">
+                <SearchIcon className="h-5 w-5 text-ink-3 group-focus-within:text-accent transition-colors duration-300" />
+              </div>
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="What are you looking for?"
+                className="block w-full pl-4 pr-16 py-4 bg-transparent text-ink focus:ring-0 focus:outline-none transition-all duration-300 placeholder:text-ink-3 text-lg"
+              />
+              <div className="absolute inset-y-0 right-2 flex items-center">
+                <button 
+                  type="submit" 
+                  className="p-2.5 bg-accent text-paper hover:bg-accent/90 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
+                  title="Search"
+                >
+                  <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {/* Quick suggestions when empty, otherwise showing results status */}
+          <div className="h-auto min-h-[2rem]">
+            {query ? (
+              <p className="text-ink-2 flex items-center gap-2 text-sm font-medium animate-in fade-in slide-in-from-bottom-1 duration-300">
+                Showing results for <span className="font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-md">"{query}"</span>
+              </p>
+            ) : (
+              <div className="animate-in fade-in duration-500 pb-4">
+                <p className="text-ink-3 text-sm font-medium mb-3">Trending now:</p>
+                <div className="flex flex-wrap gap-2 mb-10">
+                  {["React", "Machine Learning", "Hackathon", "Data Structures", "Next.js"].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => {
+                        setSearchInput(term);
+                        setSearchParams({ q: term });
+                      }}
+                      className="px-4 py-1.5 text-xs sm:text-sm font-medium bg-paper-2 hover:bg-paper-3 text-ink-2 hover:text-ink rounded-full border border-rule transition-all duration-300 hover:-translate-y-0.5 shadow-sm hover:shadow flex items-center gap-1.5 group/btn"
+                    >
+                      <TrendingUp className="w-3.5 h-3.5 text-accent/70 group-hover/btn:text-accent transition-colors" />
+                      {term}
+                    </button>
+                  ))}
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-ink mb-5">Browse Categories</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+                   {[
+                     { name: "Development", icon: Code, color: "text-syntax-cyan", bg: "bg-syntax-cyan/10", query: "development" },
+                     { name: "Design", icon: Palette, color: "text-syntax-rose", bg: "bg-syntax-rose/10", query: "design" },
+                     { name: "AI & ML", icon: BrainCircuit, color: "text-syntax-purple", bg: "bg-syntax-purple/10", query: "machine learning" },
+                     { name: "Productivity", icon: Zap, color: "text-syntax-amber", bg: "bg-syntax-amber/10", query: "productivity" },
+                   ].map((cat) => (
+                     <button
+                       key={cat.name}
+                       onClick={() => {
+                         setSearchInput(cat.query);
+                         setSearchParams({ q: cat.query });
+                       }}
+                       className="flex flex-col items-start p-4 sm:p-5 rounded-2xl border border-rule bg-paper hover:bg-paper-2 hover:border-accent/40 transition-all duration-300 group hover:-translate-y-1 hover:shadow-lg text-left"
+                     >
+                       <div className={`p-3 rounded-xl ${cat.bg} mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                         <cat.icon className={`w-6 h-6 ${cat.color}`} />
+                       </div>
+                       <span className="font-semibold text-ink group-hover:text-accent transition-colors">{cat.name}</span>
+                       <span className="text-xs text-ink-3 mt-1 font-medium">Explore resources &rarr;</span>
+                     </button>
+                   ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
       {query && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-8 flex flex-wrap gap-2 bg-transparent border-b border-rule pb-px h-auto rounded-none w-full justify-start overflow-x-auto no-scrollbar">
+          <TabsList className="mb-8 flex flex-wrap gap-2 bg-transparent w-full justify-start h-auto pb-2">
             <TabsTrigger
               value="all"
-              className="rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-ink text-ink-3 px-4 py-2"
+              className="group whitespace-nowrap rounded-xl transition-all duration-300 hover:bg-paper-2/80 active:scale-95 data-[state=active]:bg-paper-2 data-[state=active]:shadow-sm data-[state=active]:text-accent text-ink-2 px-5 py-2.5 font-medium border border-transparent data-[state=active]:border-rule/50"
             >
               All Results
-              <span className="ml-2 rounded-full bg-paper-2 px-2 py-0.5 text-xs font-mono">{totalResults}</span>
+              <span className="ml-2.5 rounded-full bg-paper-3/50 px-2.5 py-0.5 text-xs font-mono transition-colors group-data-[state=active]:bg-accent/10 group-data-[state=active]:text-accent">{totalResults}</span>
             </TabsTrigger>
             <TabsTrigger
               value="resources"
-              className="rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-ink text-ink-3 px-4 py-2"
+              className="group whitespace-nowrap rounded-xl transition-all duration-300 hover:bg-paper-2/80 active:scale-95 data-[state=active]:bg-paper-2 data-[state=active]:shadow-sm data-[state=active]:text-accent text-ink-2 px-5 py-2.5 font-medium border border-transparent data-[state=active]:border-rule/50"
             >
-              <BookOpen className="w-4 h-4 mr-2 inline" /> Resources
-              <span className="ml-2 rounded-full bg-paper-2 px-2 py-0.5 text-xs font-mono">{results.resources.length}</span>
+              <BookOpen className="w-4 h-4 mr-2 inline transition-transform group-data-[state=active]:scale-110" /> Resources
+              <span className="ml-2.5 rounded-full bg-paper-3/50 px-2.5 py-0.5 text-xs font-mono transition-colors group-data-[state=active]:bg-accent/10 group-data-[state=active]:text-accent">{results.resources.length}</span>
             </TabsTrigger>
             <TabsTrigger
               value="questions"
-              className="rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-ink text-ink-3 px-4 py-2"
+              className="group whitespace-nowrap rounded-xl transition-all duration-300 hover:bg-paper-2/80 active:scale-95 data-[state=active]:bg-paper-2 data-[state=active]:shadow-sm data-[state=active]:text-accent text-ink-2 px-5 py-2.5 font-medium border border-transparent data-[state=active]:border-rule/50"
             >
-              <MessageSquare className="w-4 h-4 mr-2 inline" /> Questions
-              <span className="ml-2 rounded-full bg-paper-2 px-2 py-0.5 text-xs font-mono">{results.questions.length}</span>
+              <MessageSquare className="w-4 h-4 mr-2 inline transition-transform group-data-[state=active]:scale-110" /> Questions
+              <span className="ml-2.5 rounded-full bg-paper-3/50 px-2.5 py-0.5 text-xs font-mono transition-colors group-data-[state=active]:bg-accent/10 group-data-[state=active]:text-accent">{results.questions.length}</span>
             </TabsTrigger>
             <TabsTrigger
               value="posts"
-              className="rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-ink text-ink-3 px-4 py-2"
+              className="group whitespace-nowrap rounded-xl transition-all duration-300 hover:bg-paper-2/80 active:scale-95 data-[state=active]:bg-paper-2 data-[state=active]:shadow-sm data-[state=active]:text-accent text-ink-2 px-5 py-2.5 font-medium border border-transparent data-[state=active]:border-rule/50"
             >
-              <FileText className="w-4 h-4 mr-2 inline" /> Posts
-              <span className="ml-2 rounded-full bg-paper-2 px-2 py-0.5 text-xs font-mono">{results.posts.length}</span>
+              <FileText className="w-4 h-4 mr-2 inline transition-transform group-data-[state=active]:scale-110" /> Posts
+              <span className="ml-2.5 rounded-full bg-paper-3/50 px-2.5 py-0.5 text-xs font-mono transition-colors group-data-[state=active]:bg-accent/10 group-data-[state=active]:text-accent">{results.posts.length}</span>
             </TabsTrigger>
             <TabsTrigger
               value="books"
-              className="rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-ink text-ink-3 px-4 py-2"
+              className="group whitespace-nowrap rounded-xl transition-all duration-300 hover:bg-paper-2/80 active:scale-95 data-[state=active]:bg-paper-2 data-[state=active]:shadow-sm data-[state=active]:text-accent text-ink-2 px-5 py-2.5 font-medium border border-transparent data-[state=active]:border-rule/50"
             >
-              <BookOpen className="w-4 h-4 mr-2 inline" /> Library
-              <span className="ml-2 rounded-full bg-paper-2 px-2 py-0.5 text-xs font-mono">{booksData.length}</span>
+              <BookOpen className="w-4 h-4 mr-2 inline transition-transform group-data-[state=active]:scale-110" /> Library
+              <span className="ml-2.5 rounded-full bg-paper-3/50 px-2.5 py-0.5 text-xs font-mono transition-colors group-data-[state=active]:bg-accent/10 group-data-[state=active]:text-accent">{booksData.length}</span>
             </TabsTrigger>
             <TabsTrigger
               value="opportunities"
-              className="rounded-t-md rounded-b-none border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:text-ink text-ink-3 px-4 py-2"
+              className="group whitespace-nowrap rounded-xl transition-all duration-300 hover:bg-paper-2/80 active:scale-95 data-[state=active]:bg-paper-2 data-[state=active]:shadow-sm data-[state=active]:text-accent text-ink-2 px-5 py-2.5 font-medium border border-transparent data-[state=active]:border-rule/50"
             >
-              <Target className="w-4 h-4 mr-2 inline" /> Opportunities
-              <span className="ml-2 rounded-full bg-paper-2 px-2 py-0.5 text-xs font-mono">{results.opportunities.length}</span>
+              <Target className="w-4 h-4 mr-2 inline transition-transform group-data-[state=active]:scale-110" /> Opportunities
+              <span className="ml-2.5 rounded-full bg-paper-3/50 px-2.5 py-0.5 text-xs font-mono transition-colors group-data-[state=active]:bg-accent/10 group-data-[state=active]:text-accent">{results.opportunities.length}</span>
             </TabsTrigger>
           </TabsList>
 

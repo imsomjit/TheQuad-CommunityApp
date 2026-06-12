@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Target, Bookmark, Calendar, Clock, Trophy, ServerCrash, OctagonAlert, CodeXml } from "lucide-react";
+import { Search, Target, Bookmark, Calendar, Clock, Trophy, ServerCrash, OctagonAlert, CodeXml, Plus } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -17,7 +17,7 @@ import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
 
 export default function Opportunities() {
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     
     const [opportunities, setOpportunities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -131,6 +131,16 @@ export default function Opportunities() {
                             Discover coding contests, hackathons, and data science competitions from various of popular platforms like &mdash; LeetCode, CodeForces, Kaggle, Naukri etc.
                         </p>
                     </div>
+
+                    {user?.role === "admin" && (
+                        <Link
+                            to="/admin/opportunities"
+                            className="hidden md:inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Opportunity
+                        </Link>
+                    )}
                 </div>
             </header>
 
