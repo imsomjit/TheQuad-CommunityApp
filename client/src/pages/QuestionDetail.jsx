@@ -133,7 +133,7 @@ export default function QuestionDetail() {
 
             <header className="border-b-2 border-double border-rule pb-8">
                 <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-                    &sect;03 &middot; question / #{question.id}
+                    &sect;03 &middot; The forum
                 </p>
 
                 <h1 className="mt-2 font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">

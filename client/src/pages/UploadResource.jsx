@@ -129,7 +129,7 @@ export default function UploadResource() {
             {/* Header */}
             <header className="mb-8">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-syntax-rose mb-2">
-          // new resource
+          // new note
                 </p>
 
                 <h1 className="font-display text-4xl font-bold tracking-tighter text-ink">

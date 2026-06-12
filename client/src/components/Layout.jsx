@@ -11,28 +11,35 @@ import { useApp } from "../context/AppContext";
 import { Braces, AlertCircle, Info, CheckCircle2 } from "lucide-react";
 
 const ROUTE_LABELS = [
-    { match: /^\/$/, label: "home feed", section: "§01" },
-    { match: /^\/resources$/, label: "resources", section: "§02" },
-    { match: /^\/resources(\/.*)?$/, label: "resource detail", section: "§02" },
-    { match: /^\/questions$/, label: "questions", section: "§03" },
-    { match: /^\/questions(\/.*)?$/, label: "question detail", section: "§03" },
-    { match: /^\/ask$/, label: "question ask", section: "§03" },
-    { match: /^\/upload$/, label: "resource upload", section: "§02" },
-    { match: /^\/posts$/, label: "posts", section: "§04" },
-    { match: /^\/posts\/new$/, label: "post write", section: "§04" },
-    { match: /^\/posts\/.+\/edit$/, label: "post edit", section: "§04" },
-    { match: /^\/posts\/.+$/, label: "post read", section: "§04" },
-    { match: /^\/library$/, label: "library", section: "§05" },
-    { match: /^\/library(\/.*)?$/, label: "book detail", section: "§05" },
-    { match: /^\/opportunities(\/.*)?$/, label: "opportunities", section: "§06" },
-    { match: /^\/u\/.+\/bookmarks$/, label: "bookmarks", section: "§07" },
-    { match: /^\/u\/.+\/followers$/, label: "profile followers", section: "§07" },
-    { match: /^\/u\/.+\/following$/, label: "profile following", section: "§07" },
-    { match: /^\/u\/.+$/, label: "profile", section: "§07" },
-    { match: /^\/settings\/profile$/, label: "profile edit", section: "§07" },
-    { match: /^\/notifications(\/.*)?$/, label: "notifications", section: "§08" },
-    { match: /^\/auth\/callback$/, label: "authenticating", section: "§00" },
-    { match: /^\/admin(\/.*)?$/, label: "admin console", section: "§00" },
+    { match: /^\/$/, label: "the feed", section: "§01", pathName: "Home feed" },
+    { match: /^\/resources$/, label: "the notes", section: "§02", pathName: "Resources" },
+    { match: /^\/resources\/.+$/, label: "the notes", section: "§02", pathName: "Resources / details" },
+    { match: /^\/questions$/, label: "the forum", section: "§03", pathName: "Questions" },
+    { match: /^\/questions\/.+$/, label: "the forum", section: "§03", pathName: "Questions / discuss" },
+    { match: /^\/ask$/, label: "new question", section: "§03", pathName: "Questions / ask" },
+    { match: /^\/upload$/, label: "new note", section: "§02", pathName: "Resources / upload" },
+    { match: /^\/posts$/, label: "the post", section: "§04", pathName: "Posts" },
+    { match: /^\/posts\/new$/, label: "new post", section: "§04", pathName: "Posts / create" },
+    { match: /^\/posts\/.+\/edit$/, label: "post edit", section: "§04", pathName: "Posts / edit" },
+    { match: /^\/posts\/.+$/, label: "the post", section: "§04", pathName: "Posts / view" },
+    { match: /^\/library$/, label: "the library", section: "§05", pathName: "library" },
+    { match: /^\/library\/.+$/, label: "the library", section: "§05", pathName: "library / book details" },
+    { match: /^\/opportunities$/, label: "the board", section: "§06", pathName: "opportunities" },
+    { match: /^\/opportunities\/.+$/, label: "the board", section: "§06", pathName: "opportunities / apply" },
+    { match: /^\/u\/.+\/bookmarks$/, label: "the bookmarks", section: "§07", pathName: "My Bookmarks" },
+    { match: /^\/u\/.+\/followers$/, label: "The followers", section: "§07", pathName: "My Profile / Followers" },
+    { match: /^\/u\/.+\/following$/, label: "The followings", section: "§07", pathName: "My Profile / Followings" },
+    { match: /^\/u\/.+$/, label: "the profile", section: "§07", pathName: "My Profile" },
+    { match: /^\/settings\/profile$/, label: "the profile", section: "§07", pathName: "My Profile / edit" },
+    { match: /^\/notifications(\/.*)?$/, label: "notifications", section: "§08", pathName: "recent Activities" },
+    { match: /^\/search(\/.*)?$/, label: "search", section: "§09", pathName: "Search" },
+    { match: /^\/login$/, label: "Sign in", section: "§00", pathName: "login account" },
+    { match: /^\/register$/, label: "Sign up", section: "§00", pathName: "create account" },
+    { match: /^\/auth\/callback$/, label: "authenticating", section: "§00", pathName: "Authenticating" },
+    { match: /^\/privacy$/, label: "the policy", section: "§10", pathName: "Privacy policy" },
+    { match: /^\/terms$/, label: "the terms", section: "§10", pathName: "Terms of service" },
+    { match: /^\/faq$/, label: "the FAQs", section: "§10", pathName: "Asked questions" },
+    { match: /^\/admin(\/.*)?$/, label: "admin console", section: "§00", pathName: "Admin Console" },
 ];
 
 function getRouteMeta(pathname) {
@@ -40,6 +47,7 @@ function getRouteMeta(pathname) {
         ROUTE_LABELS.find((r) => r.match.test(pathname)) || {
             label: "page",
             section: "§",
+            pathName: "a learning space"
         }
     );
 }
@@ -98,7 +106,7 @@ export default function Layout() {
                             <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                                 <span className="flex items-center gap-2">
                                     <span className="text-accent animate-pulse">●</span>
-                                    the peerverse / vol.01 / a learning space
+                                    peerverse / vol.01 / {meta.pathName}
                                 </span>
 
                                 <span className="hidden items-center gap-2 sm:flex">

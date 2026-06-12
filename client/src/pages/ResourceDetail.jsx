@@ -160,7 +160,7 @@ export default function ResourceDetail() {
             <article className="space-y-6">
                 <header className="border-b-2 border-double border-rule pb-8">
                     <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-                        &sect;02 &middot; the library
+                        &sect;02 &middot; the notes
                     </p>
 
                     <h1 className="mt-2 font-display text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl">

@@ -120,7 +120,7 @@ export default function Resources() {
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-rose">
-                            &sect;02 &middot; the library
+                            &sect;02 &middot; the notes
                         </p>
 
                         <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
@@ -140,7 +140,7 @@ export default function Resources() {
                         className="hidden md:inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
                     >
                         <Upload className="h-4 w-4" />
-                        New Resource
+                        Upload Note
                     </Link>
                 </div>
             </header>

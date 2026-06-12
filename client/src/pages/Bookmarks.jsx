@@ -88,7 +88,7 @@ export default function Bookmarks() {
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl mb-4 flex items-center gap-3">
             <Bookmark className="w-8 h-8 sm:w-10 sm:h-10 text-accent drop-shadow-md text-syntax-rose" strokeWidth={2.5} />
             <span className="drop-shadow-sm pb-1">
-              Your <span className="marker">Bookmarks.</span>
+              My <span className="marker">Bookmarks.</span>
             </span>
           </h1>
           <p className="text-ink-2 text-lg mb-6 max-w-2xl leading-relaxed">

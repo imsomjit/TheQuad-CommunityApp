@@ -67,7 +67,7 @@ export default function Library() {
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-syntax-mint">
-                            &sect;05 &middot; the bookshelf
+                            &sect;05 &middot; the library
                         </p>
 
                         <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
