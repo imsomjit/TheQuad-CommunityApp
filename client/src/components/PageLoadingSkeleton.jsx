@@ -21,7 +21,7 @@ export default function PageLoadingSkeleton() {
             <div className="hidden md:flex fixed top-[92px] left-0 h-[calc(100vh-92px)] w-64 flex-col border-r border-rule bg-paper p-4">
                 <div className="h-3 w-16 rounded bg-paper-2 shimmer mb-6 mt-4 ml-4" />
                 <div className="space-y-2 px-2">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
+                    {[1, 2, 3].map(i => (
                         <div key={i} className="h-10 w-full rounded-md bg-paper-2 shimmer" />
                     ))}
                 </div>
@@ -51,7 +51,7 @@ export default function PageLoadingSkeleton() {
 
                     {/* Content Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                        {[1, 2, 3].map((i) => (
                             <div key={i} className="flex flex-col gap-4 rounded-xl bg-paper-2/30 border border-rule p-5 sm:p-6 shadow-sm">
                                 {/* Card Header */}
                                 <div className="flex gap-4 items-center">

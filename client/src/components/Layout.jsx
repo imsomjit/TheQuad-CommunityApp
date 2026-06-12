@@ -11,18 +11,28 @@ import { useApp } from "../context/AppContext";
 import { Braces, AlertCircle, Info, CheckCircle2 } from "lucide-react";
 
 const ROUTE_LABELS = [
-    { match: /^\/$/, label: "feed", section: "§01" },
-    { match: /^\/resources(\/.*)?$/, label: "resources", section: "§02" },
-    { match: /^\/questions(\/.*)?$/, label: "questions", section: "§03" },
-    { match: /^\/ask$/, label: "ask", section: "§03" },
-    { match: /^\/upload$/, label: "upload", section: "§02" },
-    { match: /^\/pv\/.+$/, label: "profile", section: "§05" },
-    { match: /^\/notifications$/, label: "notifications", section: "§06" },
-    { match: /^\/auth\/callback$/, label: "authenticating", section: "§00" },
+    { match: /^\/$/, label: "home feed", section: "§01" },
+    { match: /^\/resources$/, label: "resources", section: "§02" },
+    { match: /^\/resources(\/.*)?$/, label: "resource detail", section: "§02" },
+    { match: /^\/questions$/, label: "questions", section: "§03" },
+    { match: /^\/questions(\/.*)?$/, label: "question detail", section: "§03" },
+    { match: /^\/ask$/, label: "question ask", section: "§03" },
+    { match: /^\/upload$/, label: "resource upload", section: "§02" },
     { match: /^\/posts$/, label: "posts", section: "§04" },
-    { match: /^\/posts\/new$/, label: "write", section: "§04" },
-    { match: /^\/posts\/.+\/edit$/, label: "editing", section: "§04" },
-    { match: /^\/posts\/.+$/, label: "post", section: "§04" },
+    { match: /^\/posts\/new$/, label: "post write", section: "§04" },
+    { match: /^\/posts\/.+\/edit$/, label: "post edit", section: "§04" },
+    { match: /^\/posts\/.+$/, label: "post read", section: "§04" },
+    { match: /^\/library$/, label: "library", section: "§05" },
+    { match: /^\/library(\/.*)?$/, label: "book detail", section: "§05" },
+    { match: /^\/opportunities(\/.*)?$/, label: "opportunities", section: "§06" },
+    { match: /^\/u\/.+\/bookmarks$/, label: "bookmarks", section: "§07" },
+    { match: /^\/u\/.+\/followers$/, label: "profile followers", section: "§07" },
+    { match: /^\/u\/.+\/following$/, label: "profile following", section: "§07" },
+    { match: /^\/u\/.+$/, label: "profile", section: "§07" },
+    { match: /^\/settings\/profile$/, label: "profile edit", section: "§07" },
+    { match: /^\/notifications(\/.*)?$/, label: "notifications", section: "§08" },
+    { match: /^\/auth\/callback$/, label: "authenticating", section: "§00" },
+    { match: /^\/admin(\/.*)?$/, label: "admin console", section: "§00" },
 ];
 
 function getRouteMeta(pathname) {
@@ -44,6 +54,12 @@ export default function Layout() {
 
     const [scrolled, setScrolled] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setNow(new Date()), 60000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -90,7 +106,9 @@ export default function Layout() {
                                     <span>·</span>
                                     <span className="text-ink-2">{meta.label}</span>
                                     <span>·</span>
-                                    <span>{theme === "light" ? "paper" : "ink"}</span>
+                                    <span>{now.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</span>
+                                    <span>·</span>
+                                    <span>{now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })}</span>
                                 </span>
                             </div>
                         )}
