@@ -596,8 +596,12 @@ export const booksApi = {
     headers: data instanceof FormData ? { "Content-Type": "multipart/form-data" } : undefined
   }).then((r) => r.data.data.book),
   delete: (id) => api.delete(`/books/${id}`).then((r) => r.data),
-  incrementViews: (id) => api.post(`/books/${id}/views`).then((r) => r.data),
   incrementDownloads: (id) => api.post(`/books/${id}/downloads`).then((r) => r.data),
+};
+
+// Views
+export const viewsApi = {
+  recordView: (contentType, id) => api.post(`/views/${contentType}/${id}`).then((r) => r.data),
 };
 
 export { mapUser, mapResource, mapQuestion, mapAnswer, mapComment, mapNotification, mapPost };

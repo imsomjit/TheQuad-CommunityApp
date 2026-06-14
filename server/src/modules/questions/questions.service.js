@@ -132,13 +132,7 @@ const listQuestions = async (query) => {
   return { data, pagination: meta(count) };
 };
 
-const getQuestionById = async (id, incrementView = false) => {
-  if (incrementView) {
-    await db
-      .update(questions)
-      .set({ views: sql`${questions.views} + 1` })
-      .where(eq(questions.id, id));
-  }
+const getQuestionById = async (id) => {
 
   const [row] = await db
     .select({

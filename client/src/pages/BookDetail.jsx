@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ChevronLeft, Download, Eye, FileText, Calendar, User, ShieldAlert, FileDigit, Maximize, Minimize } from "lucide-react";
+import { Download, Bookmark, BookmarkCheck, ArrowLeft, ExternalLink, Calendar, User, FileDigit, ShieldAlert, Flag, Maximize, Minimize, ChevronLeft, Eye, FileText } from "lucide-react";
+import { DetailSkeleton } from "../components/Skeletons";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { useViewTracker } from "../hooks/useViewTracker";
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
@@ -109,8 +111,6 @@ export default function BookDetail() {
             try {
                 const data = await booksApi.get(publicId);
                 setBook(data);
-                // Increment views (fire and forget)
-                booksApi.incrementViews(data.id).catch(console.error);
             } catch (err) {
                 toast.error("Failed to load book details");
             } finally {
@@ -132,22 +132,14 @@ export default function BookDetail() {
     };
 
     if (authLoading) return null;
-
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location.pathname }} replace />;
     }
 
+    useViewTracker("book", book?.id);
+
     if (loading) {
-        return (
-            <div className="mx-auto w-full max-w-4xl animate-pulse space-y-8 px-4 sm:px-0">
-                <div className="h-6 w-32 rounded bg-paper-2" />
-                <div className="h-48 rounded-2xl bg-paper-2" />
-                <div className="space-y-4">
-                    <div className="h-4 w-full rounded bg-paper-2" />
-                    <div className="h-4 w-3/4 rounded bg-paper-2" />
-                </div>
-            </div>
-        );
+        return <DetailSkeleton />;
     }
 
     if (!book) {
@@ -207,13 +199,15 @@ export default function BookDetail() {
                                     />
                                     <div className="hidden sm:block h-6 w-px bg-rule mx-1" />
                                     <BookmarkButton targetType="book" targetId={book.id} initialCount={book.bookmarksCount} />
-                                    <button
-                                        onClick={() => setIsReportOpen(true)}
-                                        className="rounded-full p-2 text-ink-3 hover:bg-red-500/10 hover:text-red-500 transition-colors"
-                                        title="Report this book"
-                                    >
-                                        <ShieldAlert className="h-5 w-5" />
-                                    </button>
+                                    {currentUser?.id !== (book.uploader?.id || book.uploaderId) && (
+                                        <button
+                                            onClick={() => setIsReportOpen(true)}
+                                            className="rounded-full p-2 text-ink-3 hover:bg-red-500/10 hover:text-red-500 transition-colors"
+                                            title="Report this book"
+                                        >
+                                            <ShieldAlert className="h-5 w-5" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -281,7 +275,7 @@ export default function BookDetail() {
                                 <div className="flex items-center gap-1.5 rounded-lg border border-rule px-3 py-1.5 bg-paper-2/50">
                                     <User className="h-4 w-4 text-ink-3" />
                                     <span className="font-medium text-ink">Uploader:</span>
-                                    <Link to={`/u/${book.uploader.username}`} className="text-accent hover:underline">{book.uploader.username}</Link>
+                                    <Link to={`/u/${book.uploader.username}`} className="text-accent hover:underline">@{book.uploader.username}</Link>
                                 </div>
                             </div>
 

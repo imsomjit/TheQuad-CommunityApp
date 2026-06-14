@@ -160,12 +160,7 @@ const getBookById = async (publicId) => {
   return book;
 };
 
-const incrementViews = async (id) => {
-  await db
-    .update(books)
-    .set({ views: sql`${books.views} + 1` })
-    .where(eq(books.id, id));
-};
+
 
 const incrementDownloads = async (id) => {
   await db
@@ -221,7 +216,6 @@ module.exports = {
   updateBook,
   getBooks,
   getBookById,
-  incrementViews,
   incrementDownloads,
   deleteBook,
 };

@@ -13,11 +13,12 @@ const {
 } = require("../../utils/jwt");
 const AppError = require("../../utils/AppError");
 const { sendEmail } = require("../../utils/email");
-const { getOtpEmailTemplate, getResendOtpEmailTemplate, getWelcomeEmailTemplate } = require("../../utils/emailTemplates");
+const { getOtpEmailTemplate, getResendOtpEmailTemplate, getWelcomeEmailTemplate, getResetPasswordEmailTemplate } = require("../../utils/emailTemplates");
 const notificationService = require("../notifications/notifications.service");
 const settingsService = require("../settings/settings.service");
 
 const BCRYPT_ROUNDS = 12;
+const crypto = require("crypto");
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 const getOtpExpiry = () => new Date(Date.now() + 15 * 60 * 1000); // 15 mins
@@ -67,6 +68,7 @@ const register = async ({ name, username, email, password, gender, dateOfBirth }
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   
   const otp = generateOtp();
+  const hashedOtp = await bcrypt.hash(otp, BCRYPT_ROUNDS);
   const otpExpiresAt = getOtpExpiry();
   const avatarUrl = generateDiceBearAvatar(username, gender);
 
@@ -84,7 +86,7 @@ const register = async ({ name, username, email, password, gender, dateOfBirth }
       role: "student", 
       authProvider: "local",
       isVerified: false,
-      otp,
+      otp: hashedOtp,
       otpExpiresAt
     })
     .returning();
@@ -111,7 +113,9 @@ const verifyOtp = async ({ email, otp }) => {
     throw new AppError("Too many failed attempts. Please request a new OTP.", 403, "TOO_MANY_ATTEMPTS");
   }
 
-  if (user.otp !== otp || new Date() > user.otpExpiresAt) {
+  const isOtpValid = user.otp && await bcrypt.compare(otp, user.otp);
+
+  if (!isOtpValid || new Date() > user.otpExpiresAt) {
     await db.update(users).set({ otpAttempts: user.otpAttempts + 1 }).where(eq(users.id, user.id));
     throw new AppError("Invalid or expired OTP", 400, "INVALID_OTP");
   }
@@ -151,13 +155,18 @@ const resendOtp = async ({ email }) => {
   if (user.isVerified) throw new AppError("User is already verified", 400, "ALREADY_VERIFIED");
 
   const otp = generateOtp();
+  const hashedOtp = await bcrypt.hash(otp, BCRYPT_ROUNDS);
   const otpExpiresAt = getOtpExpiry();
 
-  await db.update(users).set({ otp, otpExpiresAt, otpAttempts: 0 }).where(eq(users.id, user.id));
+  await db
+    .update(users)
+    .set({ otp: hashedOtp, otpExpiresAt, otpAttempts: 0, updatedAt: new Date() })
+    .where(eq(users.id, user.id));
 
+  // Send new OTP
   await sendEmail({
     to: email,
-    subject: "Your new verification code for PeerVerse",
+    subject: "Your new verification code",
     html: getResendOtpEmailTemplate(otp),
   });
 
@@ -403,6 +412,80 @@ const getMe = async (userId) => {
   return sanitizeUser(user);
 };
 
+/**
+ * Forgot Password Flow
+ */
+const forgotPassword = async ({ email }) => {
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  
+  // We don't throw an error if the user isn't found to prevent email enumeration
+  if (!user) return { success: true };
+
+  // Only allow reset for local users
+  if (user.authProvider !== "local" && user.authProvider !== "both") {
+    return { success: true }; // Silent ignore for OAuth-only users
+  }
+
+  // Generate 32-byte hex token
+  const token = crypto.randomBytes(32).toString("hex");
+  
+  // Hash token for database storage
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+  await db
+    .update(users)
+    .set({ resetToken: hashedToken, resetTokenExpiresAt: expiresAt, updatedAt: new Date() })
+    .where(eq(users.id, user.id));
+
+  const resetUrl = `${env.CLIENT_URL}/reset-password?token=${token}`;
+
+  await sendEmail({
+    to: email,
+    subject: "Reset your PeerVerse password",
+    html: getResetPasswordEmailTemplate(resetUrl, user.name),
+  });
+
+  return { success: true };
+};
+
+/**
+ * Reset Password
+ */
+const resetPassword = async ({ token, password }) => {
+  // Hash the incoming token to match what's in DB
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.resetToken, hashedToken))
+    .limit(1);
+
+  if (!user) {
+    throw new AppError("Invalid or expired reset token", 400, "INVALID_TOKEN");
+  }
+
+  if (new Date() > user.resetTokenExpiresAt) {
+    throw new AppError("Reset token has expired", 400, "EXPIRED_TOKEN");
+  }
+
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+  // Update password and invalidate token
+  await db
+    .update(users)
+    .set({ 
+      passwordHash, 
+      resetToken: null, 
+      resetTokenExpiresAt: null, 
+      updatedAt: new Date() 
+    })
+    .where(eq(users.id, user.id));
+
+  return { success: true };
+};
+
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
 const issueTokens = async (user) => {
@@ -425,4 +508,4 @@ const issueTokens = async (user) => {
   return { accessToken, refreshToken };
 };
 
-module.exports = { register, verifyOtp, resendOtp, login, googleAuth, refresh, logout, getMe };
+module.exports = { register, verifyOtp, resendOtp, login, googleAuth, refresh, logout, getMe, forgotPassword, resetPassword };

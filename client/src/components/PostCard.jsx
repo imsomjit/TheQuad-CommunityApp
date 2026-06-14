@@ -121,7 +121,7 @@ export default function PostCard({ post, variant = "default" }) {
                 className="h-6 w-6 rounded-full object-cover"
               />
               <span className="truncate text-xs font-medium text-ink-2 transition-colors hover:text-ink">
-                {post.author.name}
+                @{post.author.username}
               </span>
             </Link>
           )}

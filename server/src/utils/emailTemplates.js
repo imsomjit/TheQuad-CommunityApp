@@ -145,9 +145,21 @@ const getBirthdayEmailTemplate = (name) => {
   return getBaseTemplate(content, "Happy Birthday from PeerVerse!");
 };
 
+const getResetPasswordEmailTemplate = (resetUrl, name) => {
+  const content = `
+    <h2 style="margin-top: 0; color: #1c1814;">Reset your password, ${name}</h2>
+    <p>We received a request to reset the password for your PeerVerse account.</p>
+    <p>You can reset your password by clicking the button below:</p>
+    <a href="${resetUrl}" class="btn">Reset Password</a>
+    <p style="margin-top: 24px; font-size: 14px; color: #5a534a;">If you didn't request a password reset, you can safely ignore this email. This link will expire in 15 minutes.</p>
+  `;
+  return getBaseTemplate(content, "Reset your PeerVerse password");
+};
+
 module.exports = {
   getOtpEmailTemplate,
   getResendOtpEmailTemplate,
   getWelcomeEmailTemplate,
-  getBirthdayEmailTemplate
+  getBirthdayEmailTemplate,
+  getResetPasswordEmailTemplate
 };

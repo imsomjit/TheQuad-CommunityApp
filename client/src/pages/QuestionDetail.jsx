@@ -14,6 +14,8 @@ import {
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
+import { useViewTracker } from "../hooks/useViewTracker";
+import { DetailSkeleton } from "../components/Skeletons";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
 import { extractIdFromSlug } from "../utils/slugify";
@@ -43,7 +45,6 @@ export default function QuestionDetail() {
         addAnswer,
         acceptAnswer,
         deleteQuestion,
-        incrementViews,
         fetchQuestion,
         openReportModal,
     } = useApp();
@@ -61,21 +62,16 @@ export default function QuestionDetail() {
             if (extractedId) {
                 await fetchQuestion(extractedId);
             }
-            if (question) {
-                incrementViews("question", id);
-            }
             setIsLoading(false);
         };
         loadFullQuestion();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, extractedId]);
 
+    useViewTracker("question", question?.id);
+
     if (isLoading) {
-        return (
-            <div className="py-20 text-center">
-                <p className="font-display text-2xl text-ink">Loading...</p>
-            </div>
-        );
+        return <DetailSkeleton />;
     }
 
     if (!question) {
@@ -201,25 +197,27 @@ export default function QuestionDetail() {
                     </div>
 
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-                        <button
-                            data-testid="report-question-btn"
-                            onClick={() => {
-                                if (!isAuthenticated) {
-                                    toast.error("Please log in to report");
-                                    navigate("/login");
-                                    return;
-                                }
-                                openReportModal("question", question.id, question.title);
-                            }}
-                            className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
-                        >
-                            <Flag className="h-3 w-3" />
-                            report
-                        </button>
+                        {!isOwner && (
+                            <button
+                                data-testid="report-question-btn"
+                                onClick={() => {
+                                    if (!isAuthenticated) {
+                                        toast.error("Please log in to report");
+                                        navigate("/login");
+                                        return;
+                                    }
+                                    openReportModal("question", question.id, question.title);
+                                }}
+                                className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
+                            >
+                                <Flag className="h-3 w-3" />
+                                report
+                            </button>
+                        )}
 
                         <Link
                             to={`/u/${question.author.username}`}
-                            className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
+                            className="flex items-right gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
                         >
                             <img
                                 src={question.author.avatar}
@@ -312,20 +310,22 @@ export default function QuestionDetail() {
                                         </button>
                                     )}
 
-                                    <button
-                                        onClick={() => {
-                                            if (!isAuthenticated) {
-                                                toast.error("Please log in to report");
-                                                navigate("/login");
-                                                return;
-                                            }
-                                            openReportModal("answer", answer.id, `Answer by ${answer.author.name}`);
-                                        }}
-                                        className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
-                                    >
-                                        <Flag className="h-3 w-3" />
-                                        report
-                                    </button>
+                                    {currentUser?.id !== answer.author.id && (
+                                        <button
+                                            onClick={() => {
+                                                if (!isAuthenticated) {
+                                                    toast.error("Please log in to report");
+                                                    navigate("/login");
+                                                    return;
+                                                }
+                                                openReportModal("answer", answer.id, `Answer by @${answer.author.username}`);
+                                            }}
+                                            className="flex items-center gap-1 text-xs text-ink-3 transition-colors hover:text-syntax-rose"
+                                        >
+                                            <Flag className="h-3 w-3" />
+                                            report
+                                        </button>
+                                    )}
 
                                     {/* Edit / Delete actions for answer owner / moderator */}
                                     {(currentUser?.id === answer.author.id || isModerator) && (
@@ -360,7 +360,7 @@ export default function QuestionDetail() {
 
                                     <div className="text-xs">
                                         <div className="font-semibold text-ink">
-                                            {answer.author.name}
+                                            @{answer.author.username}
                                         </div>
                                         <div className="font-mono text-ink-3">
                                             answered {timeAgo(answer.createdAt)}

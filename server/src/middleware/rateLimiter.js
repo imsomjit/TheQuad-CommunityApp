@@ -46,6 +46,15 @@ const registerLimiter = rateLimit({
   handler: rateLimitResponse,
 });
 
+// Forgot Password Limiter
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
 // Refresh token limiter - much more generous since multiple tabs/users behind NAT can hit this often
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
@@ -292,6 +301,7 @@ const voteReadLimiter = rateLimit({
 module.exports = {
   authLimiter,
   registerLimiter,
+  forgotPasswordLimiter,
   refreshLimiter,
   resourceReadLimiter,
   resourceWriteLimiter,

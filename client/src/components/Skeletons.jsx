@@ -82,28 +82,65 @@ export function OpportunityCardSkeleton() {
 
 export function OpportunityDetailSkeleton() {
     return (
-        <div className="max-w-4xl mx-auto pb-24 animate-in fade-in">
-            <div className="mb-8">
-                <Skeleton className="h-12 w-3/4 mb-4" />
-                <div className="flex gap-4">
+        <div className="max-w-4xl mx-auto pb-24 animate-in fade-in pt-8">
+            <div className="mb-8 space-y-4 border border-rule rounded-2xl bg-paper p-6 md:p-8">
+                <div className="flex justify-between items-start">
                     <Skeleton className="h-6 w-24 rounded-full" />
-                    <Skeleton className="h-6 w-32 rounded-full" />
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="md:col-span-2 space-y-6">
-                    <Skeleton className="h-[400px] w-full rounded-xl" />
-                    <div className="space-y-4">
-                        <Skeleton className="h-6 w-1/3" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-5/6" />
+                    <div className="flex gap-2">
+                        <Skeleton className="h-9 w-24 rounded-lg" />
+                        <Skeleton className="h-9 w-24 rounded-lg" />
                     </div>
                 </div>
-                <div className="space-y-6">
-                    <Skeleton className="h-48 w-full rounded-xl" />
-                    <Skeleton className="h-48 w-full rounded-xl" />
+                <Skeleton className="h-10 w-3/4 rounded-md" />
+                <div className="flex gap-4">
+                    <Skeleton className="h-6 w-32 rounded-full" />
+                    <Skeleton className="h-6 w-32 rounded-full" />
                 </div>
+                <div className="space-y-3 pt-6 border-t border-rule mt-6">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-[90%]" />
+                    <Skeleton className="h-4 w-[95%]" />
+                    <Skeleton className="h-4 w-3/4" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function DetailSkeleton() {
+    return (
+        <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-in fade-in">
+            <div className="mb-6 flex gap-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-24" />
+            </div>
+            
+            <Skeleton className="h-12 w-[85%] mb-8" />
+            
+            <div className="flex items-center gap-4 mb-10 pb-8 border-b border-rule">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-8 w-24 rounded-full" />
+            </div>
+            
+            <div className="space-y-5">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-[95%]" />
+                <Skeleton className="h-4 w-[90%]" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-[85%]" />
+                
+                <div className="py-6">
+                    <Skeleton className="h-[200px] w-full rounded-xl" />
+                </div>
+                
+                <Skeleton className="h-4 w-[92%]" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-[80%]" />
             </div>
         </div>
     );

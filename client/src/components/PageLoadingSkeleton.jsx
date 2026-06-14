@@ -4,7 +4,7 @@ export default function PageLoadingSkeleton() {
     return (
         <div className="relative min-h-screen bg-paper text-ink overflow-hidden pointer-events-none">
             {/* Fake Top Navbar */}
-            <div className="fixed top-0 z-40 w-full flex flex-col border-b border-rule bg-paper/85">
+            <div className="sticky md:fixed top-0 z-40 w-full flex flex-col border-b border-rule bg-paper/85">
                 <div className="h-6 sm:h-7 border-b border-rule/60 bg-paper-2" />
                 <div className="h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                     <div className="h-8 w-32 rounded bg-paper-2 shimmer" />

@@ -230,7 +230,7 @@ export default function PostsFeed() {
       <div className="mt-2">
         {loading ? (
           <PostsGrid>
-            {Array(6).fill(0).map((_, i) => (
+            {Array(3).fill(0).map((_, i) => (
               <PostCardSkeleton key={i} />
             ))}
           </PostsGrid>

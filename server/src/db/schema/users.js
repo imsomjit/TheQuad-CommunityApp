@@ -32,9 +32,11 @@ const users = pgTable("users", {
 
   // ─── Authentication & Verification ──────────────────────────────────────────
   isVerified: boolean("is_verified").default(false).notNull(),
-  otp: varchar("otp", { length: 6 }),
+  otp: varchar("otp", { length: 255 }),
   otpExpiresAt: timestamp("otp_expires_at", { withTimezone: true }),
   otpAttempts: integer("otp_attempts").default(0).notNull(),
+  resetToken: varchar("reset_token", { length: 255 }),
+  resetTokenExpiresAt: timestamp("reset_token_expires_at", { withTimezone: true }),
 
   // ─── Profile ─────────────────────────────────────────────────────────────
   avatarUrl: text("avatar_url"),

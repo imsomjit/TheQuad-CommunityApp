@@ -25,8 +25,7 @@ const create = asyncHandler(async (req, res) => {
 
 const getOne = asyncHandler(async (req, res) => {
   const question = await questionService.getQuestionById(
-    parseInt(req.params.id),
-    true
+    parseInt(req.params.id)
   );
   res.json({ success: true, data: question });
 });

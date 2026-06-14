@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ExternalLink, Target, Bookmark, BookmarkCheck, Calendar, Clock, Trophy, ArrowLeft, GraduationCap, CodeXml } from "lucide-react";
+import { ExternalLink, Target, Bookmark, BookmarkCheck, Calendar, Clock, Trophy, ArrowLeft, GraduationCap, CodeXml, Flag } from "lucide-react";
 import { opportunitiesApi } from "../services/api";
+import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { OpportunityDetailSkeleton } from "../components/Skeletons";
@@ -12,6 +13,7 @@ import remarkGfm from "remark-gfm";
 export default function OpportunityDetail() {
     const { id } = useParams();
     const { isAuthenticated } = useAuth();
+    const { openReportModal } = useApp();
 
     const [opp, setOpp] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -89,6 +91,14 @@ export default function OpportunityDetail() {
                             {opp.status}
                         </div>
                         <div className="flex gap-2">
+                            <button
+                                onClick={() => openReportModal("opportunity", opp.id, opp.title)}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-ink-2 hover:text-red-500 hover:border-red-500/30 transition-colors text-sm"
+                                title="Report this opportunity"
+                            >
+                                <Flag className="w-4 h-4" />
+                                <span className="hidden sm:inline">Report</span>
+                            </button>
                             <button
                                 onClick={handleBookmark}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm transition-colors ${opp.isBookmarked

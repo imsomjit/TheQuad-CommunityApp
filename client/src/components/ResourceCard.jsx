@@ -144,7 +144,7 @@ export default function ResourceCard({ resource, variant = "list" }) {
 
                         <span className="text-xs text-ink-2">
                             <span className="font-medium text-ink">
-                                {resource.uploader.name}
+                                @{resource.uploader.username}
                             </span>{" "}
                             <span className="font-mono text-ink-3">
                                 · {timeAgo(resource.createdAt)}

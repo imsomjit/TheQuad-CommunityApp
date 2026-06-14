@@ -10,7 +10,10 @@ import { useApp } from "../context/AppContext";
 import { toast } from "sonner";
 import { CATEGORY_META } from "../components/PostCard";
 import { MarkdownRenderer } from "../components/MarkdownEditor";
+import { DetailSkeleton } from "../components/Skeletons";
+import { DetailSkeleton } from "../components/Skeletons";
 import CommentSection from "../components/CommentSection";
+import { useViewTracker } from "../hooks/useViewTracker";
 
 
 // ── Category metadata card ────────────────────────────────────────────────────
@@ -208,6 +211,11 @@ export default function PostDetail() {
   const [userVote, setUserVote] = useState(null);
   const [shareToast, setShareToast] = useState(false);
 
+  const [toc, setToc] = useState([]);
+  const [activeHeadingId, setActiveHeadingId] = useState("");
+
+  useViewTracker("post", post?.id);
+
   const isBookmarked = post ? bookmarks.has(`blog:${post.id}`) : false;
 
   useEffect(() => {
@@ -315,7 +323,7 @@ export default function PostDetail() {
 
 
   // ── Render states ──────────────────────────────────────────────────────────
-  if (loading) return <PostDetailSkeleton />;
+  if (loading) return <DetailSkeleton />;
 
   if (error === "404" || !post) {
     return (
@@ -380,17 +388,18 @@ export default function PostDetail() {
             >
               {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
             </button>
-            <button
-              onClick={handleReport}
-              title="Report"
-              className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule text-ink-3 transition-colors hover:border-red-300 hover:text-red-400"
-            >
-              <Flag className="h-4 w-4" />
-            </button>
+            {!isOwner && (
+              <button
+                onClick={handleReport}
+                title="Report"
+                className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule text-ink-3 transition-colors hover:border-red-300 hover:text-red-400"
+              >
+                <Flag className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* ── Article content ────────────────────────────────────────────── */}
         {/* ── Article content ────────────────────────────────────────────── */}
         <article className="min-w-0 flex-1 max-w-3xl mx-auto">
           {/* Breadcrumb */}
@@ -602,26 +611,3 @@ export default function PostDetail() {
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
-function PostDetailSkeleton() {
-  return (
-    <div className="mx-auto max-w-7xl w-full px-4 py-8 sm:px-6 lg:px-2">
-      <div className="flex gap-8">
-        <div className="hidden w-9 md:block" />
-        <div className="flex-1 space-y-4">
-          <div className="h-4 w-32 shimmer rounded-sm bg-paper-2" />
-          <div className="h-10 w-3/4 shimmer rounded-sm bg-paper-2" />
-          <div className="h-10 w-1/2 shimmer rounded-sm bg-paper-2" />
-          <div className="flex gap-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-4 w-20 shimmer rounded-sm bg-paper-2" />)}
-          </div>
-          <div className="mt-6 space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-4 w-full shimmer rounded-sm bg-paper-2" style={{ width: `${60 + Math.random() * 40}%` }} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

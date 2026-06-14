@@ -114,9 +114,8 @@ export default function QuestionCard({ question }) {
                         />
 
                         <span className="text-xs text-ink-2">
-                            asked by{" "}
                             <span className="font-medium text-ink">
-                                {question.author.name}
+                                @{question.author.username}
                             </span>
                             <span className="font-mono text-ink-3">
                                 {" "}· {timeAgo(question.createdAt)}

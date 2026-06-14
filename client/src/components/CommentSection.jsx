@@ -161,7 +161,7 @@ export default function CommentSection({ targetType, targetId, className = "" })
               currentUser={currentUser}
               onReply={handleReply}
               onDelete={handleDelete}
-              onReport={(id) => openReportModal("comment", id, `Comment by ${comment.author?.name || "user"}`)}
+              onReport={(id) => openReportModal("comment", id, `Comment by @${comment.author?.username || "user"}`)}
               depth={0}
             />
           ))}
@@ -209,7 +209,7 @@ function CommentItem({ comment, currentUser, onReply, onDelete, onReport, depth 
               to={`/u/${comment.author?.username}`}
               className="text-xs font-medium text-ink hover:text-accent"
             >
-              {comment.author?.name || comment.author?.username || "User"}
+              @{comment.author?.username || "User"}
             </Link>
             <span className="font-mono text-[10px] text-ink-3">
               {new Date(comment.createdAt || comment.created_at).toLocaleDateString()}
@@ -242,7 +242,7 @@ function CommentItem({ comment, currentUser, onReply, onDelete, onReport, depth 
               </button>
             )}
 
-            {currentUser && (
+            {currentUser && !isOwner && (
               <button
                 onClick={() => onReport(comment.id)}
                 className="flex items-center gap-1 text-[10px] font-mono text-ink-3 transition-colors hover:text-red-400"
@@ -274,7 +274,7 @@ function CommentItem({ comment, currentUser, onReply, onDelete, onReport, depth 
           <input
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
-            placeholder={`Reply to ${comment.author?.name || "user"}…`}
+            placeholder={`Reply to @${comment.author?.username || "user"}…`}
             className="h-8 flex-1 rounded-sm border border-rule bg-paper px-2.5 text-xs text-ink placeholder:text-ink-3 focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/30"
             autoFocus
           />

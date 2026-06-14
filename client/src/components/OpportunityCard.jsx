@@ -1,14 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Bookmark, BookmarkCheck, Calendar, Clock, Trophy, CodeXml, Target } from "lucide-react";
+import { Bookmark, BookmarkCheck, Calendar, Clock, Trophy, CodeXml, Target, Flag } from "lucide-react";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
 import { useAuth } from "../context/AuthContext";
+import { useApp } from "../context/AppContext";
 import { opportunitiesApi } from "../services/api";
 import { toast } from "sonner";
 
 export default function OpportunityCard({ opportunity }) {
     const { isAuthenticated } = useAuth();
+    const { openReportModal } = useApp();
     const [isBookmarked, setIsBookmarked] = React.useState(opportunity.isBookmarked || false); // Might be initially false since we don't return it in list
 
     const handleBookmark = async (e) => {
@@ -29,6 +31,16 @@ export default function OpportunityCard({ opportunity }) {
         } catch (err) {
             toast.error("Failed to bookmark opportunity");
         }
+    };
+
+    const handleReport = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAuthenticated) {
+            toast.error("Please log in to report");
+            return;
+        }
+        openReportModal("opportunity", opportunity.id, opportunity.title);
     };
 
     const getStatusColor = (s) => {
@@ -60,12 +72,22 @@ export default function OpportunityCard({ opportunity }) {
                 <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wide uppercase border ${getStatusColor(opportunity.status)}`}>
                     {opportunity.status}
                 </div>
-                <button 
-                    onClick={handleBookmark}
-                    className={`p-1.5 rounded-full transition-colors ${isBookmarked ? 'text-accent bg-accent/10' : 'text-ink-3 hover:text-accent hover:bg-accent/10'}`}
-                >
-                    {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                </button>
+                <div className="flex items-center gap-1">
+                    <button 
+                        onClick={handleReport}
+                        className="p-1.5 rounded-full transition-colors text-ink-3 hover:text-red-500 hover:bg-red-500/10"
+                        title="Report"
+                    >
+                        <Flag className="w-4 h-4" />
+                    </button>
+                    <button 
+                        onClick={handleBookmark}
+                        className={`p-1.5 rounded-full transition-colors ${isBookmarked ? 'text-accent bg-accent/10' : 'text-ink-3 hover:text-accent hover:bg-accent/10'}`}
+                        title="Bookmark"
+                    >
+                        {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                    </button>
+                </div>
             </div>
             
             <h3 className="font-display font-semibold text-ink text-2xl leading-tight mb-3 group-hover:text-accent transition-colors line-clamp-2">

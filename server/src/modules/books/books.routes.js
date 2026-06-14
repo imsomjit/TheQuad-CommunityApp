@@ -29,7 +29,6 @@ const upload = multer({
 // Public routes
 router.get("/", bookReadLimiter, booksController.getBooks);
 router.get("/:publicId", bookReadLimiter, booksController.getBookById);
-router.post("/:id/views", bookReadLimiter, booksController.incrementViews);
 router.post("/:id/downloads", bookReadLimiter, booksController.incrementDownloads);
 
 // Admin only routes

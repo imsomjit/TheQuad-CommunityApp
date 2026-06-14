@@ -36,6 +36,7 @@ const {
 const { siteSettings } = require("./settings");
 const { broadcasts, broadcastTypeEnum } = require("./broadcasts");
 const { books } = require("./books");
+const { contentViews } = require("./content_views");
 
 module.exports = {
   // Tables
@@ -61,6 +62,7 @@ module.exports = {
   siteSettings,
   broadcasts,
   books,
+  contentViews,
 
   // Enums
   userRoleEnum,

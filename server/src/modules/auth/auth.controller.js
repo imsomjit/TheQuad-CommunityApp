@@ -183,5 +183,18 @@ const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { user } });
 });
 
-module.exports = { register, verifyOtp, resendOtp, login, googleRedirect, googleCallback, refresh, logout, me };
+// POST /api/auth/forgot-password
+const forgotPassword = asyncHandler(async (req, res) => {
+  await authService.forgotPassword(req.body);
+  // Always return the same response
+  res.json({ success: true, message: "If an account exists for this email, a password reset link has been sent." });
+});
+
+// POST /api/auth/reset-password
+const resetPassword = asyncHandler(async (req, res) => {
+  await authService.resetPassword(req.body);
+  res.json({ success: true, message: "Password has been successfully reset." });
+});
+
+module.exports = { register, verifyOtp, resendOtp, login, googleRedirect, googleCallback, refresh, logout, me, forgotPassword, resetPassword };
 

@@ -25,6 +25,8 @@ const AskQuestion = lazy(() => import("./pages/AskQuestion"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -80,6 +82,8 @@ function App() {
                   
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
                   <Route path="/" element={<Home />} />
                   <Route path="/explore" element={<Explore />} />

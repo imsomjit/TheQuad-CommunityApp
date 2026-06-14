@@ -47,11 +47,7 @@ exports.getBookById = asyncHandler(async (req, res) => {
   });
 });
 
-exports.incrementViews = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  await booksService.incrementViews(Number(id));
-  res.status(200).json({ status: "success" });
-});
+
 
 exports.incrementDownloads = asyncHandler(async (req, res) => {
   const { id } = req.params;

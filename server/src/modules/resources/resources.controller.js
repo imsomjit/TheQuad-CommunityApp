@@ -24,8 +24,7 @@ const create = asyncHandler(async (req, res) => {
 // GET /api/resources/:id
 const getOne = asyncHandler(async (req, res) => {
   const resource = await resourceService.getResourceById(
-    parseInt(req.params.id),
-    true // increment views
+    parseInt(req.params.id)
   );
   res.json({ success: true, data: resource });
 });

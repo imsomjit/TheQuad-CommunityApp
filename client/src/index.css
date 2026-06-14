@@ -546,7 +546,8 @@ html.light .ring-glow:focus-visible {
 .prose-dev {
     color: var(--ink);
     line-height: 1.8;
-    font-size: 1rem;
+    font-size: 1.125rem;
+    font-family: 'Charter', 'Bitstream Charter', 'Iowan Old Style', 'Georgia', serif;
     max-width: 72ch;
 }
 
@@ -558,11 +559,13 @@ html.light .ring-glow:focus-visible {
 .prose-dev h2,
 .prose-dev h3,
 .prose-dev h4 {
-    font-family: var(--font-display);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     line-height: 1.3;
     color: var(--ink);
     margin-top: 2em;
     margin-bottom: 0.5em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .prose-dev h1 {
@@ -585,7 +588,8 @@ html.light .ring-glow:focus-visible {
 
 .prose-dev p {
     color: var(--ink-2);
-    line-height: 1.85;
+    line-height: 1.9;
+    margin-bottom: 1.25em;
 }
 
 .prose-dev strong {

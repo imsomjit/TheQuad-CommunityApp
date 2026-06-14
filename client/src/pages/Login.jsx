@@ -278,12 +278,12 @@ export default function Login() {
                   <label className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">
                     Password
                   </label>
-                  <button
-                    type="button"
+                  <Link
+                    to="/forgot-password"
                     className="font-mono text-[10px] text-accent hover:underline"
                   >
                     forgot?
-                  </button>
+                  </Link>
                 </div>
                 <div className="relative">
                   <Input

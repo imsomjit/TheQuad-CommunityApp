@@ -438,7 +438,7 @@ export function AppProvider({ children }) {
     [isAuthenticated]
   );
 
-  const incrementViews = useCallback((kind, id) => {
+  const incrementLocalViews = useCallback((kind, id) => {
     const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
     if (kind === "question") {
       setQuestions((qs) =>
@@ -519,7 +519,7 @@ export function AppProvider({ children }) {
       fetchQuestion,
       addAnswer,
       acceptAnswer,
-      incrementViews,
+      incrementLocalViews,
       incrementDownloads,
       markNotifRead,
       markAllNotifsRead,
@@ -550,7 +550,7 @@ export function AppProvider({ children }) {
       fetchQuestion,
       addAnswer,
       acceptAnswer,
-      incrementViews,
+      incrementLocalViews,
       incrementDownloads,
       markNotifRead,
       markAllNotifsRead,

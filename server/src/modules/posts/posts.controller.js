@@ -25,7 +25,7 @@ const drafts = asyncHandler(async (req, res) => {
 // GET /api/posts/:slug
 const getBySlug = asyncHandler(async (req, res) => {
   const publicId = extractIdFromSlug(req.params.slug);
-  const post = await postsService.getPostByPublicId(publicId, true);
+  const post = await postsService.getPostByPublicId(publicId);
   res.json({ success: true, data: post });
 });
 

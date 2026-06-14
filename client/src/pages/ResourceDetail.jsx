@@ -21,6 +21,8 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import VoteButtons from "../components/VoteButtons";
 import TagBadge from "../components/TagBadge";
+import { DetailSkeleton } from "../components/Skeletons";
+import { useViewTracker } from "../hooks/useViewTracker";
 import { extractIdFromSlug } from "../utils/slugify";
 import { adminApi, resourcesApi } from "../services/api";
 const RESOURCE_TYPES = [
@@ -71,9 +73,9 @@ export default function ResourceDetail() {
         toggleBookmark,
         currentUser,
         deleteResource,
-        incrementViews,
         incrementDownloads,
         openReportModal,
+        apiLoaded,
     } = useApp();
     const { isAuthenticated } = useAuth();
 
@@ -82,10 +84,11 @@ export default function ResourceDetail() {
         (r) => r.publicId === extractedId || r.id === parseInt(extractedId, 10)
     );
 
-    useEffect(() => {
-        if (resource) incrementViews("resource", resource.id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [resource?.id]);
+    useViewTracker("resource", resource?.id);
+
+    if (!apiLoaded && !resource) {
+        return <DetailSkeleton />;
+    }
 
     if (!resource) {
         return (
@@ -244,31 +247,23 @@ export default function ResourceDetail() {
                         />
                         {isBookmarked ? "Saved" : "Save"}
                     </button>
-
-                    <button
-                        data-testid="report-resource-btn"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                toast.error("Please log in to report resources");
-                                navigate("/login");
-                                return;
-                            }
-                            openReportModal("resource", resource.id, resource.title);
-                        }}
-                        className="ml-auto inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
-                    >
-                        <Flag className="h-3.5 w-3.5" />
-                        Report
-                    </button>
-
-                    {isMine && (
-                        <Link
-                            to={`/upload?edit=${resource.id}`}
-                            className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink"
+                            
+                    {!isMine && (
+                        <button
+                            data-testid="report-resource-btn"
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    toast.error("Please log in to report resources");
+                                    navigate("/login");
+                                    return;
+                                }
+                                openReportModal("resource", resource.id, resource.title);
+                            }}
+                            className="ml-auto inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
                         >
-                            <Edit3 className="h-3.5 w-3.5" />
-                            Edit
-                        </Link>
+                            <Flag className="h-3.5 w-3.5" />
+                            Report
+                        </button>
                     )}
 
                     {(isMine || isModerator) && (

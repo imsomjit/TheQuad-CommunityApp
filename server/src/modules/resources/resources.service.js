@@ -153,13 +153,7 @@ const listResources = async (query) => {
  * Get a single resource by ID with full details.
  * Also increments view count atomically.
  */
-const getResourceById = async (id, incrementView = false) => {
-  if (incrementView) {
-    await db
-      .update(resources)
-      .set({ views: sql`${resources.views} + 1` })
-      .where(eq(resources.id, id));
-  }
+const getResourceById = async (id) => {
 
   const [row] = await db
     .select({
