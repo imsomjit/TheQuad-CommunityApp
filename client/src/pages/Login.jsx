@@ -143,20 +143,10 @@ export default function Login() {
         <div className="absolute inset-0 grid-bg opacity-40" />
 
         {/* Content */}
-        <div className="relative z-10 flex flex-1 flex-col justify-between p-12 xl:p-16">
-          {/* Top — Logo */}
-          <Link to="/" className="group flex items-baseline gap-2">
-            <span className="flex h-10 w-10 items-center justify-center rounded-sm border border-rule bg-paper-2/80 transition-colors group-hover:border-accent">
-              <Braces className="h-5 w-5 text-accent" strokeWidth={2} />
-            </span>
-            <span className="font-display text-2xl font-bold text-ink">
-              Peer<span className="font-display-italic text-accent">Verse</span>
-            </span>
-            <span className="ml-1 font-mono text-[10px] text-ink-3">/vol.01</span>
-          </Link>
+        <div className="relative z-10 flex flex-1 flex-col justify-center p-12 xl:p-16">
 
           {/* Center — Hero text */}
-          <div className="my-auto max-w-lg">
+          <div className="mt-14 mb-16 max-w-lg">
             <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
               <Terminal className="h-3.5 w-3.5 text-accent" />
               for people who code
@@ -183,7 +173,7 @@ export default function Login() {
           </div>
 
           {/* Bottom — Quote */}
-          <div className="rounded-sm border border-rule bg-paper p-5 backdrop-blur-sm">
+          <div className="rounded-sm mt-16 border border-rule bg-paper p-5 backdrop-blur-sm">
             <p className="text-sm leading-relaxed text-ink italic">
               <span className="text-accent">❝</span> Live as if you were to die tomorrow. Learn as if you were to live forever. <span className="text-accent">❞</span>
             </p>
@@ -201,10 +191,10 @@ export default function Login() {
 
       {/* ──── RIGHT PANEL — Form ─────────────────────────────────────── */}
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 lg:px-16 xl:px-24">
-        {/* Mobile Back Button */}
+        {/* Back Button */}
         <button 
           onClick={() => navigate(-1)}
-          className="absolute top-6 right-6 lg:hidden flex h-10 w-10 items-center justify-center rounded-full border border-rule bg-paper-2/60 text-ink-2 hover:text-ink hover:border-accent transition-colors"
+          className="absolute top-6 right-6 flex h-10 w-10 items-center justify-center rounded-full border border-rule bg-paper-2/60 text-ink-2 hover:text-ink hover:border-accent transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>

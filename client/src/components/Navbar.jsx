@@ -57,7 +57,7 @@ export default function Navbar({ scrolled }) {
     return (
         <header
             data-testid="app-navbar"
-            className={`border-b border-rule bg-paper/85 backdrop-blur-xl transition-all duration-700 ${
+            className={`border-b border-rule bg-paper/85 backdrop-blur-xl transition-all duration-300 ease-out ${
                 scrolled ? "h-14 shadow-sm" : "h-16"
             }`}
         >
@@ -82,7 +82,7 @@ export default function Navbar({ scrolled }) {
                             Peer
                         </span>
 
-                        <span className="font-display-italic text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent">
+                        <span className="font-display-italic text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent group-hover:text-ink transition-colors">
                             Verse
                         </span>
 

@@ -311,11 +311,11 @@ export default function Home() {
                                         data-testid="hero-browse-btn"
                                         className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-semibold text-paper btn-primary shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
                                     >
-                                        Open the library <ArrowRight className="h-4 w-4" />
+                                        View Resources <ArrowRight className="h-4 w-4" />
                                     </Link>
 
                                     <Link
-                                        to="/posts"
+                                        to="/ask"
                                         data-testid="hero-ask-btn"
                                         className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                                     >
