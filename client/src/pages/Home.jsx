@@ -193,7 +193,7 @@ export default function Home() {
                     if (res.data?.pagination?.total) return Number(res.data.pagination.total);
                     return 0;
                 };
-                
+
                 setOpportunitiesCount(getCount(oppsData) + getCount(upcomingOpps));
 
                 const resourcesCount = getCount(resourcesData);
@@ -319,7 +319,7 @@ export default function Home() {
                                         data-testid="hero-ask-btn"
                                         className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                                     >
-                                        Ask a question
+                                        Ask a Question
                                     </Link>
 
                                     <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
@@ -737,7 +737,7 @@ export default function Home() {
                             ))}
                         </div>
                     ) : (
-                        <EmptyPlaceholder 
+                        <EmptyPlaceholder
                             icon={BookText}
                             title="No books yet"
                             description="The library is empty."

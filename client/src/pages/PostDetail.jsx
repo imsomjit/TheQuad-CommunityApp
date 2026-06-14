@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { CATEGORY_META } from "../components/PostCard";
 import { MarkdownRenderer } from "../components/MarkdownEditor";
 import { DetailSkeleton } from "../components/Skeletons";
-import { DetailSkeleton } from "../components/Skeletons";
 import CommentSection from "../components/CommentSection";
 import { useViewTracker } from "../hooks/useViewTracker";
 
