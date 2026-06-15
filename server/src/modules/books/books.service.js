@@ -56,10 +56,12 @@ const getBooks = async ({ page, limit, search, author, subject, sort }) => {
   const filters = [eq(books.isDeleted, false)];
 
   if (search) {
+    const q = `%${search}%`;
     filters.push(
       or(
-        ilike(books.title, `%${search}%`),
-        ilike(books.author, `%${search}%`)
+        sql`to_tsvector('english', coalesce(${books.title}, '') || ' ' || coalesce(${books.description}, '') || ' ' || coalesce(${books.author}, '') || ' ' || coalesce(${books.subject}, '') || ' ' || coalesce(${books.isbn}, '')) @@ plainto_tsquery('english', ${search})`,
+        sql`${books.tags}::text ILIKE ${q}`,
+        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${books.uploaderId} AND (users.name ILIKE ${q} OR users.username ILIKE ${q}))`
       )
     );
   }

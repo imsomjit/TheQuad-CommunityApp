@@ -21,6 +21,7 @@ import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
 import BookCard from "../components/BookCard";
+import OpportunityCard from "../components/OpportunityCard";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 
 export default function Search() {
@@ -71,9 +72,9 @@ export default function Search() {
         const [resRes, qRes, pRes, bRes, oRes] = await Promise.all([
           resourcesApi.list({ q: query, limit: 10 }).catch(() => ({ data: [] })),
           questionsApi.list({ q: query, limit: 8 }).catch(() => ({ data: [] })),
-          postsApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
-          booksApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
-          opportunitiesApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
+          postsApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
+          booksApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
+          opportunitiesApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
         ]);
 
         setResults({
@@ -349,10 +350,7 @@ export default function Search() {
                     {/* Placeholder for opportunities, or we can just render simple cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {results.opportunities.slice(0, 4).map(opp => (
-                        <div key={opp.id} className="p-4 border border-rule rounded-md bg-paper">
-                          <h3 className="font-bold text-lg">{opp.title}</h3>
-                          <p className="text-sm text-ink-2">{opp.organizer}</p>
-                        </div>
+                        <OpportunityCard key={opp.id} opportunity={opp} />
                       ))}
                     </div>
                   </section>
@@ -395,10 +393,7 @@ export default function Search() {
               <TabsContent value="opportunities" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {results.opportunities.length > 0 ? (
                   results.opportunities.map(opp => (
-                    <div key={opp.id} className="p-4 border border-rule rounded-md bg-paper">
-                      <h3 className="font-bold text-lg">{opp.title}</h3>
-                      <p className="text-sm text-ink-2">{opp.organizer}</p>
-                    </div>
+                    <OpportunityCard key={opp.id} opportunity={opp} />
                   ))
                 ) : (
                   <div className="col-span-full"><EmptyPlaceholder icon={Target} title="No opportunities found" /></div>

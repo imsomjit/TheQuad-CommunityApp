@@ -313,6 +313,12 @@ const mapNotification = (n) => {
 
 // ── API Functions ────────────────────────────────────────────────────────────
 
+
+// ─── TAGS API ──────────────────────────────────────────────────────────────
+export const tagsApi = {
+  getAll: () => api.get("/tags").then((res) => res.data),
+};
+
 // Auth
 export const authApi = {
   register: (data) => api.post("/auth/register", data),

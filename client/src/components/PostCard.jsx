@@ -11,6 +11,7 @@ import {
   Layers,
 } from "lucide-react";
 import { generateSlug } from "../utils/slugify";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 // ── Category display helpers ─────────────────────────────────────────────────
 export const CATEGORY_META = {
@@ -116,9 +117,9 @@ export default function PostCard({ post, variant = "default" }) {
               className="flex min-w-0 items-center gap-2"
             >
               <img
-                src={post.author.avatar}
+                src={post.author.avatar || getAvatarFallback(post.author.name, post.author.username)}
                 alt={post.author.name}
-                className="h-6 w-6 rounded-full object-cover"
+                className="h-6 w-6 rounded-full object-cover bg-paper-2"
               />
               <span className="truncate text-xs font-medium text-ink-2 transition-colors hover:text-ink">
                 @{post.author.username}

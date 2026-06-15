@@ -16,6 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { toast } from "sonner";
+import AutocompleteTagInput from "../components/ui/AutocompleteTagInput";
+import { postCategoryEnum } from "shared";
 import { postsApi } from "../services/api";
 import { useApp } from "../context/AppContext";
 
@@ -636,12 +639,22 @@ export default function PostEditor() {
               Tags <span className="normal-case">(up to 10)</span>
             </label>
             <div className="flex gap-2">
-              <input
+              <AutocompleteTagInput
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                existingTags={tags}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.endsWith(" ") || val.endsWith(",")) {
+                    const t = val.toLowerCase().trim().replace(/[^a-z0-9-]/g, "");
+                    if (t && !tags.includes(t) && tags.length < 10) setTags((prev) => [...prev, t]);
+                    setTagInput("");
+                  } else {
+                    setTagInput(val.toLowerCase().replace(/[^a-z0-9- ]/g, ""));
+                  }
+                }}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                 placeholder="add-a-tag"
-                className="field-sm flex-1"
+                className="w-full rounded-md border border-rule bg-paper px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-accent/40 focus:ring-1 focus:ring-accent/30"
               />
               <button type="button" onClick={addTag} className="flex h-8 w-8 items-center justify-center rounded-sm border border-rule text-ink-2 hover:text-ink">
                 <Plus className="h-3.5 w-3.5" />

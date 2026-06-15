@@ -11,6 +11,7 @@ import {
 import { useApp } from "../context/AppContext";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
+import AutocompleteTagInput from "../components/ui/AutocompleteTagInput";
 import {
     Select,
     SelectContent,
@@ -38,7 +39,7 @@ export default function UploadResource() {
     const [type, setType] = useState("notes");
     const [college, setCollege] = useState("");
     const [branch, setBranch] = useState("");
-    const [semester, setSemester] = useState("all");
+    const [semester, setSemester] = useState("");
     const [subject, setSubject] = useState("");
     const [tags, setTags] = useState([]);
     const [tagInput, setTagInput] = useState("");
@@ -106,7 +107,7 @@ export default function UploadResource() {
                 type,
                 college,
                 branch,
-                semester: semester === "all" ? undefined : Number(semester),
+                semester: (!semester || semester === "all") ? undefined : Number(semester),
                 subject,
                 tags,
             }, file);
@@ -260,23 +261,26 @@ export default function UploadResource() {
                     </Field>
 
                     <Field label="Semester">
-                        <Select value={semester} onValueChange={setSemester}>
-                            <SelectTrigger
-                                data-testid="upload-semester"
-                                className="bg-paper border-rule h-11"
-                            >
-                                <SelectValue />
-                            </SelectTrigger>
-
-                            <SelectContent className="bg-paper border-rule text-ink">
-                                <SelectItem value="all">All Sem</SelectItem>
-                                {SEMESTERS.map((item) => (
-                                    <SelectItem key={item} value={String(item)}>
-                                        Sem {item}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            type="number"
+                            min="1"
+                            max="8"
+                            data-testid="upload-semester"
+                            value={semester}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") {
+                                    setSemester("");
+                                } else {
+                                    const num = parseInt(val, 10);
+                                    if (num >= 1 && num <= 8) {
+                                        setSemester(val);
+                                    }
+                                }
+                            }}
+                            placeholder="e.g. 3 (Leave blank for All sem)"
+                            className="bg-paper border-rule h-11 focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                        />
                     </Field>
 
                     <Field label="Subject" className="md:col-span-2">
@@ -293,15 +297,25 @@ export default function UploadResource() {
                 {/* Tags */}
                 <Field label="Tags">
                     <div className="flex gap-2">
-                        <Input
+                        <AutocompleteTagInput
                             data-testid="tag-input"
                             value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
+                            existingTags={tags}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val.endsWith(" ") || val.endsWith(",")) {
+                                    const t = val.trim().replace(/^#/, "").toLowerCase();
+                                    if (t && !tags.includes(t)) setTags([...tags, t]);
+                                    setTagInput("");
+                                } else {
+                                    setTagInput(val);
+                                }
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") addTag(e);
                             }}
-                            placeholder="add a tag and press Enter"
-                            className="bg-paper border-rule h-11 flex-1 focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                            placeholder="e.g. machine-learning, notes..."
+                            className="bg-paper border-rule h-11 w-full rounded-md px-3 text-sm focus-visible:border-accent/40 focus-visible:ring-accent/30 outline-none border"
                         />
 
                         <button

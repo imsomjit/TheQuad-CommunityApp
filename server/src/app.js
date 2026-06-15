@@ -29,6 +29,7 @@ const broadcastsRoutes = require("./modules/settings/broadcasts.routes");
 const moderationRoutes = require("./modules/moderation/moderation.routes");
 const booksRoutes = require("./modules/books/books.routes");
 const viewsRoutes = require("./modules/views/views.routes");
+const tagsRoutes = require("./modules/tags/tags.routes");
 
 const createApp = () => {
   const app = express();
@@ -88,6 +89,7 @@ const createApp = () => {
   app.use("/api/moderation", moderationRoutes);
   app.use("/api/books", booksRoutes);
   app.use("/api/views", viewsRoutes);
+  app.use("/api/tags", tagsRoutes);
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.use((req, res) => {

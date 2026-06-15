@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { Upload, FileText, Image as ImageIcon, Loader2, X, Plus, Pencil, Trash2, Eye, Save } from "lucide-react";
 import { booksApi } from "../../services/api";
+import AutocompleteTagInput from "../../components/ui/AutocompleteTagInput";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { generateSlug } from "../../utils/slugify";
@@ -185,9 +186,19 @@ export default function AdminBooks() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-ink">Tags</label>
                             <div className="flex gap-2">
-                                <input
+                                <AutocompleteTagInput
                                     value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
+                                    existingTags={tags}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val.endsWith(" ") || val.endsWith(",")) {
+                                            const t = val.trim().replace(/^#/, "").toLowerCase();
+                                            if (t && !tags.includes(t)) setTags([...tags, t]);
+                                            setTagInput("");
+                                        } else {
+                                            setTagInput(val);
+                                        }
+                                    }}
                                     onKeyDown={(e) => e.key === "Enter" && addTag(e)}
                                     className="w-full rounded-xl border border-rule bg-paper-2 px-4 py-2.5 text-sm outline-none transition-colors focus:border-accent"
                                     placeholder="e.g. algorithms, computer-science (Press Enter)"
@@ -522,9 +533,19 @@ function EditBookModal({ book, onClose, onSuccess }) {
                         <div className="space-y-1.5">
                             <label className="text-sm font-medium text-ink">Tags</label>
                             <div className="flex gap-2">
-                                <input
+                                <AutocompleteTagInput
                                     value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
+                                    existingTags={tags}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val.endsWith(" ") || val.endsWith(",")) {
+                                            const t = val.trim().replace(/^#/, "").toLowerCase();
+                                            if (t && !tags.includes(t)) setTags([...tags, t]);
+                                            setTagInput("");
+                                        } else {
+                                            setTagInput(val);
+                                        }
+                                    }}
                                     onKeyDown={(e) => e.key === "Enter" && addTag(e)}
                                     className="w-full rounded-xl border border-rule bg-paper-2 px-4 py-2.5 text-sm outline-none transition-all focus:border-accent focus:ring-2 focus:ring-accent/20"
                                     placeholder="Add tags (Press Enter)"

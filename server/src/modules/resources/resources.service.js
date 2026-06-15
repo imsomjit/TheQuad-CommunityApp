@@ -1,6 +1,6 @@
 "use strict";
 
-const { eq, and, ilike, sql, desc, asc, inArray } = require("drizzle-orm");
+const { eq, and, or, ilike, sql, desc, asc, inArray } = require("drizzle-orm");
 const { db } = require("../../db/index");
 const {
   resources,
@@ -52,9 +52,13 @@ const listResources = async (query) => {
   const conditions = [];
 
   if (q) {
-    // Full-text search on title + description
+    const searchParam = `%${q}%`;
     conditions.push(
-      sql`to_tsvector('english', ${resources.title} || ' ' || coalesce(${resources.description}, '')) @@ plainto_tsquery('english', ${q})`
+      or(
+        sql`to_tsvector('english', ${resources.title} || ' ' || coalesce(${resources.description}, '') || ' ' || coalesce(${resources.college}, '') || ' ' || coalesce(${resources.branch}, '') || ' ' || coalesce(${resources.subject}, '') || ' ' || coalesce(${resources.fileName}, '')) @@ plainto_tsquery('english', ${q})`,
+        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${resources.uploaderId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
+        sql`EXISTS (SELECT 1 FROM resource_tags WHERE resource_tags.resource_id = ${resources.id} AND resource_tags.tag ILIKE ${searchParam})`
+      )
     );
   }
   

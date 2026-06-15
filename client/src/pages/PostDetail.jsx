@@ -3,9 +3,9 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronUp, ChevronDown, Bookmark, Share2, Flag, Clock, Eye,
   Edit2, ChevronLeft, ChevronRight, List, Copy, Check,
-  Code2, Briefcase, BookMarked, Layers, ExternalLink, Trash2,
+  Code2, Briefcase, BookMarked, Layers, ExternalLink, Trash2, Plus
 } from "lucide-react";
-import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi } from "../services/api";
+import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi, usersApi } from "../services/api";
 import { useApp } from "../context/AppContext";
 import { toast } from "sonner";
 import { CATEGORY_META } from "../components/PostCard";
@@ -13,6 +13,7 @@ import { MarkdownRenderer } from "../components/MarkdownEditor";
 import { DetailSkeleton } from "../components/Skeletons";
 import CommentSection from "../components/CommentSection";
 import { useViewTracker } from "../hooks/useViewTracker";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 
 // ── Category metadata card ────────────────────────────────────────────────────
@@ -214,6 +215,9 @@ export default function PostDetail() {
   const [activeHeadingId, setActiveHeadingId] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
   useViewTracker("post", post?.id);
 
   const isBookmarked = post ? bookmarks.has(`blog:${post.id}`) : false;
@@ -237,6 +241,35 @@ export default function PostDetail() {
     };
     load();
   }, [slug, currentUser]);
+
+  useEffect(() => {
+    if (post?.author && currentUser && post.author.username !== currentUser.username) {
+      usersApi.getProfile(post.author.username)
+        .then((p) => setIsFollowing(p.viewerFollows))
+        .catch(() => {});
+    }
+  }, [post, currentUser]);
+
+  const handleFollowToggle = async () => {
+    if (!currentUser) { navigate("/login"); return; }
+    if (followLoading || !post?.author) return;
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await usersApi.unfollow(post.author.username);
+        setIsFollowing(false);
+        toast.success(`Unfollowed @${post.author.username}`);
+      } else {
+        await usersApi.follow(post.author.username);
+        setIsFollowing(true);
+        toast.success(`Following @${post.author.username}`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Action failed");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   const handleVote = async (direction) => {
     if (!currentUser) { navigate("/login"); return; }
@@ -355,7 +388,7 @@ export default function PostDetail() {
           <div className="sticky top-24 flex flex-col items-center gap-2">
             <button
               onClick={() => handleVote("up")}
-              className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
+              className={`flex h-9 w-9 items-center justify-center rounded-md border transition-colors
                 ${userVote === "up" ? "border-accent bg-accent/10 text-accent" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
             >
               <ChevronUp className="h-4 w-4" />
@@ -365,7 +398,7 @@ export default function PostDetail() {
             </span>
             <button
               onClick={() => handleVote("down")}
-              className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
+              className={`flex h-9 w-9 items-center justify-center rounded-md border transition-colors
                 ${userVote === "down" ? "border-red-400 bg-red-50 text-red-500" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
             >
               <ChevronDown className="h-4 w-4" />
@@ -373,26 +406,11 @@ export default function PostDetail() {
 
             <div className="my-1 h-px w-full bg-rule" />
 
-            <button
-              onClick={handleBookmarkClick}
-              title="Bookmark"
-              className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
-                ${isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
-            >
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-            </button>
-            <button
-              onClick={handleShare}
-              title="Copy link"
-              className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-rule text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-            >
-              {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
-            </button>
             {!isOwner && (
               <button
                 onClick={handleReport}
                 title="Report"
-                className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule text-ink-3 transition-colors hover:border-red-300 hover:text-red-400"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule text-ink-3 transition-colors hover:border-red-300 hover:text-red-400"
               >
                 <Flag className="h-4 w-4" />
               </button>
@@ -418,13 +436,29 @@ export default function PostDetail() {
           <div className="flex items-center justify-between mb-8 pb-8 border-b border-rule">
             <div className="flex items-center gap-4">
               {post.author && (
-                <Link to={`/u/${post.author.username}`}>
-                  <img
-                    src={post.author.avatar}
-                    alt={post.author.name}
-                    className="h-12 w-12 rounded-full object-cover shadow-sm border border-rule"
-                  />
-                </Link>
+                <div className="relative">
+                  <Link to={`/u/${post.author.username}`}>
+                    <img
+                      src={post.author.avatar || getAvatarFallback(post.author.name, post.author.username)}
+                      alt={post.author.name}
+                      className="h-12 w-12 rounded-full object-cover shadow-sm border border-rule bg-paper-2"
+                    />
+                  </Link>
+                  {(!currentUser || currentUser.username !== post.author.username) && (
+                    <button 
+                      onClick={handleFollowToggle}
+                      disabled={followLoading}
+                      title={isFollowing ? `Unfollow ${post.author.name}` : `Follow ${post.author.name}`}
+                      className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-paper-2 border border-rule shadow-sm transition-colors ${
+                        isFollowing 
+                          ? "text-accent hover:text-error hover:border-error/30" 
+                          : "text-ink hover:text-accent"
+                      }`}
+                    >
+                      {isFollowing ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                    </button>
+                  )}
+                </div>
               )}
               <div className="flex flex-col justify-center">
                 {post.author && (
@@ -527,15 +561,15 @@ export default function PostDetail() {
 
           {/* Mobile action bar */}
           <div className="mt-8 flex items-center gap-3 border-t border-rule pt-5 md:hidden">
-            <button onClick={() => handleVote("up")} className={`flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm transition-colors ${userVote === "up" ? "border-accent bg-accent/10 text-accent" : "border-rule text-ink-2"}`}>
+            <button onClick={() => handleVote("up")} className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors ${userVote === "up" ? "border-accent bg-accent/10 text-accent" : "border-rule text-ink-2"}`}>
               <ChevronUp className="h-4 w-4" />
               {(post.upvotes || 0) - (post.downvotes || 0)}
             </button>
-            <button onClick={handleBookmarkClick} className={`flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm transition-colors ${isBookmarked ? "border-amber-400 text-amber-500" : "border-rule text-ink-2"}`}>
+            <button onClick={handleBookmarkClick} className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors ${isBookmarked ? "border-amber-400 text-amber-500" : "border-rule text-ink-2"}`}>
               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
               Save
             </button>
-            <button onClick={handleShare} className="flex items-center gap-1.5 rounded-sm border border-rule px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink">
+            <button onClick={handleShare} className="flex items-center gap-1.5 rounded-md border border-rule px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink">
               <Share2 className="h-4 w-4" />
               Share
             </button>
@@ -543,14 +577,14 @@ export default function PostDetail() {
 
           {/* Author card */}
           {post.author && (
-            <div className="mt-10 rounded-sm border border-rule bg-paper-2/40 p-5">
+            <div className="mt-10 rounded-md border border-rule bg-paper-2/40 p-5">
               <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">Written by</p>
               <div className="flex items-start gap-4">
                 <Link to={`/u/${post.author.username}`}>
                   <img
-                    src={post.author.avatar}
+                    src={post.author.avatar || getAvatarFallback(post.author.name, post.author.username)}
                     alt={post.author.name}
-                    className="h-12 w-12 rounded-sm object-cover"
+                    className="h-12 w-12 rounded-md object-cover bg-paper-2"
                   />
                 </Link>
                 <div className="min-w-0 flex-1">
@@ -560,6 +594,19 @@ export default function PostDetail() {
                   <p className="font-mono text-xs text-ink-3">@{post.author.username}</p>
                   {post.author.bio && <p className="mt-1.5 text-sm text-ink-2">{post.author.bio}</p>}
                 </div>
+                {(!currentUser || currentUser.username !== post.author.username) && (
+                  <button
+                    onClick={handleFollowToggle}
+                    disabled={followLoading}
+                    className={`shrink-0 rounded-md border border-rule px-4 py-1.5 text-xs font-medium transition-all ${
+                      isFollowing 
+                        ? "bg-paper-2 text-ink-2 hover:border-error/30 hover:bg-error/10 hover:text-error"
+                        : "bg-paper text-ink shadow-sm hover:bg-paper-2 hover:text-accent"
+                    }`}
+                  >
+                    {isFollowing ? "Following" : "Follow"}
+                  </button>
+                )}
               </div>
             </div>
           )}
