@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Braces,
   ArrowRight,
   ArrowLeft,
   Eye,
   EyeOff,
   Loader2,
-  Sparkles,
   BookOpen,
   MessageSquare,
-  Award,
   Terminal,
-  ChevronDown,
+  Target,
   ShieldAlert,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -157,9 +154,9 @@ export default function Register() {
                 desc="Get help from peers who've been where you are."
               />
               <FeatureItem
-                icon={Award}
-                title="Build your profile"
-                desc="A GitHub-style academic portfolio that grows with you."
+                icon={Target}
+                title="Discover opportunities"
+                desc="Find hackathons, internships, and entry-level roles."
               />
             </div>
           </div>
@@ -230,7 +227,7 @@ export default function Register() {
           </div>
 
           {siteSettings && siteSettings.registrationEnabled === false ? (
-            <div className="rounded-sm border border-orange-500/30 bg-orange-500/10 p-8 text-center shadow-sm">
+            <div className="rounded-md border border-orange-500/30 bg-orange-500/10 p-8 text-center shadow-sm">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
                 <ShieldAlert className="h-6 w-6 text-orange-500" />
               </div>
@@ -240,7 +237,7 @@ export default function Register() {
               </p>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center gap-2 rounded-sm bg-accent px-6 py-2.5 text-sm font-semibold text-paper btn-primary hover:scale-[1.01] transition-all"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-6 py-2.5 text-sm font-semibold text-paper btn-primary hover:scale-[1.01] transition-all"
               >
                 Go to Sign In
               </Link>
@@ -251,7 +248,7 @@ export default function Register() {
               <button
                 type="button"
             onClick={handleGoogleRegister}
-            className="flex w-full items-center justify-center gap-3 rounded-sm border border-rule bg-paper-2/60 py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:bg-paper-2 hover:shadow-lg"
+            className="flex w-full items-center justify-center gap-3 rounded-md border border-rule bg-paper-2/60 py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:bg-paper-2 hover:shadow-lg"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -273,19 +270,19 @@ export default function Register() {
 
           {/* Form */}
           {accountExistsError ? (
-            <div className="rounded-sm border border-syntax-rose/30 bg-syntax-rose/10 p-6 text-center shadow-sm">
+            <div className="rounded-md border border-syntax-rose/30 bg-syntax-rose/10 p-6 text-center shadow-sm">
               <p className="text-ink font-medium mb-6">This email is already registered. Please log in.</p>
               <div className="flex flex-col gap-3">
                 <Link
                   to="/login"
-                  className="flex w-full items-center justify-center gap-2 rounded-sm bg-accent py-3 text-sm font-semibold text-paper btn-primary hover:scale-[1.01] transition-all"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-accent py-3 text-sm font-semibold text-paper btn-primary hover:scale-[1.01] transition-all"
                 >
                   Go to Sign In
                 </Link>
                 <button
                   type="button"
                   onClick={handleGoogleRegister}
-                  className="flex w-full items-center justify-center gap-3 rounded-sm border border-rule bg-paper py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:shadow-md"
+                  className="flex w-full items-center justify-center gap-3 rounded-md border border-rule bg-paper py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:shadow-md"
                 >
                   <svg className="h-5 w-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -457,13 +454,13 @@ export default function Register() {
           {/* Legal */}
           <p className="text-center font-mono text-[10px] text-ink-3 leading-relaxed">
             By creating an account, you agree to our{" "}
-            <span className="text-ink-2 hover:text-accent cursor-pointer">
+            <Link to="/terms" className="text-ink-2 hover:text-accent cursor-pointer">
               Terms
-            </span>{" "}
-            and{" "}
-            <span className="text-ink-2 hover:text-accent cursor-pointer">
+            </Link>
+            {" "}and{" "}
+            <Link to="/privacy" className="text-ink-2 hover:text-accent cursor-pointer">
               Privacy Policy
-            </span>
+            </Link>
           </p>
         </div>
       </div>
@@ -474,7 +471,7 @@ export default function Register() {
 function FeatureItem({ icon: Icon, title, desc }) {
   return (
     <div className="flex gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-rule bg-paper-2/60">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-rule bg-paper-2/60">
         <Icon className="h-4 w-4 text-accent" />
       </div>
       <div>

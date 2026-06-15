@@ -8,19 +8,16 @@ import {
     BookOpen,
     MessageSquare,
     Users,
-    Award,
     Terminal,
     Search,
     Target,
-    Bookmark,
     Calendar,
     Clock,
     Trophy,
     CodeXml,
     FileText,
     BookText,
-    Download,
-    Eye
+    PenLine,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
@@ -309,17 +306,17 @@ export default function Home() {
                                     <Link
                                         to="/resources"
                                         data-testid="hero-browse-btn"
-                                        className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-semibold text-paper btn-primary shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
+                                        className="group inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm text-paper btn-primary shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
                                     >
-                                        View Resources <ArrowRight className="h-4 w-4" />
+                                        <Flame className="h-4 w-4 group-hover:animate-bounce" /> Trending notes
                                     </Link>
 
                                     <Link
-                                        to="/ask"
+                                        to="/questions"
                                         data-testid="hero-ask-btn"
-                                        className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
+                                        className="group inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                                     >
-                                        Ask a Question
+                                        Questions feed <ArrowRight className="h-4 w-4 group-hover:-rotate-45 duration-300" />
                                     </Link>
 
                                     <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
@@ -404,11 +401,11 @@ export default function Home() {
                         </div>
 
                         <div className="flex items-center mt-2 gap-3">
-                            <Link to="/ask" className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
-                                <MessageSquare className="h-4 w-4" /> Ask Question
+                            <Link to="/resources" className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
+                                <BookOpen className="h-4 w-4" /> View Resources
                             </Link>
-                            <Link to="/upload" className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2 px-4 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper active:scale-95">
-                                <BookOpen className="h-4 w-4" /> Share Note
+                            <Link to="/ask" className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2 px-4 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper active:scale-95">
+                                <PenLine className="h-4 w-4" /> Write a Post
                             </Link>
                         </div>
                     </div>

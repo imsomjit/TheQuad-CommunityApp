@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Download, Bookmark, BookmarkCheck, ArrowLeft, ExternalLink, Calendar, User, FileDigit, ShieldAlert, Flag, Maximize, Minimize, ChevronLeft, Eye, FileText } from "lucide-react";
+import { Download, Bookmark, BookmarkCheck, ArrowLeft, ExternalLink, Calendar, User, FileDigit, ShieldAlert, Flag, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock } from "lucide-react";
 import { DetailSkeleton } from "../components/Skeletons";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -16,7 +16,7 @@ import { timeAgo } from "../utils/timeAgo";
 import { extractIdFromSlug } from "../utils/slugify";
 import { useAuth } from "../context/AuthContext";
 import { booksApi } from "../services/api";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import CommentSection from "../components/CommentSection";
 import VoteButtons from "../components/VoteButtons";
@@ -27,7 +27,9 @@ export default function BookDetail() {
     const { publicId: slugOrId } = useParams();
     const publicId = extractIdFromSlug(slugOrId) || slugOrId;
     const { isAuthenticated, loading: authLoading } = useAuth();
+    const { currentUser } = useApp();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [book, setBook] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -106,7 +108,6 @@ export default function BookDetail() {
     });
 
     useEffect(() => {
-        if (!isAuthenticated) return;
         const fetchBook = async () => {
             try {
                 const data = await booksApi.get(publicId);
@@ -118,7 +119,7 @@ export default function BookDetail() {
             }
         };
         fetchBook();
-    }, [publicId, isAuthenticated]);
+    }, [publicId]);
 
     const handleDownload = async () => {
         if (!book) return;
@@ -132,9 +133,6 @@ export default function BookDetail() {
     };
 
     if (authLoading) return null;
-    if (!isAuthenticated) {
-        return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-    }
 
     useViewTracker("book", book?.id);
 
@@ -226,13 +224,23 @@ export default function BookDetail() {
                                     Soon
                                 </span>
                             </div>
-                            <button
-                                onClick={() => setShowPdf(!showPdf)}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-paper-2 px-4 py-3 font-medium text-ink hover:bg-paper-3 transition-colors border border-rule"
-                            >
-                                <Eye className="h-5 w-5" />
-                                {showPdf ? "Hide Preview" : "Preview PDF"}
-                            </button>
+                            {currentUser ? (
+                                <button
+                                    onClick={() => setShowPdf(!showPdf)}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-paper-2 px-4 py-3 font-medium text-ink hover:bg-paper-3 transition-colors border border-rule"
+                                >
+                                    <Eye className="h-5 w-5" />
+                                    {showPdf ? "Hide Preview" : "Preview PDF"}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => navigate("/login")}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-paper-2 px-4 py-3 font-medium text-ink hover:bg-paper-3 transition-colors border border-rule"
+                                >
+                                    <Lock className="h-5 w-5" />
+                                    Login to Preview
+                                </button>
+                            )}
                         </div>
 
                         {/* 4. Details (Bottom on mobile, Col 2 Row 2 on desktop) */}
@@ -300,7 +308,7 @@ export default function BookDetail() {
             </div>
 
             {/* PDF Viewer */}
-            {showPdf && (
+            {showPdf && currentUser && (
                 <div
                     ref={viewerContainerRef}
                     className="overflow-hidden rounded-2xl border border-rule bg-paper shadow-lg w-full h-[70vh] sm:h-[85vh] min-h-[500px] sm:min-h-[800px] flex flex-col relative"

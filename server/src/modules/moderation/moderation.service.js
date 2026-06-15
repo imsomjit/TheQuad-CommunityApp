@@ -211,23 +211,23 @@ const getDeletedContent = async () => {
   const [res, ques, ans, psts, comms] = await Promise.all([
     db.select({
       id: resources.id, publicId: resources.publicId, title: resources.title,
-      deletedAt: resources.deletedAt, deletedBy: users.username, type: sql`'resource'`
+      deletedAt: resources.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'resource'`
     }).from(resources).where(eq(resources.isDeleted, true)).leftJoin(users, eq(resources.deletedById, users.id)),
     db.select({
       id: questions.id, publicId: questions.publicId, title: questions.title,
-      deletedAt: questions.deletedAt, deletedBy: users.username, type: sql`'question'`
+      deletedAt: questions.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'question'`
     }).from(questions).where(eq(questions.isDeleted, true)).leftJoin(users, eq(questions.deletedById, users.id)),
     db.select({
       id: answers.id, publicId: answers.publicId, title: answers.body,
-      deletedAt: answers.deletedAt, deletedBy: users.username, type: sql`'answer'`
+      deletedAt: answers.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'answer'`
     }).from(answers).where(eq(answers.isDeleted, true)).leftJoin(users, eq(answers.deletedById, users.id)),
     db.select({
       id: posts.id, publicId: posts.publicId, title: posts.title,
-      deletedAt: posts.deletedAt, deletedBy: users.username, type: sql`'blog'`
+      deletedAt: posts.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'blog'`
     }).from(posts).where(eq(posts.isDeleted, true)).leftJoin(users, eq(posts.deletedById, users.id)),
     db.select({
       id: comments.id, publicId: comments.publicId, title: comments.body,
-      deletedAt: comments.deletedAt, deletedBy: users.username, type: sql`'comment'`
+      deletedAt: comments.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'comment'`
     }).from(comments).where(eq(comments.isDeleted, true)).leftJoin(users, eq(comments.deletedById, users.id)),
   ]);
 

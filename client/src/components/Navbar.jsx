@@ -130,21 +130,21 @@ export default function Navbar({ scrolled }) {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
                                     <DropdownMenuItem asChild>
-                                        <Link to="/ask" className="cursor-pointer flex items-center gap-2">
-                                            <MessageSquare className="h-4 w-4" />
-                                            <span>Ask Question</span>
+                                        <Link to="/upload" className="cursor-pointer flex items-center gap-2">
+                                            <Upload className="h-4 w-4" />
+                                            <span>Share a Resource</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link to="/upload" className="cursor-pointer flex items-center gap-2">
-                                            <Upload className="h-4 w-4" />
-                                            <span>Share Resource</span>
+                                        <Link to="/ask" className="cursor-pointer flex items-center gap-2">
+                                            <MessageSquare className="h-4 w-4" />
+                                            <span>Ask a Question</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link to="/posts/new" className="cursor-pointer flex items-center gap-2">
                                             <PenLine className="h-4 w-4" />
-                                            <span>Write Post</span>
+                                            <span>Write a Post</span>
                                         </Link>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>

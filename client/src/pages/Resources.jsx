@@ -141,7 +141,7 @@ export default function Resources() {
                             className="hidden md:inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
                         >
                             <Upload className="h-4 w-4" />
-                            Upload a Note
+                            Share a Note
                         </Link>
                     )}
                 </div>

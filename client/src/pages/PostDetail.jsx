@@ -212,6 +212,7 @@ export default function PostDetail() {
 
   const [toc, setToc] = useState([]);
   const [activeHeadingId, setActiveHeadingId] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useViewTracker("post", post?.id);
 
@@ -506,8 +507,15 @@ export default function PostDetail() {
           )}
 
           {/* Markdown body — uses shared MarkdownRenderer (theme-adaptive syntax) */}
-          <div className="mt-4">
+          <div className={`mt-4 relative ${!isExpanded ? "max-h-[600px] overflow-hidden" : ""}`}>
             <MarkdownRenderer>{post.body}</MarkdownRenderer>
+            {!isExpanded && (
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-paper to-transparent flex items-end justify-center pb-4">
+                    <button onClick={() => setIsExpanded(true)} className="rounded-full bg-paper border border-rule px-6 py-2 text-sm font-medium text-ink shadow-sm hover:bg-paper-2 hover:text-accent transition-colors">
+                        Show more
+                    </button>
+                </div>
+            )}
           </div>
 
           {/* Series navigation bottom */}

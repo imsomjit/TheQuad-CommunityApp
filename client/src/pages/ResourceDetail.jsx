@@ -15,7 +15,15 @@ import {
     Calendar,
     Lock,
     Eye,
+    Maximize,
+    Minimize,
 } from "lucide-react";
+
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { useTheme } from "../context/ThemeContext";
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -78,6 +86,78 @@ export default function ResourceDetail() {
         apiLoaded,
     } = useApp();
     const { isAuthenticated } = useAuth();
+    const { theme } = useTheme();
+
+    const [showPreview, setShowPreview] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const viewerContainerRef = React.useRef(null);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            viewerContainerRef.current?.requestFullscreen().catch(err => {
+                console.error("Error attempting to enable full-screen mode:", err.message);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    };
+
+    const defaultLayoutPluginInstance = defaultLayoutPlugin({
+        sidebarTabs: () => [], 
+        renderToolbar: (Toolbar) => (
+            <Toolbar>
+                {(slots) => {
+                    const {
+                        CurrentPageInput,
+                        GoToNextPage,
+                        GoToPreviousPage,
+                        NumberOfPages,
+                        Zoom,
+                        ZoomIn,
+                        ZoomOut,
+                    } = slots;
+                    return (
+                        <div className="flex w-full items-center justify-between px-4 py-2 bg-paper border-b border-rule shrink-0">
+                            <div className="flex items-center gap-2">
+                                <ZoomOut />
+                                <Zoom />
+                                <ZoomIn />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <GoToPreviousPage />
+                                <div className="flex items-center gap-1 font-mono text-sm text-ink-2">
+                                    <CurrentPageInput />
+                                    <span>/</span>
+                                    <NumberOfPages />
+                                </div>
+                                <GoToNextPage />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={toggleFullscreen}
+                                    className="p-1.5 rounded-md hover:bg-paper-2 transition-colors text-ink-2 hover:text-ink"
+                                    title={isFullscreen ? "Exit Full Screen" : "Full Screen"}
+                                >
+                                    {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }}
+            </Toolbar>
+        ),
+    });
 
     const extractedId = extractIdFromSlug(id);
     const resource = resources.find(
@@ -233,6 +313,24 @@ export default function ResourceDetail() {
                         {isAuthenticated ? "Download" : "Login to Download"}
                     </button>
 
+                    {isAuthenticated ? (
+                        <button
+                            onClick={() => setShowPreview(!showPreview)}
+                            className="inline-flex items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 py-2 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                        >
+                            <Eye className="h-4 w-4" />
+                            {showPreview ? "Hide Preview" : "Preview"}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => navigate("/login")}
+                            className="inline-flex items-center gap-1.5 rounded-sm border border-rule bg-paper-2 px-3 py-2 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                        >
+                            <Lock className="h-4 w-4" />
+                            Login to Preview
+                        </button>
+                    )}
+
                     <button
                         onClick={handleBookmark}
                         data-testid="bookmark-detail-btn"
@@ -290,7 +388,7 @@ export default function ResourceDetail() {
                 {/* File preview */}
                 <div className="flex items-center gap-4 rounded-sm border border-rule bg-paper-2/40 p-5">
                     <div
-                        className="flex h-14 w-14 items-center justify-center rounded-sm border"
+                        className="flex h-14 w-14 items-center justify-center rounded-sm border shrink-0"
                         style={{ borderColor: colorVar, color: colorVar }}
                     >
                         <FileText className="h-7 w-7" strokeWidth={1.5} />
@@ -306,6 +404,34 @@ export default function ResourceDetail() {
                         </p>
                     </div>
                 </div>
+
+                {showPreview && isAuthenticated && (
+                    <div className="mt-6">
+                        {resource.fileUrl?.toLowerCase().endsWith('.pdf') ? (
+                            <div
+                                ref={viewerContainerRef}
+                                className="overflow-hidden rounded-2xl border border-rule bg-paper shadow-lg w-full h-[70vh] sm:h-[85vh] min-h-[500px] sm:min-h-[800px] flex flex-col relative"
+                            >
+                                <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js`}>
+                                    <Viewer
+                                        fileUrl={resource.fileUrl}
+                                        plugins={[defaultLayoutPluginInstance]}
+                                        theme={theme === 'dark' ? 'dark' : 'light'}
+                                    />
+                                </Worker>
+                            </div>
+                        ) : resource.fileUrl?.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                            <div className="overflow-hidden rounded-2xl border border-rule shadow-lg bg-paper flex justify-center items-center p-4">
+                                <img src={resource.fileUrl} alt="Resource Preview" className="max-w-full max-h-[85vh] object-contain rounded-md" />
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center border border-rule rounded-md bg-paper-2/40">
+                                <p className="text-ink-2 text-sm font-mono uppercase tracking-widest">Preview not available for this file type.</p>
+                                <button onClick={handleDownload} className="mt-4 text-accent hover:underline text-sm font-medium">Download to view</button>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <section className="space-y-3">
                     <h2 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">

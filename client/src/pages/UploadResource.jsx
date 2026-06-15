@@ -51,6 +51,16 @@ export default function UploadResource() {
             toast.error("File size must be less than 10MB");
             return;
         }
+
+        const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/markdown'];
+        const ext = f.name.split('.').pop().toLowerCase();
+        const validExts = ['pdf', 'png', 'jpg', 'jpeg', 'docx', 'md'];
+
+        if (!validTypes.includes(f.type) && !validExts.includes(ext)) {
+            toast.error("Invalid file type. Only PDF, DOCX, PNG, JPG, and MD are allowed.");
+            return;
+        }
+
         setFile(f);
     };
 
@@ -156,6 +166,7 @@ export default function UploadResource() {
                     >
                         <input
                             type="file"
+                            accept=".pdf,.png,.jpg,.jpeg,.docx,.md"
                             className="hidden"
                             data-testid="file-input"
                             onChange={onFileChange}
