@@ -18,7 +18,6 @@ import {
 } from "../components/ui/select";
 import { toast } from "sonner";
 import AutocompleteTagInput from "../components/ui/AutocompleteTagInput";
-import { postCategoryEnum } from "shared";
 import { postsApi } from "../services/api";
 import { useApp } from "../context/AppContext";
 
