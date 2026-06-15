@@ -4,7 +4,6 @@ import {
   Clock,
   Eye,
   ChevronUp,
-  BookOpen,
   Code2,
   Briefcase,
   BookMarked,

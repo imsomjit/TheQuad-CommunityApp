@@ -7,7 +7,7 @@ import {
 import { usersApi } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
-import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
+import { getAvatarFallback } from "../utils/fallbacks";
 import { SettingsSkeleton } from "../components/Skeletons";
 import NetworkBanner from "../components/NetworkBanner";
 import { toast } from "sonner";

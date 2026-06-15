@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Shield, Eye, Database, Share2, Lock, HelpCircle, Mail } from "lucide-react";
+import { Shield, Eye, Database, Share2, Lock, Mail } from "lucide-react";
 
 export default function Privacy() {
     const [activeSection, setActiveSection] = useState("collect");

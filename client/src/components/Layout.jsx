@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, useLocation, Link } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -9,7 +9,6 @@ import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
-import { Braces, AlertCircle, Info, CheckCircle2 } from "lucide-react";
 
 const ROUTE_LABELS = [
     { match: /^\/$/, label: "the feed", section: "§01", pathName: "Home feed" },

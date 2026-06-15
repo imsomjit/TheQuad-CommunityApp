@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Eye, EyeOff, Terminal } from "lucide-react";
+import { Loader2, Eye, EyeOff, Terminal } from "lucide-react";
 
 import api from "../services/api";
 import { Button } from "../components/ui/button";

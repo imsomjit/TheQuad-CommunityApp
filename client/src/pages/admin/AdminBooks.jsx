@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
-import { Upload, FileText, Image as ImageIcon, Loader2, X, Plus, Pencil, Trash2, Eye, Save } from "lucide-react";
+import { Upload, FileText, Image as ImageIcon, Loader2, X, Plus, Pencil, Eye, Save } from "lucide-react";
 import { booksApi } from "../../services/api";
 import AutocompleteTagInput from "../../components/ui/AutocompleteTagInput";
 import { toast } from "sonner";

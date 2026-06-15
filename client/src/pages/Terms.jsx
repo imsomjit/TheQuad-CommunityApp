@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Scale, UserCheck, ShieldAlert, FileText, AlertTriangle, Copyright, HelpCircle } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export default function Terms() {
     const [activeSection, setActiveSection] = useState("acceptance");

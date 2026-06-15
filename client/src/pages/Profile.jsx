@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
-    MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
+    Award, MapPin, Calendar, Sparkles, FolderGit2,
     FolderOpen, Edit3, Linkedin, Twitter, Instagram, Code2,
     Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap
 } from "lucide-react";

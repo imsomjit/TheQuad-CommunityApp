@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import api from "../../services/api";
-import { XCircle, AlertCircle, Eye, Trash2 } from "lucide-react";
+import { AlertCircle, } from "lucide-react";
 
 export default function AdminReports() {
   const [reports, setReports] = useState([]);

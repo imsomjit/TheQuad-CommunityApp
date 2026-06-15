@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
-  Braces,
   ArrowRight,
   ArrowLeft,
   Eye,

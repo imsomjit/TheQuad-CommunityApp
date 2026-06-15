@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, X, Upload, ArrowDownUp, BookText, Eye, Download, ShieldCheck } from "lucide-react";
+import { Link, } from "react-router-dom";
+import { Search, X, Upload, ArrowDownUp, BookText, } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { booksApi } from "../services/api";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";

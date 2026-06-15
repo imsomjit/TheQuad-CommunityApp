@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Target, Bookmark, Calendar, Clock, Trophy, ServerCrash, OctagonAlert, CodeXml, Plus } from "lucide-react";
+import { Search, Target, ServerCrash, OctagonAlert, CodeXml, Plus } from "lucide-react";
 import {
     Select,
     SelectContent,

@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronUp, ChevronDown, Bookmark, Share2, Flag, Clock, Eye,
   Edit2, ChevronLeft, ChevronRight, List, Copy, Check,
-  Code2, Briefcase, BookMarked, Layers, ExternalLink, Trash2, Plus
+  Code2, Layers, ExternalLink, Trash2, Plus
 } from "lucide-react";
 import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi, usersApi } from "../services/api";
 import { useApp } from "../context/AppContext";

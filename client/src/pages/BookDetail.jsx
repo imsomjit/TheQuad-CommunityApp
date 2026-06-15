@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Download, Bookmark, BookmarkCheck, ArrowLeft, ExternalLink, Calendar, User, FileDigit, ShieldAlert, Flag, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock } from "lucide-react";
+import { Download, Calendar, User, FileDigit, ShieldAlert, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock } from "lucide-react";
 import { DetailSkeleton } from "../components/Skeletons";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -16,7 +16,7 @@ import { timeAgo } from "../utils/timeAgo";
 import { extractIdFromSlug } from "../utils/slugify";
 import { useAuth } from "../context/AuthContext";
 import { booksApi } from "../services/api";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import CommentSection from "../components/CommentSection";
 import VoteButtons from "../components/VoteButtons";

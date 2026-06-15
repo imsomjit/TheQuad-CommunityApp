@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Settings, Save, Loader2, Link2, BellRing, Flag, Check, ShieldAlert,
+  Save, Loader2, Link2, BellRing, Flag, Check, ShieldAlert,
   CalendarClock, Trash2, Calendar
 } from "lucide-react";
 import { toast } from "sonner";

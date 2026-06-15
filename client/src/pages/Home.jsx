@@ -27,19 +27,32 @@ import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
 import BookCard from "../components/BookCard";
-import BookmarkButton from "../components/BookmarkButton";
 import TagBadge from "../components/TagBadge";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton, PostCardSkeleton, BookCardSkeleton, OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
-import { timeAgo } from "../utils/timeAgo";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 const STAT_COLOR = {
     resources: "--syntax-mint",
     questions: "--syntax-cyan",
     students: "--syntax-violet",
     answers: "--syntax-amber",
+};
+
+const getRankAvatarStyle = (index) => {
+    if (index === 0) return "ring-1 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.3)] border-yellow-300/50";
+    if (index === 1) return "ring-1 ring-slate-300/80 shadow-[0_0_10px_rgba(203,213,225,0.2)] border-slate-300/50";
+    if (index === 2) return "ring-1 ring-orange-500/80 shadow-[0_0_10px_rgba(249,115,22,0.2)] border-orange-500/50";
+    return "border-rule group-hover:border-accent";
+};
+
+const getRankNumberStyle = (index) => {
+    if (index === 0) return "text-yellow-500 font-extrabold text-xs drop-shadow-[0_0_4px_rgba(250,204,21,0.4)]";
+    if (index === 1) return "text-slate-400 font-bold text-xs drop-shadow-[0_0_2px_rgba(203,213,225,0.3)]";
+    if (index === 2) return "text-orange-500 font-bold text-xs drop-shadow-[0_0_2px_rgba(249,115,22,0.3)]";
+    return "text-ink-3 font-bold text-[10px]";
 };
 
 function StatTile({ icon: Icon, label, value, colorKey }) {
@@ -532,8 +545,11 @@ export default function Home() {
                                         className="group flex cursor-pointer items-center justify-between last:border-0 last:pb-0"
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <span className="font-mono text-[10px] font-bold text-ink-3 w-4">#{i + 1}</span>
-                                            <img src={user.avatar} alt="" className="h-8 w-8 rounded-md object-cover border border-rule group-hover:border-accent transition-colors shrink-0" />
+                                            <span className={`font-mono w-4 shrink-0 transition-all ${getRankNumberStyle(i)}`}>#{i + 1}</span>
+                                            <div className="relative shrink-0 flex items-center justify-center">
+                                                <img src={user.avatar || getAvatarFallback(user.name, user.username)} alt="" className={`h-8 w-8 rounded-md object-cover border transition-all bg-paper-2 ${getRankAvatarStyle(i)}`} />
+                                                {i === 0 && <Sparkles className="absolute -top-1 -right-1 h-3.5 w-3.5 text-yellow-400 drop-shadow-md" />}
+                                            </div>
                                             <div className="flex flex-col overflow-hidden">
                                                 <span className="truncate text-sm font-medium text-ink transition-colors group-hover:text-accent">
                                                     {user.username} <span className="font-mono text-xs text-ink-3 font-normal ml-1"></span>
@@ -566,9 +582,9 @@ export default function Home() {
 
                             <div className="mt-3 flex items-center gap-3">
                                 <img
-                                    src={currentUser.avatar}
+                                    src={currentUser.avatar || getAvatarFallback(currentUser.name, currentUser.username)}
                                     alt=""
-                                    className="h-14 w-14 rounded-md border border-rule object-cover"
+                                    className="h-14 w-14 rounded-md border border-rule object-cover bg-paper-2"
                                 />
 
                                 <div>
