@@ -523,7 +523,7 @@ export default function Home() {
                     <div className="rounded-md border border-rule bg-paper-2/60 p-5">
                         <h3 className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             <span className="flex items-center gap-2">
-                                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                                <Trophy className="h-3.5 w-3.5 text-accent" />
                                 // monthly top contributors
                             </span>
                         </h3>

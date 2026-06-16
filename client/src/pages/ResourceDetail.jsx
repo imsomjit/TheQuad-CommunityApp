@@ -19,6 +19,8 @@ import {
     Minimize,
     Building2,
     GraduationCap,
+    Share2,
+    Check,
 } from "lucide-react";
 
 import { Worker, Viewer } from '@react-pdf-viewer/core';
@@ -96,6 +98,44 @@ export default function ResourceDetail() {
     const viewerContainerRef = React.useRef(null);
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
+    const [shareToast, setShareToast] = useState(false);
+
+    const handleShare = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: resource?.title || "Check out this resource",
+                    url: url
+                });
+                return;
+            } catch (err) {
+                if (err.name !== "AbortError") console.error(err);
+            }
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => {
+                setShareToast(true);
+                setTimeout(() => setShareToast(false), 2000);
+            });
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = url;
+            textArea.style.position = "absolute";
+            textArea.style.left = "-999999px";
+            document.body.prepend(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                setShareToast(true);
+                setTimeout(() => setShareToast(false), 2000);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                textArea.remove();
+            }
+        }
+    };
 
     const extractedId = extractIdFromSlug(id);
     const resource = resources.find(
@@ -337,97 +377,113 @@ export default function ResourceDetail() {
                 </header>
 
                 {/* Action bar */}
-                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-accent-soft bg-paper shadow-sm p-3">
-                    <VoteButtons
-                        kind="resource"
-                        id={resource.id}
-                        upvotes={resource.upvotes}
-                        downvotes={resource.downvotes}
-                        layout="horizontal"
-                        size="md"
-                    />
-
-                    <div className="h-8 w-px bg-rule mx-1" />
-
-                    <button
-                        onClick={handleDownload}
-                        data-testid="download-resource-btn"
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
-                    >
-                        {isAuthenticated ? (
-                            <Download className="h-4 w-4" />
-                        ) : (
-                            <Lock className="h-4 w-4" />
-                        )}
-                        {isAuthenticated ? "Download" : "Login to Download"}
-                    </button>
-
-                    {isAuthenticated ? (
-                        <button
-                            onClick={() => setShowPreview(!showPreview)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
-                        >
-                            <Eye className="h-4 w-4" />
-                            {showPreview ? "Hide Preview" : "Preview"}
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => navigate("/login")}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
-                        >
-                            <Lock className="h-4 w-4" />
-                            Preview
-                        </button>
-                    )}
-
-                    <div className="flex-1" />
-
-                    <button
-                        onClick={handleBookmark}
-                        data-testid="bookmark-detail-btn"
-                        className={`inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${isBookmarked
-                                ? "border-accent bg-accent-soft text-accent"
-                                : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
-                            }`}
-                    >
-                        <Bookmark
-                            className="h-4 w-4"
-                            fill={isBookmarked ? "currentColor" : "none"}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 rounded-xl border border-accent-soft bg-paper shadow-sm p-3">
+                    {/* Primary Group */}
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
+                        <VoteButtons
+                            kind="resource"
+                            id={resource.id}
+                            upvotes={resource.upvotes}
+                            downvotes={resource.downvotes}
+                            layout="horizontal"
+                            size="md"
                         />
-                        {isBookmarked ? "Saved" : "Save"}
-                    </button>
-                            
-                    {!isMine && (
-                        <button
-                            data-testid="report-resource-btn"
-                            onClick={() => {
-                                if (!isAuthenticated) {
-                                    toast.error("Please log in to report resources");
-                                    navigate("/login");
-                                    return;
-                                }
-                                openReportModal("resource", resource.id, resource.title);
-                            }}
-                            className="ml-auto inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
-                        >
-                            <Flag className="h-3.5 w-3.5" />
-                            Report
-                        </button>
-                    )}
 
-                    {(isMine || isModerator) && (
+                        <div className="hidden sm:block h-8 w-px bg-rule mx-1" />
+
                         <button
-                            data-testid="delete-resource-btn"
-                            onClick={handleDelete}
-                            className="inline-flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                            onClick={handleDownload}
+                            data-testid="download-resource-btn"
+                            className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
                         >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Delete
+                            {isAuthenticated ? (
+                                <Download className="h-4 w-4" />
+                            ) : (
+                                <Lock className="h-4 w-4" />
+                            )}
+                            Download
                         </button>
-                    )}
+
+                        {isAuthenticated ? (
+                            <button
+                                onClick={() => setShowPreview(!showPreview)}
+                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                            >
+                                <Eye className="h-4 w-4" />
+                                {showPreview ? "Hide Preview" : "Preview"}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => navigate("/login")}
+                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                            >
+                                <Lock className="h-4 w-4" />
+                                Preview
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="hidden sm:block flex-1" />
+
+                    {/* Secondary Group */}
+                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-rule sm:border-0">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleBookmark}
+                                data-testid="bookmark-detail-btn"
+                                className={`flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${isBookmarked
+                                        ? "border-accent bg-accent-soft text-accent"
+                                        : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
+                                    }`}
+                            >
+                                <Bookmark
+                                    className="h-4 w-4"
+                                    fill={isBookmarked ? "currentColor" : "none"}
+                                />
+                                {isBookmarked ? "Saved" : "Save"}
+                            </button>
+                            
+                            <button
+                                onClick={handleShare}
+                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                            >
+                                {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
+                                {shareToast ? "Copied!" : "Share"}
+                            </button>
+                        </div>
+                                
+                        {!isMine && (
+                            <button
+                                data-testid="report-resource-btn"
+                                onClick={() => {
+                                    if (!isAuthenticated) {
+                                        toast.error("Please log in to report resources");
+                                        navigate("/login");
+                                        return;
+                                    }
+                                    openReportModal("resource", resource.id, resource.title);
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-md px-2 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                            >
+                                <Flag className="h-4 w-4" />
+                                <span className="hidden sm:inline">Report</span>
+                            </button>
+                        )}
+
+                        {(isMine || isModerator) && (
+                            <button
+                                data-testid="delete-resource-btn"
+                                onClick={handleDelete}
+                                className="inline-flex items-center gap-1.5 rounded-md px-2 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="hidden sm:inline">Delete</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="hidden md:grid md:grid-cols-3 gap-4">
                     <Stat label="views" value={resource.views.toLocaleString()} />
                     <Stat label="downloads" value={resource.downloads.toLocaleString()} />
                     <Stat

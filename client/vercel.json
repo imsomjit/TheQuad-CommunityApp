@@ -1,8 +1,24 @@
 {
   "rewrites": [
     {
-      "source": "/posts/:slug",
-      "destination": "/api/og-post"
+      "source": "/posts/:id",
+      "destination": "/api/og-post?type=post&id=:id"
+    },
+    {
+      "source": "/resources/:id",
+      "destination": "/api/og-post?type=resource&id=:id"
+    },
+    {
+      "source": "/library/:id",
+      "destination": "/api/og-post?type=book&id=:id"
+    },
+    {
+      "source": "/opportunities/:id",
+      "destination": "/api/og-post?type=opportunity&id=:id"
+    },
+    {
+      "source": "/questions/:id",
+      "destination": "/api/og-post?type=question&id=:id"
     },
     {
       "source": "/(.*)",

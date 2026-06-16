@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Download, Calendar, User, FileDigit, ShieldAlert, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock, BookOpen } from "lucide-react";
+import { Download, Calendar, User, FileDigit, ShieldAlert, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock, BookOpen, Share2, Check } from "lucide-react";
 import { DetailSkeleton } from "../components/Skeletons";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -107,6 +107,45 @@ export default function BookDetail() {
         ),
     });
 
+    const [shareToast, setShareToast] = useState(false);
+
+    const handleShare = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: book?.title || "Check out this book",
+                    url: url
+                });
+                return;
+            } catch (err) {
+                if (err.name !== "AbortError") console.error(err);
+            }
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => {
+                setShareToast(true);
+                setTimeout(() => setShareToast(false), 2000);
+            });
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = url;
+            textArea.style.position = "absolute";
+            textArea.style.left = "-999999px";
+            document.body.prepend(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                setShareToast(true);
+                setTimeout(() => setShareToast(false), 2000);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                textArea.remove();
+            }
+        }
+    };
+
     useEffect(() => {
         const fetchBook = async () => {
             try {
@@ -197,6 +236,15 @@ export default function BookDetail() {
                                     />
                                     <div className="w-px h-6 md:w-8 md:h-px bg-rule mx-1 my-0 md:mx-0 md:my-1" />
                                     <BookmarkButton targetType="book" targetId={book.id} initialCount={book.bookmarksCount} />
+                                    
+                                    <button
+                                        onClick={handleShare}
+                                        className="rounded-full p-2 text-ink-3 hover:bg-paper-2 hover:text-ink transition-colors"
+                                        title="Share this book"
+                                    >
+                                        {shareToast ? <Check className="h-5 w-5 text-emerald-500" /> : <Share2 className="h-5 w-5" />}
+                                    </button>
+
                                     {currentUser?.id !== (book.uploader?.id || book.uploaderId) && (
                                         <button
                                             onClick={() => setIsReportOpen(true)}
