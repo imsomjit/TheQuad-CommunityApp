@@ -455,7 +455,7 @@ const listPosts = async (query) => {
     const searchParam = `%${q}%`;
     conditions.push(
       or(
-        sql`to_tsvector('english', ${posts.title} || ' ' || coalesce(${posts.body}, '') || ' ' || coalesce(${posts.category}, '')) @@ plainto_tsquery('english', ${q})`,
+        sql`to_tsvector('english', ${posts.title} || ' ' || coalesce(${posts.category}::text, '')) @@ plainto_tsquery('english', ${q})`,
         sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${posts.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
         sql`EXISTS (SELECT 1 FROM post_tags WHERE post_tags.post_id = ${posts.id} AND post_tags.tag ILIKE ${searchParam})`
       )

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Download, Calendar, User, FileDigit, ShieldAlert, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock } from "lucide-react";
+import { Download, Calendar, User, FileDigit, ShieldAlert, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock, BookOpen } from "lucide-react";
 import { DetailSkeleton } from "../components/Skeletons";
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
@@ -181,21 +181,21 @@ export default function BookDetail() {
                         {/* 2. Title & Author & Votes (Middle on mobile, Col 2 Row 1 on desktop) */}
                         <div className="flex flex-col gap-4 text-center md:text-left">
                             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                <div>
-                                    <h1 className="font-display text-2xl font-bold leading-tight text-ink sm:text-3xl md:text-4xl">
+                                <div className="flex-1 min-w-0">
+                                    <h1 className="font-display text-4xl font-bold leading-tight text-ink md:text-6xl break-words">
                                         {book.title}
                                     </h1>
-                                    <p className="mt-1 md:mt-2 text-lg text-accent font-medium">by {book.author}</p>
+                                    <p className="mt-1 md:mt-2 text-md md:text-xl text-accent font-medium">by {book.author}</p>
                                 </div>
-                                <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 sm:gap-3">
+                                <div className="flex flex-row md:flex-col shrink-0 items-center justify-center gap-2 sm:gap-3 bg-paper border border-accent-soft px-3 py-2 md:py-3 rounded-xl shadow-sm">
                                     <VoteButtons
                                         kind="book"
                                         id={book.id}
                                         upvotes={book.upvotes}
                                         downvotes={book.downvotes}
-                                        layout="horizontal"
+                                        layout="responsive"
                                     />
-                                    <div className="hidden sm:block h-6 w-px bg-rule mx-1" />
+                                    <div className="w-px h-6 md:w-8 md:h-px bg-rule mx-1 my-0 md:mx-0 md:my-1" />
                                     <BookmarkButton targetType="book" targetId={book.id} initialCount={book.bookmarksCount} />
                                     {currentUser?.id !== (book.uploader?.id || book.uploaderId) && (
                                         <button
@@ -271,19 +271,24 @@ export default function BookDetail() {
                             <div className="flex flex-wrap gap-2 text-sm text-ink-2">
                                 {book.subject && (
                                     <div className="flex items-center gap-1.5 rounded-lg border border-rule px-3 py-1.5 bg-paper-2/50">
+                                        <BookOpen className="h-4 w-4 text-accent" />
                                         <span className="font-medium text-ink">Subject:</span> {book.subject}
                                     </div>
                                 )}
                                 {book.isbn && (
                                     <div className="flex items-center gap-1.5 rounded-lg border border-rule px-3 py-1.5 bg-paper-2/50">
-                                        <FileDigit className="h-4 w-4 text-ink-3" />
+                                        <FileDigit className="h-4 w-4 text-accent" />
                                         <span className="font-medium text-ink">ISBN:</span> {book.isbn}
                                     </div>
                                 )}
                                 <div className="flex items-center gap-1.5 rounded-lg border border-rule px-3 py-1.5 bg-paper-2/50">
-                                    <User className="h-4 w-4 text-ink-3" />
+                                    <User className="h-4 w-4 text-accent" />
                                     <span className="font-medium text-ink">Uploader:</span>
-                                    <Link to={`/u/${book.uploader.username}`} className="text-accent hover:underline">@{book.uploader.username}</Link>
+                                    {book.uploader?.role === "admin" ? (
+                                        <span className="text-ink-3">System</span>
+                                    ) : (
+                                        <Link to={`/u/${book.uploader?.username}`} className="text-accent hover:underline">@{book.uploader?.username}</Link>
+                                    )}
                                 </div>
                             </div>
 
@@ -296,7 +301,7 @@ export default function BookDetail() {
                             {book.tags && book.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-4">
                                     {book.tags.map(tag => (
-                                        <span key={tag} className="inline-flex items-center rounded-md bg-accent/10 px-2.5 py-1 font-mono text-xs font-medium text-accent hover:bg-accent/20 cursor-pointer transition-colors">
+                                        <span key={tag} className="inline-flex items-center rounded-md bg-paper-3 px-2.5 py-1 font-mono text-xs font-medium text-accent hover:bg-accent-soft cursor-pointer transition-colors">
                                             #{tag}
                                         </span>
                                     ))}

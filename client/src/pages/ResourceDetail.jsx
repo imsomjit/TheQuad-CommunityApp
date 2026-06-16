@@ -17,6 +17,8 @@ import {
     Eye,
     Maximize,
     Minimize,
+    Building2,
+    GraduationCap,
 } from "lucide-react";
 
 import { Worker, Viewer } from '@react-pdf-viewer/core';
@@ -262,7 +264,7 @@ export default function ResourceDetail() {
     };
 
     return (
-        <div className="mx-auto max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mx-auto max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Link
                 to="/resources"
                 data-testid="back-to-resources"
@@ -291,11 +293,26 @@ export default function ResourceDetail() {
                             {type.label}
                         </span>
 
-                        <span>{resource.subject}</span>
-                        <span className="text-ink-3/60">·</span>
-                        <span>{resource.college}</span>
-                        <span className="text-ink-3/60">·</span>
-                        <span>{resource.branch} · Sem {resource.semester}</span>
+                        {resource.subject && (
+                            <div className="flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1 bg-paper-2/50 text-ink-2">
+                                <BookOpen className="h-3 w-3 text-accent" />
+                                <span>{resource.subject}</span>
+                            </div>
+                        )}
+                        
+                        {resource.college && (
+                            <div className="flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1 bg-paper-2/50 text-ink-2">
+                                <Building2 className="h-3 w-3 text-accent" />
+                                <span>{resource.college}</span>
+                            </div>
+                        )}
+                        
+                        {resource.branch && (
+                            <div className="flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1 bg-paper-2/50 text-ink-2">
+                                <GraduationCap className="h-3 w-3 text-accent" />
+                                <span>{resource.branch} · Sem {resource.semester}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-3 flex items-center gap-4 font-mono text-xs text-ink-3">
@@ -320,7 +337,7 @@ export default function ResourceDetail() {
                 </header>
 
                 {/* Action bar */}
-                <div className="flex flex-wrap items-center gap-3 rounded-md border border-rule bg-paper-2/50 p-4">
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-accent-soft bg-paper shadow-sm p-3">
                     <VoteButtons
                         kind="resource"
                         id={resource.id}
@@ -330,12 +347,12 @@ export default function ResourceDetail() {
                         size="md"
                     />
 
-                    <div className="h-8 w-px bg-rule" />
+                    <div className="h-8 w-px bg-rule mx-1" />
 
                     <button
                         onClick={handleDownload}
                         data-testid="download-resource-btn"
-                        className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
                     >
                         {isAuthenticated ? (
                             <Download className="h-4 w-4" />
@@ -348,7 +365,7 @@ export default function ResourceDetail() {
                     {isAuthenticated ? (
                         <button
                             onClick={() => setShowPreview(!showPreview)}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-paper-2 px-3 py-2 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
                         >
                             <Eye className="h-4 w-4" />
                             {showPreview ? "Hide Preview" : "Preview"}
@@ -356,17 +373,19 @@ export default function ResourceDetail() {
                     ) : (
                         <button
                             onClick={() => navigate("/login")}
-                            className="inline-flex items-center gap-1.5 rounded-md border border-rule bg-paper-2 px-3 py-2 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
                         >
                             <Lock className="h-4 w-4" />
-                            Login to Preview
+                            Preview
                         </button>
                     )}
+
+                    <div className="flex-1" />
 
                     <button
                         onClick={handleBookmark}
                         data-testid="bookmark-detail-btn"
-                        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${isBookmarked
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${isBookmarked
                                 ? "border-accent bg-accent-soft text-accent"
                                 : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
                             }`}

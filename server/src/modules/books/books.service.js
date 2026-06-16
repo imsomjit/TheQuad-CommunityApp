@@ -146,6 +146,7 @@ const getBookById = async (publicId) => {
         username: users.username,
         name: users.name,
         avatarUrl: users.avatarUrl,
+        role: users.role,
       },
     })
     .from(books)

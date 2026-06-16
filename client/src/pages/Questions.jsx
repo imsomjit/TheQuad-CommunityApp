@@ -234,9 +234,9 @@ export default function Questions() {
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <span className="text-ink-2">total answers</span>
+                                <span className="text-ink-2">total questions</span>
                                 <span className="font-mono text-ink">
-                                    {questions.reduce((acc, qq) => acc + qq.answers.length, 0)}
+                                    {questions.length}
                                 </span>
                             </div>
                         </div>

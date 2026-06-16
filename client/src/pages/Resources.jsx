@@ -44,6 +44,21 @@ export default function Resources() {
     const activeColleges = useMemo(() => Array.from(new Set(resources.map(r => r.college).filter(Boolean))).sort(), [resources]);
     const activeBranches = useMemo(() => Array.from(new Set(resources.map(r => r.branch).filter(Boolean))).sort(), [resources]);
     const activeSubjects = useMemo(() => Array.from(new Set(resources.map(r => r.subject).filter(Boolean))).sort(), [resources]);
+    
+    const allTags = useMemo(() => {
+        const counts = {};
+        resources.forEach(r => {
+            if (r.tags) {
+                r.tags.forEach(t => {
+                    counts[t] = (counts[t] || 0) + 1;
+                });
+            }
+        });
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    }, [resources]);
+
+    const totalDownloads = useMemo(() => resources.reduce((acc, r) => acc + (r.downloads || 0), 0), [resources]);
+    const totalContributors = useMemo(() => new Set(resources.map(r => r.uploader?.id).filter(Boolean)).size, [resources]);
 
     const [q, setQ] = useState(params.get("q") || "");
     
@@ -147,8 +162,10 @@ export default function Resources() {
                 </div>
             </header>
 
-            {/* Filter bar */}
-            <div className="space-y-4 rounded-md border border-rule bg-paper-2/40 p-5">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                <div className="space-y-6 lg:col-span-9">
+                    {/* Filter bar */}
+                    <div className="space-y-4">
                 <div className="flex items-center gap-3">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
@@ -271,21 +288,79 @@ export default function Resources() {
                 </p>
             </div>
 
-            {/* Resource list */}
-            <div className="space-y-3">
-                {!apiLoaded ? (
-                    [1, 2, 3, 4, 5].map((i) => <ResourceCardSkeleton key={i} />)
-                ) : filtered.length === 0 ? (
-                    <EmptyPlaceholder 
-                        icon={Search}
-                        title="No matches found"
-                        description="Try clearing some filters or searching differently."
-                    />
-                ) : (
-                    filtered.map((resource) => (
-                        <ResourceCard key={resource.id} resource={resource} />
-                    ))
-                )}
+                    {/* Resource list */}
+                    <div className="space-y-3">
+                        {!apiLoaded ? (
+                            [1, 2, 3, 4, 5].map((i) => <ResourceCardSkeleton key={i} />)
+                        ) : filtered.length === 0 ? (
+                            <EmptyPlaceholder 
+                                icon={Search}
+                                title="No matches found"
+                                description="Try clearing some filters or searching differently."
+                            />
+                        ) : (
+                            filtered.map((resource) => (
+                                <ResourceCard key={resource.id} resource={resource} />
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                <aside className="lg:col-span-3">
+                    <div className="sticky top-24 space-y-4 rounded-sm border border-rule bg-paper-2/40 p-4">
+                        <h3 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                            // filter by tag
+                        </h3>
+
+                        <div className="flex max-h-[300px] flex-wrap gap-1.5 overflow-y-auto pr-1">
+                            {allTags.length > 0 ? (
+                                allTags.map(([t, count]) => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setParams(t === activeTag ? {} : { tag: t })}
+                                        data-testid={`filter-tag-${t}`}
+                                    >
+                                        <span className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs transition-colors ${
+                                            t === activeTag 
+                                                ? "border-accent bg-accent-soft text-accent" 
+                                                : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
+                                        }`}>
+                                            {t}
+                                            <span className="ml-1 text-ink-3/70">{count}</span>
+                                        </span>
+                                    </button>
+                                ))
+                            ) : (
+                                <span className="text-xs text-ink-3 font-mono py-2">No tags available.</span>
+                            )}
+                        </div>
+
+                        <hr className="border-rule" />
+
+                        <div className="space-y-2 text-sm">
+                            <div className="flex items-center justify-between">
+                                <span className="text-ink-2">total documents</span>
+                                <span className="font-mono text-ink">
+                                    {resources.length}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <span className="text-ink-2">total downloads</span>
+                                <span className="font-mono text-ink">
+                                    {totalDownloads}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <span className="text-ink-2">total contributors</span>
+                                <span className="font-mono text-ink">
+                                    {totalContributors}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             </div>
         </div>
     );
