@@ -35,7 +35,7 @@ export default function PageLoadingSkeleton() {
             </div>
 
             {/* Main Content Area */}
-            <div className="pt-[92px] md:pl-64 flex flex-col min-h-screen">
+            <div className="md:pt-[92px] md:pl-64 flex flex-col min-h-screen">
                 <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-2 animate-in fade-in duration-500">
                     {/* Hero Skeleton (Mimicking Home Page) */}
                     <div className="relative overflow-hidden rounded-md border border-rule bg-paper-2/20 mb-10">
