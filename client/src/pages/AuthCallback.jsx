@@ -23,7 +23,7 @@ export default function AuthCallback() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState(null);
-  const { fetchMe } = useAuth();
+  const { fetchMe, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     // Check for error query params (from failed OAuth)
@@ -38,6 +38,25 @@ export default function AuthCallback() {
         account_suspended: "Your account is suspended.",
       };
       setError(messages[errorParam] || "Authentication failed. Please try again.");
+      return;
+    }
+
+    // If AuthContext already succeeded in refreshing the token (e.g. via cookies),
+    // we do NOT need to refresh again. Doing so will use the same token and fail 
+    // due to refresh token rotation (which revokes used tokens immediately).
+    if (isAuthenticated) {
+      // Clear the URL hash for security
+      window.history.replaceState(null, "", "/auth/callback");
+      toast.success("Signed in with Google!");
+      
+      const from = location.state?.from?.pathname;
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (user?.role === "admin" || user?.role === "moderator") {
+        navigate("/admin/reports", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
       return;
     }
 
@@ -69,7 +88,7 @@ export default function AuthCallback() {
       .catch(() => {
         setError("Failed to obtain access token. Please try signing in again.");
       });
-  }, [navigate, searchParams, fetchMe]);
+  }, [navigate, searchParams, fetchMe, isAuthenticated, user, location.state]);
 
   if (error) {
     return (
