@@ -41,11 +41,16 @@ export default function AuthCallback() {
       return;
     }
 
-    // We just arrived from the server redirect. The server has set the pv_refresh cookie.
-    // We call refresh() to exchange the cookie for an access token.
+    // Check for fallback token in the hash (useful when 3rd-party cookies are blocked)
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const fallbackToken = hashParams.get("refreshToken");
+
+    // We just arrived from the server redirect.
+    // Clear the URL hash for security
     window.history.replaceState(null, "", "/auth/callback");
 
-    authApi.refresh()
+    // If cookies are blocked, we can use the fallback token directly
+    authApi.refresh(fallbackToken)
       .then(({ data }) => {
         setAccessToken(data.data.accessToken);
         return fetchMe();

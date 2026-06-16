@@ -35,7 +35,7 @@ const register = asyncHandler(async (req, res) => {
 const verifyOtp = asyncHandler(async (req, res) => {
   const { user, accessToken, refreshToken } = await authService.verifyOtp(req.body);
   setRefreshCookie(res, refreshToken);
-  res.json({ success: true, data: { user, accessToken } });
+  res.json({ success: true, data: { user, accessToken, refreshToken } });
 });
 
 // POST /api/auth/resend-otp
@@ -48,7 +48,7 @@ const resendOtp = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { user, accessToken, refreshToken } = await authService.login(req.body);
   setRefreshCookie(res, refreshToken);
-  res.json({ success: true, data: { user, accessToken } });
+  res.json({ success: true, data: { user, accessToken, refreshToken } });
 });
 
 // ── Google OAuth (Server-Side Redirect Flow) ─────────────────────────────────
@@ -148,7 +148,8 @@ const googleCallback = asyncHandler(async (req, res) => {
     setRefreshCookie(res, refreshToken);
 
     // Redirect to client (AuthCallback page will read cookie via /api/auth/refresh)
-    res.redirect(`${env.CLIENT_URL}/auth/callback`);
+    // We also append refreshToken to hash as a fallback if 3rd-party cookies are blocked by the browser.
+    res.redirect(`${env.CLIENT_URL}/auth/callback#refreshToken=${refreshToken}`);
   } catch (err) {
     logger.error("Google OAuth callback error", { error: err.message });
 
@@ -163,10 +164,13 @@ const googleCallback = asyncHandler(async (req, res) => {
 
 // POST /api/auth/refresh
 const refresh = asyncHandler(async (req, res) => {
-  const rawToken = req.cookies?.pv_refresh;
+  const rawToken = req.body?.refreshToken || req.cookies?.pv_refresh;
+  if (!rawToken) {
+    return res.status(401).json({ success: false, message: "No refresh token provided" });
+  }
   const { user, accessToken, refreshToken } = await authService.refresh(rawToken);
   setRefreshCookie(res, refreshToken);
-  res.json({ success: true, data: { user, accessToken } });
+  res.json({ success: true, data: { user, accessToken, refreshToken } });
 });
 
 // POST /api/auth/logout

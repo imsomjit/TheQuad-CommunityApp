@@ -38,6 +38,13 @@ export const clearAccessToken = () => {
   accessToken = null;
 };
 
+// ── Fallback for 3rd-party cookie blocking ───────────────────────────────────
+export const setRefreshToken = (token) => {
+  if (token) localStorage.setItem("pv_refresh", token);
+};
+export const getRefreshToken = () => localStorage.getItem("pv_refresh");
+export const clearRefreshToken = () => localStorage.removeItem("pv_refresh");
+
 /**
  * Register a callback to invoke when silent refresh fails.
  * AuthContext sets this on mount so we can clear React state
@@ -57,7 +64,12 @@ api.interceptors.request.use((config) => {
 
 // ── Response interceptor: handle 401 → silent refresh ────────────────────────
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (res.data?.data?.refreshToken) {
+      setRefreshToken(res.data.data.refreshToken);
+    }
+    return res;
+  },
   async (error) => {
     const original = error.config;
 
@@ -73,12 +85,14 @@ api.interceptors.response.use(
       try {
         // Deduplicate concurrent refresh attempts
         if (!refreshPromise) {
-          refreshPromise = api.post("/auth/refresh").finally(() => {
+          const rToken = getRefreshToken();
+          refreshPromise = api.post("/auth/refresh", { refreshToken: rToken }).finally(() => {
             refreshPromise = null;
           });
         }
         const { data } = await refreshPromise;
         setAccessToken(data.data.accessToken);
+        if (data.data.refreshToken) setRefreshToken(data.data.refreshToken);
         original.headers.Authorization = `Bearer ${data.data.accessToken}`;
         return api(original);
       } catch {
@@ -325,8 +339,11 @@ export const authApi = {
   verifyOtp: (data) => api.post("/auth/verify-otp", data),
   resendOtp: (data) => api.post("/auth/resend-otp", data),
   login: (data) => api.post("/auth/login", data),
-  refresh: () => api.post("/auth/refresh"),
-  logout: () => api.post("/auth/logout"),
+  refresh: (refreshToken) => api.post("/auth/refresh", { refreshToken: refreshToken || getRefreshToken() }),
+  logout: () => {
+    clearRefreshToken();
+    return api.post("/auth/logout");
+  },
   me: () => api.get("/auth/me"),
 };
 
