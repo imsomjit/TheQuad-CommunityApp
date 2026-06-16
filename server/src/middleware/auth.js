@@ -38,6 +38,8 @@ const auth = asyncHandler(async (req, _res, next) => {
   if (header && header.startsWith("Bearer ")) {
     const token = header.slice(7);
     decoded = verifyAccessToken(token);
+  } else if (req.query.token) {
+    decoded = verifyAccessToken(req.query.token);
   } else if (req.cookies?.pv_refresh && req.originalUrl.includes("/api/notifications/stream")) {
     decoded = verifyRefreshToken(req.cookies.pv_refresh);
   } else {
@@ -67,6 +69,12 @@ const optionalAuth = async (req, _res, next) => {
     const token = header.slice(7);
     try {
       decoded = verifyAccessToken(token);
+    } catch {
+      // Ignore
+    }
+  } else if (req.query.token) {
+    try {
+      decoded = verifyAccessToken(req.query.token);
     } catch {
       // Ignore
     }
