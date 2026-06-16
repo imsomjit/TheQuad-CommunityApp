@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { Search, Target, ServerCrash, OctagonAlert, CodeXml, Plus } from "lucide-react";
 import {
     Select,
@@ -16,8 +17,17 @@ import { OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
 
-export default function Opportunities() {
+export default function Opportunities({ inExplore = false }) {
     const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=opportunities", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
+
     
     const [opportunities, setOpportunities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -111,6 +121,8 @@ export default function Opportunities() {
         if (sourceName.includes("hackerrank")) return <span className="font-bold text-syntax-blue-500">H</span>;
         return <CodeXml className="w-4 h-4" />;
     };
+
+    if (!isDesktop && !inExplore) return null;
 
     return (
         <div className="max-w-7xl mx-auto pb-24 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">

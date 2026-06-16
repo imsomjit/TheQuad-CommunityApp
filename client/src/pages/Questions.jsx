@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import {
     Search,
     Plus,
@@ -29,8 +30,17 @@ const SORTS = [
     { key: "active", label: "Active" },
 ];
 
-export default function Questions() {
+export default function Questions({ inExplore = false }) {
     const { questions, apiLoaded, currentUser } = useApp();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    React.useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=questions", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
+
 
     const [q, setQ] = useState("");
     const [tag, setTag] = useState("");
@@ -78,6 +88,8 @@ export default function Questions() {
 
         return list;
     }, [questions, q, tag, sort]);
+
+    if (!isDesktop && !inExplore) return null;
 
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

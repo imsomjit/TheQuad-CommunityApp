@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { Search, SlidersHorizontal, X, Upload, ArrowDownUp } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
@@ -36,9 +37,17 @@ const SORTS = [
 
 const ALL = "__all__";
 
-export default function Resources() {
+export default function Resources({ inExplore = false }) {
     const { resources, apiLoaded, currentUser } = useApp();
     const [params, setParams] = useSearchParams();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    React.useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=resources", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
 
     // Dynamically compute filters from available resources
     const activeColleges = useMemo(() => Array.from(new Set(resources.map(r => r.college).filter(Boolean))).sort(), [resources]);
@@ -127,6 +136,8 @@ export default function Resources() {
         semester !== ALL ||
         subject !== ALL ||
         activeTag;
+
+    if (!isDesktop && !inExplore) return null;
 
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

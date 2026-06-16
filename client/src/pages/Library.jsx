@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { Search, X, Upload, ArrowDownUp, BookText, } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { booksApi } from "../services/api";
@@ -25,8 +26,18 @@ const SORTS = [
     { key: "popular", label: "Popular" },
 ];
 
-export default function Library() {
+export default function Library({ inExplore = false }) {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=library", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
+
+
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -59,6 +70,8 @@ export default function Library() {
         fetchBooks();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, sort, subject, q]);
+
+    if (!isDesktop && !inExplore) return null;
 
     return (
         <div className="mx-auto max-w-7xl pb-24 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">

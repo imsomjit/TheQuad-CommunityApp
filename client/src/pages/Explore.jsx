@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import Resources from "./Resources";
 import Questions from "./Questions";
 import PostsFeed from "./PostsFeed";
@@ -8,7 +10,36 @@ import LibraryPage from "./Library";
 import { BookOpen, MessageSquare, FileText, Target, Library, Compass } from "lucide-react";
 
 export default function Explore() {
-    const [activeTab, setActiveTab] = useState("resources");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    const urlTab = searchParams.get("tab") || "resources";
+    const [activeTab, setActiveTab] = useState(urlTab);
+
+    // Sync state to URL
+    useEffect(() => {
+        if (activeTab !== urlTab) {
+            setSearchParams({ tab: activeTab }, { replace: true });
+        }
+    }, [activeTab, urlTab, setSearchParams]);
+
+    // Desktop redirect
+    useEffect(() => {
+        if (isDesktop) {
+            const routeMap = {
+                resources: "/resources",
+                questions: "/questions",
+                posts: "/posts",
+                library: "/library",
+                opportunities: "/opportunities"
+            };
+            navigate(routeMap[activeTab] || "/resources", { replace: true });
+        }
+    }, [isDesktop, navigate, activeTab]);
+
+    // Return null while redirecting to avoid flashing mobile layout on desktop
+    if (isDesktop) return null;
 
     return (
         <div className="w-full min-h-screen pb-24 md:hidden animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
@@ -40,19 +71,19 @@ export default function Explore() {
                 {/* Tab Content Wrappers */}
                 <div className="px-2">
                     <TabsContent value="resources" className="-mt-4 outline-none animate-in fade-in slide-in-from-bottom-2 zoom-in-[0.98] duration-500 ease-out">
-                        <Resources />
+                        <Resources inExplore={true} />
                     </TabsContent>
                     <TabsContent value="questions" className="-mt-4 outline-none animate-in fade-in slide-in-from-bottom-2 zoom-in-[0.98] duration-500 ease-out">
-                        <Questions />
+                        <Questions inExplore={true} />
                     </TabsContent>
                     <TabsContent value="posts" className="-mt-4 outline-none animate-in fade-in slide-in-from-bottom-2 zoom-in-[0.98] duration-500 ease-out">
-                        <PostsFeed />
+                        <PostsFeed inExplore={true} />
                     </TabsContent>
                     <TabsContent value="library" className="-mt-4 outline-none animate-in fade-in slide-in-from-bottom-2 zoom-in-[0.98] duration-500 ease-out">
-                        <LibraryPage />
+                        <LibraryPage inExplore={true} />
                     </TabsContent>
                     <TabsContent value="opportunities" className="-mt-4 outline-none animate-in fade-in slide-in-from-bottom-2 zoom-in-[0.98] duration-500 ease-out">
-                        <Opportunities />
+                        <Opportunities inExplore={true} />
                     </TabsContent>
                 </div>
             </Tabs>
