@@ -105,7 +105,7 @@ export default function Search() {
     results.opportunities.length;
 
   return (
-    <div className="w-full min-h-screen pb-24 px-4 sm:px-8 xl:px-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full min-h-screen pb-24 px-2 sm:px-8 xl:px-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="mb-10 pt-2 sm:pt-12 relative z-10">
         <div className="max-w-3xl">
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl mb-4 flex items-center gap-3">

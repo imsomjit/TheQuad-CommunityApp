@@ -214,7 +214,7 @@ export default function Profile() {
     const totalLangBytes = ghLanguages.reduce((a, l) => a + (l.bytes || 0), 0) || 1;
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="px-2 px-2 sm:px-6 md:px-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* ── Banner + Header ─────────────────────────────────────────────── */}
             <div>
                 {/* Banner */}

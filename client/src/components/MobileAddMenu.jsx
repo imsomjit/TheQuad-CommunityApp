@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { X, Upload, MessageSquare, FileText } from "lucide-react";
+import { Upload, MessageSquare, PenLine } from "lucide-react";
 import { createPortal } from "react-dom";
 
-export default function MobileAddMenu({ isOpen, onClose }) {
+export default function MobileAddMenu({ isOpen, onClose, hoveredAction }) {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
@@ -15,71 +15,63 @@ export default function MobileAddMenu({ isOpen, onClose }) {
         };
     }, [isOpen]);
 
-    if (!isOpen) return null;
-
+    // We don't unmount it so the closing animation can play!
+    // We use CSS opacity and pointer-events-none instead.
+    
     return createPortal(
-        <div className="fixed inset-0 z-[100] md:hidden">
-            {/* Backdrop */}
+        <div className={`fixed inset-0 z-[100] md:hidden ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+            
+            {/* Subtle Backdrop */}
             <div 
-                className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity duration-300"
+                className={`absolute inset-0 bg-ink/10 backdrop-blur-sm transition-all duration-300 ease-out ${isOpen ? 'opacity-100' : 'opacity-0 delay-100'}`}
                 onClick={onClose}
             />
 
-            {/* Bottom Sheet */}
-            <div className="absolute bottom-0 left-0 right-0 bg-paper border-t border-rule rounded-t-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full duration-300">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-display font-semibold text-ink">Create New</h2>
-                    <button 
-                        onClick={onClose}
-                        className="p-2 -mr-2 text-ink-3 hover:text-ink rounded-full bg-paper-2"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+            {/* Arc Menu Wrapper anchored to center of + button */}
+            <div className="absolute bottom-[46px] left-1/2 w-0 h-0">
+                
+                {/* Resource (Left Arc) */}
+                <Link 
+                    to="/upload"
+                    onClick={onClose}
+                    data-action-id="resource"
+                    className={`absolute flex flex-col items-center gap-2 w-20 transition-all duration-400 cubic-bezier(0.34, 1.56, 0.64, 1) ${isOpen ? 'translate-x-[-90px] translate-y-[-80px] scale-100 opacity-100' : 'translate-x-[0px] translate-y-[0px] scale-50 opacity-0'}`}
+                    style={{ left: '-40px', bottom: '-20px' }}
+                >
+                    <div className={`flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-transform duration-200 ${hoveredAction === 'resource' ? 'bg-syntax-rose scale-110 text-paper' : 'bg-paper-2 text-accent border border-accent-soft'}`}>
+                        <Upload className="w-6 h-6" strokeWidth={2} />
+                    </div>
+                    <span className={`text-[11px] font-mono uppercase tracking-wider transition-all duration-200 ${hoveredAction === 'resource' ? 'text-syntax-rose scale-110' : 'text-ink-2'}`}>Upload</span>
+                </Link>
 
-                <div className="grid grid-cols-1 gap-3 pb-8">
-                    <Link 
-                        to="/upload" 
-                        onClick={onClose}
-                        className="flex items-center gap-4 p-4 rounded-xl border border-rule bg-paper-2 hover:border-accent hover:bg-accent-soft/30 transition-all"
-                    >
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-syntax-mint/10 text-syntax-mint">
-                            <Upload className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-ink">Upload Resource</h3>
-                            <p className="text-xs text-ink-3 mt-0.5">Share notes, PYQs, and assignments</p>
-                        </div>
-                    </Link>
+                {/* Question (Top Arc) */}
+                <Link 
+                    to="/ask"
+                    onClick={onClose}
+                    data-action-id="question"
+                    className={`absolute flex flex-col items-center gap-2 w-20 transition-all duration-400 cubic-bezier(0.34, 1.56, 0.64, 1) delay-75 ${isOpen ? 'translate-x-[0px] translate-y-[-115px] scale-100 opacity-100' : 'translate-x-[0px] translate-y-[0px] scale-50 opacity-0'}`}
+                    style={{ left: '-40px', bottom: '-20px' }}
+                >
+                    <div className={`flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-transform duration-200 ${hoveredAction === 'question' ? 'bg-syntax-cyan scale-110 text-paper' : 'bg-paper-2 text-accent border border-accent-soft'}`}>
+                        <MessageSquare className="w-6 h-6" strokeWidth={2} />
+                    </div>
+                    <span className={`text-[11px] font-mono uppercase tracking-wider transition-all duration-200 ${hoveredAction === 'question' ? 'text-syntax-cyan scale-110' : 'text-ink-2'}`}>Ask</span>
+                </Link>
 
-                    <Link 
-                        to="/ask" 
-                        onClick={onClose}
-                        className="flex items-center gap-4 p-4 rounded-xl border border-rule bg-paper-2 hover:border-accent hover:bg-accent-soft/30 transition-all"
-                    >
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-syntax-cyan/10 text-syntax-cyan">
-                            <MessageSquare className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-ink">Ask a Question</h3>
-                            <p className="text-xs text-ink-3 mt-0.5">Get help from the community</p>
-                        </div>
-                    </Link>
+                {/* Post (Right Arc) */}
+                <Link 
+                    to="/posts/new"
+                    onClick={onClose}
+                    data-action-id="post"
+                    className={`absolute flex flex-col items-center gap-2 w-20 transition-all duration-400 cubic-bezier(0.34, 1.56, 0.64, 1) delay-150 ${isOpen ? 'translate-x-[90px] translate-y-[-80px] scale-100 opacity-100' : 'translate-x-[0px] translate-y-[0px] scale-50 opacity-0'}`}
+                    style={{ left: '-40px', bottom: '-20px' }}
+                >
+                    <div className={`flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-transform duration-200 ${hoveredAction === 'post' ? 'bg-syntax-violet scale-110 text-paper' : 'bg-paper-2 text-accent border border-accent-soft'}`}>
+                        <PenLine className="w-6 h-6" strokeWidth={2} />
+                    </div>
+                    <span className={`text-[11px] font-mono uppercase tracking-wider transition-all duration-200 ${hoveredAction === 'post' ? 'text-syntax-violet scale-110' : 'text-ink-2'}`}>Post</span>
+                </Link>
 
-                    <Link 
-                        to="/posts/new" 
-                        onClick={onClose}
-                        className="flex items-center gap-4 p-4 rounded-xl border border-rule bg-paper-2 hover:border-accent hover:bg-accent-soft/30 transition-all"
-                    >
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-syntax-amber/10 text-syntax-amber">
-                            <FileText className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-ink">Write a Post</h3>
-                            <p className="text-xs text-ink-3 mt-0.5">Share knowledge or experiences</p>
-                        </div>
-                    </Link>
-                </div>
             </div>
         </div>,
         document.body

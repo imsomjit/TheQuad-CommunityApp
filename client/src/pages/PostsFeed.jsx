@@ -119,11 +119,11 @@ export default function PostsFeed({ inExplore = false }) {
               &sect;04 &middot; the Post
             </p>
 
-            <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+            <h1 className="hidden md:inline mt-2 font-display text-5xl md:text-6xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
               Write. <span className="font-display-italic text-accent">Read. </span>&amp; <span className="italic marker">Inspire. </span>
             </h1>
 
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+            <p className="mt-4 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
               A constellation of &mdash; DSA editorials, interview experiences, learning journals, and project breakdowns written by learners based on their learnings, experiences and late night sessions.
             </p>
           </div>

@@ -83,11 +83,11 @@ export default function Library({ inExplore = false }) {
                             &sect;05 &middot; the library
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="hidden md:inline mt-2 font-display text-5xl md:text-6xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Read. <span className="font-display-italic text-accent">Learn.</span> & <span className="italic marker">Grow.</span>
                         </h1>
 
-                        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+                        <p className="mt-4 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
                             Explore free PDF books and study materials from a wide range of subjects. Discover new topics and prepare for your next exam.
                         </p>
                     </div>

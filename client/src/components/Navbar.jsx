@@ -92,27 +92,27 @@ export default function Navbar({ scrolled }) {
                     </span>
                 </Link>
 
-                {/* Desktop Nav Links (Removed in favor of Sidebar) */}
-
                 {/* Search */}
-                <div className="hidden max-w-md flex-1 sm:block">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
+                {!isAuthenticated && (
+                    <div className="hidden max-w-md flex-1 sm:block">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
 
-                        <Input
-                            ref={searchInputRef}
-                            data-testid="navbar-search-input"
-                            onKeyDown={handleSearch}
-                            placeholder="search notes, papers, questions…"
-                            className="h-9 rounded-sm border-rule rounded-md bg-paper pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
-                        />
+                            <Input
+                                ref={searchInputRef}
+                                data-testid="navbar-search-input"
+                                onKeyDown={handleSearch}
+                                placeholder="search notes, papers, questions…"
+                                className="h-9 rounded-sm border-rule rounded-md bg-paper pl-9 pr-14 text-sm text-ink placeholder:text-ink-3 focus-visible:border-accent/60 focus-visible:ring-accent/30"
+                            />
 
-                        <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 lg:flex">
-                            <Command className="h-3 w-3" />
-                            K
-                        </kbd>
+                            <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-sm border border-rule bg-paper px-1.5 py-0.5 font-mono text-[10px] text-ink-3 lg:flex">
+                                <Command className="h-3 w-3" />
+                                K
+                            </kbd>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Right Actions */}
                 <div className="ml-auto flex items-center gap-2.5">

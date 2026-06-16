@@ -1,18 +1,64 @@
-import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Home, Compass, Plus, Search, User } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MobileAddMenu from "./MobileAddMenu";
 
 export default function MobileNav() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+    const [hoveredAction, setHoveredAction] = useState(null);
+    const startPos = useRef(null);
+
+    const actionRoutes = {
+        resource: '/upload',
+        question: '/ask',
+        post: '/posts/new'
+    };
 
     const linkClass = ({ isActive }) =>
         `group relative flex flex-col items-center justify-center p-2 text-xs font-medium transition-all duration-300 ease-out active:scale-90 ${isActive
             ? "text-accent scale-110 drop-shadow-sm"
             : "text-ink-3 hover:text-ink hover:scale-105"
         }`;
+
+    const handlePointerDown = (e) => {
+        // Only trigger on primary touch/mouse
+        if (e.button !== 0 && e.button !== undefined) return; 
+        
+        e.currentTarget.setPointerCapture(e.pointerId);
+        startPos.current = { x: e.clientX, y: e.clientY };
+        setIsAddMenuOpen(true);
+        setHoveredAction(null);
+    };
+
+    const handlePointerMove = (e) => {
+        if (!isAddMenuOpen) return;
+        
+        // Find which action the pointer is currently over using native DOM testing
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const actionEl = el?.closest('[data-action-id]');
+        if (actionEl) {
+            setHoveredAction(actionEl.getAttribute('data-action-id'));
+        } else {
+            setHoveredAction(null);
+        }
+    };
+
+    const handlePointerUp = (e) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+        
+        // If they released over an action, navigate!
+        if (hoveredAction && actionRoutes[hoveredAction]) {
+            navigate(actionRoutes[hoveredAction]);
+        }
+
+        // Always close the menu when the finger is released
+        setIsAddMenuOpen(false);
+        setHoveredAction(null);
+        startPos.current = null;
+    };
 
     return (
         <>
@@ -30,10 +76,13 @@ export default function MobileNav() {
                     {/* Add FAB (Inline) */}
                     <div className="px-2">
                         <button
-                            onClick={() => setIsAddMenuOpen(true)}
-                            className="group flex items-center justify-center w-11 h-11 bg-accent text-paper rounded-full shadow-md hover:shadow-lg hover:scale-105 active:scale-90 transition-all duration-300 ease-out"
+                            onPointerDown={handlePointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            className={`group flex items-center justify-center w-11 h-11 bg-accent text-paper rounded-full shadow-md transition-all duration-300 ease-out ${isAddMenuOpen ? 'scale-90 shadow-none' : 'hover:shadow-lg hover:scale-105 active:scale-90'}`}
+                            style={{ touchAction: 'none' }} // Prevent scrolling while dragging!
                         >
-                            <Plus className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" strokeWidth={2.5} />
+                            <Plus className={`w-5 h-5 transition-transform duration-300 ${isAddMenuOpen ? 'rotate-45' : 'group-hover:rotate-90'}`} strokeWidth={2.5} />
                         </button>
                     </div>
 
@@ -55,6 +104,7 @@ export default function MobileNav() {
             <MobileAddMenu
                 isOpen={isAddMenuOpen}
                 onClose={() => setIsAddMenuOpen(false)}
+                hoveredAction={hoveredAction}
             />
         </>
     );
