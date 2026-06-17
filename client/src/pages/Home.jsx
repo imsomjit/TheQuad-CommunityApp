@@ -301,14 +301,27 @@ export default function Home() {
                                     PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
                                 </p>
 
-                                <h1 className="h-[180px] sm:h-[200px] md:h-[220px] lg:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
-                                    A <span className="font-display-italic text-accent">learning</span>{" "}
-                                    <span className="font-display-italic">space</span>
-                                    <br />
-                                    for <TypewriterEffect />
+                                <h1 className="relative grid grid-cols-1 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
+                                    {/* Hidden sizing layers for all phrases to establish exact max height dynamically */}
+                                    {TYPEWRITER_PHRASES.map((phrase) => (
+                                        <div key={phrase} className="col-start-1 row-start-1 invisible pointer-events-none" aria-hidden="true">
+                                            A <span className="font-display-italic text-accent">learning</span>{" "}
+                                            <span className="font-display-italic">space</span>
+                                            <br />
+                                            for <span className="marker">{phrase}</span>
+                                        </div>
+                                    ))}
+
+                                    {/* Visible typing layer */}
+                                    <div className="col-start-1 row-start-1">
+                                        A <span className="font-display-italic text-accent">learning</span>{" "}
+                                        <span className="font-display-italic">space</span>
+                                        <br />
+                                        for <TypewriterEffect />
+                                    </div>
                                 </h1>
 
-                                <p className="-mt-2 sm:mt-8 max-w-2xl text-base  leading-relaxed text-ink-2 sm:text-lg">
+                                <p className="mt-4 sm:mt-8 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
                                     Share annotated notes, debate past-year papers, and grow a
                                     public technical profile linked to your GitHub. PeerVerse is
                                     built like a developer tool — and reads like a journal you
@@ -359,7 +372,7 @@ export default function Home() {
                                     />
                                     <StatTile
                                         icon={Target}
-                                        label="opportunities"
+                                        label="Openings"
                                         value={opportunitiesCount.toLocaleString()}
                                         colorKey="answers"
                                     />
