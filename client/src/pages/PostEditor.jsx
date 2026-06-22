@@ -19,8 +19,9 @@ import {
 } from "../components/ui/select";
 import { toast } from "sonner";
 import AutocompleteTagInput from "../components/ui/AutocompleteTagInput";
-import { postsApi } from "../services/api";
+import { postsApi, seriesApi } from "../services/api";
 import { useApp } from "../context/AppContext";
+import { generateSlug } from "../utils/slugify";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -189,19 +190,8 @@ function InterviewMetaForm({ meta, onChange }) {
 }
 
 function JournalMetaForm({ meta, onChange }) {
-  return (
-    <div>
-      <label className="label-xs">Day Number</label>
-      <input
-        type="number"
-        value={meta.dayNumber || ""}
-        onChange={(e) => onChange({ ...meta, dayNumber: parseInt(e.target.value) || undefined })}
-        placeholder="e.g. 12"
-        min="1"
-        className="field-sm w-32"
-      />
-    </div>
-  );
+  // Deprecated: We now use the Journal Series feature instead of standalone day numbers
+  return null;
 }
 
 function ProjectMetaForm({ meta, onChange }) {
@@ -274,6 +264,12 @@ export default function PostEditor() {
   const [coverFile, setCoverFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState("");
 
+  const [userSeries, setUserSeries] = useState([]);
+  const [seriesId, setSeriesId] = useState("");
+  const [seriesOrder, setSeriesOrder] = useState("");
+  const [newSeriesTitle, setNewSeriesTitle] = useState("");
+  const [creatingSeries, setCreatingSeries] = useState(false);
+
   const [postId, setPostId] = useState(id ? parseInt(id) : null);
   const [status, setStatus] = useState("draft");
   const [saving, setSaving] = useState(false);
@@ -296,27 +292,40 @@ export default function PostEditor() {
       setCoverPreview(p.coverImageUrl || "");
       setStatus(p.status);
       setPostId(p.id);
+      if (p.seriesId) {
+        setSeriesId(p.seriesId.toString());
+        setSeriesOrder(p.seriesOrder?.toString() || "");
+      }
       setLoading(false);
     }).catch(() => { navigate("/posts"); });
-  }, [id]);
+  }, [id, navigate]);
+
+  // Load user series
+  useEffect(() => {
+    if (currentUser?.id) {
+      seriesApi.listByUser(currentUser.id)
+        .then(setUserSeries)
+        .catch(console.error);
+    }
+  }, [currentUser]);
 
   // Redirect if not logged in
   useEffect(() => {
     if (!currentUser) navigate("/login");
   }, [currentUser]);
 
-  // ── Autosave (debounced, 30s) ────────────────────────────────────────────
+  // ── Autosave (debounced, 5s) ────────────────────────────────────────────
   const autosaveTimerRef = useRef(null);
   const pendingAutosave = useRef(false);
 
   const triggerAutosave = useCallback(() => {
-    if (!postId) return;
+    if (!postId || !title.trim() || !body.trim()) return;
     pendingAutosave.current = true;
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     autosaveTimerRef.current = setTimeout(async () => {
       if (!pendingAutosave.current) return;
       try {
-        await postsApi.autosave(postId, { title, body, excerpt, categoryMeta });
+        await postsApi.autosave(postId, { title: title.trim(), body, excerpt, categoryMeta });
         setLastSaved(new Date());
         pendingAutosave.current = false;
       } catch {}
@@ -324,9 +333,11 @@ export default function PostEditor() {
   }, [postId, title, body, excerpt, categoryMeta]);
 
   useEffect(() => {
-    if (postId && status === "draft") triggerAutosave();
+    if (postId && status === "draft" && title.trim() && body.trim()) {
+      triggerAutosave();
+    }
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
-  }, [title, body, excerpt, categoryMeta]);
+  }, [title, body, excerpt, categoryMeta, postId, status, triggerAutosave]);
 
   // ── Toolbar actions ───────────────────────────────────────────────────────
   const insertMarkdown = (before, after = "") => {
@@ -391,6 +402,8 @@ export default function PostEditor() {
         tags,
         excerpt: excerpt || undefined,
         status: "draft",
+        seriesId: category === "learning_journal" && seriesId ? parseInt(seriesId) : null,
+        seriesOrder: category === "learning_journal" && seriesId && seriesOrder ? parseInt(seriesOrder) : null,
       };
 
       let post;
@@ -434,15 +447,27 @@ export default function PostEditor() {
     setPublishing(true);
     setError(null);
     try {
+      const payload = {
+        title: title.trim(),
+        body,
+        category,
+        categoryMeta,
+        tags,
+        excerpt: excerpt || undefined,
+        seriesId: category === "learning_journal" && seriesId ? parseInt(seriesId) : null,
+        seriesOrder: category === "learning_journal" && seriesId && seriesOrder ? parseInt(seriesOrder) : null,
+      };
+
       // Save first if needed
       let pid = postId;
+      let finalPost;
       if (!pid) {
-        const post = await postsApi.create({ title: title.trim(), body, category, categoryMeta, tags, status: "draft" });
-        pid = post.id;
+        finalPost = await postsApi.create({ ...payload, status: "draft" });
+        pid = finalPost.id;
         setPostId(pid);
         window.history.replaceState({}, "", `/posts/${pid}/edit`);
       } else {
-        await postsApi.update(pid, { title: title.trim(), body, category, categoryMeta, tags, excerpt: excerpt || undefined });
+        finalPost = await postsApi.update(pid, payload);
       }
 
       // Upload cover
@@ -455,9 +480,12 @@ export default function PostEditor() {
         } catch {}
       }
 
-      const published = await postsApi.publish(pid);
-      setStatus("published");
-      navigate(`/posts/${published.slug}`);
+      if (status !== "published") {
+        finalPost = await postsApi.publish(pid);
+        setStatus("published");
+      }
+      
+      navigate(`/posts/${generateSlug(finalPost.title, finalPost.publicId || finalPost.id)}`);
     } catch (err) {
       setError(err.response?.data?.message || "Publish failed");
     } finally {
@@ -654,12 +682,86 @@ export default function PostEditor() {
           </div>
 
           {/* Category metadata */}
-          <div className="rounded-sm border border-rule bg-paper p-4">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
-              Details
-            </p>
-            {categoryMetaForms[category]}
-          </div>
+          {category !== "learning_journal" && categoryMetaForms[category] && (
+            <div className="rounded-sm border border-rule bg-paper p-4">
+              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+                Details
+              </p>
+              {categoryMetaForms[category]}
+            </div>
+          )}
+
+          {/* Series Options (Learning Journal only) */}
+          {category === "learning_journal" && (
+            <div className="rounded-sm border border-rule bg-paper p-4">
+              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+                Journal Series
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="label-xs">Series</label>
+                  <Select value={seriesId || "none"} onValueChange={(v) => setSeriesId(v === "none" ? "" : v)}>
+                    <SelectTrigger className="w-full border-rule bg-paper-2/40 focus:border-accent/60">
+                      <SelectValue placeholder="Select a series..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {userSeries.map((s) => (
+                        <SelectItem key={s.id} value={s.id.toString()}>{s.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(!seriesId || seriesId === "none") && (
+                  <div>
+                    <label className="label-xs">Create New Series</label>
+                    <div className="flex gap-2">
+                      <input
+                        value={newSeriesTitle}
+                        onChange={(e) => setNewSeriesTitle(e.target.value)}
+                        placeholder="100 Days of Code..."
+                        className="field-sm flex-1"
+                        disabled={creatingSeries}
+                      />
+                      <button
+                        type="button"
+                        disabled={!newSeriesTitle.trim() || creatingSeries}
+                        onClick={async () => {
+                          setCreatingSeries(true);
+                          try {
+                            const s = await seriesApi.create({ title: newSeriesTitle.trim() });
+                            setUserSeries([...userSeries, s]);
+                            setSeriesId(s.id.toString());
+                            setNewSeriesTitle("");
+                          } catch (err) {
+                            console.error(err);
+                          } finally {
+                            setCreatingSeries(false);
+                          }
+                        }}
+                        className="flex h-8 items-center justify-center rounded-sm bg-paper-3 px-3 text-xs text-ink transition-colors hover:bg-rule disabled:opacity-50"
+                      >
+                        Create
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {seriesId !== "" && (
+                  <div>
+                    <label className="label-xs">Day / Part Number</label>
+                    <input
+                      type="number"
+                      value={seriesOrder}
+                      onChange={(e) => setSeriesOrder(e.target.value)}
+                      placeholder="e.g. 1"
+                      min="1"
+                      className="field-sm w-full"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Tags */}
           <div className="rounded-sm border border-rule bg-paper p-4">
