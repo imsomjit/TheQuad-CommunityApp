@@ -40,16 +40,28 @@ const ROUTE_LABELS = [
     { match: /^\/terms$/, label: "the terms", section: "§10", pathName: "Terms of service" },
     { match: /^\/faq$/, label: "the FAQs", section: "§10", pathName: "Asked questions" },
     { match: /^\/admin(\/.*)?$/, label: "admin console", section: "§00", pathName: "Admin Console" },
+    { match: /^\/explore$/, label: "the explore", section: "§11", pathName: "Explore" },
 ];
 
-function getRouteMeta(pathname) {
-    return (
-        ROUTE_LABELS.find((r) => r.match.test(pathname)) || {
-            label: "page",
-            section: "§",
-            pathName: "a learning space"
+function getRouteMeta(pathname, search = "") {
+    const route = ROUTE_LABELS.find((r) => r.match.test(pathname)) || {
+        label: "page",
+        section: "§",
+        pathName: "a learning space"
+    };
+
+    if (pathname === "/explore" && search) {
+        const params = new URLSearchParams(search);
+        const tab = params.get("tab");
+        if (tab) {
+            return {
+                ...route,
+                pathName: `Explore / ${tab}`
+            };
         }
-    );
+    }
+
+    return route;
 }
 
 export default function Layout() {
@@ -57,7 +69,7 @@ export default function Layout() {
     const { isAuthenticated } = useAuth();
     const { siteSettings } = useApp();
     const location = useLocation();
-    const meta = getRouteMeta(location.pathname);
+    const meta = getRouteMeta(location.pathname, location.search);
     const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
 
     const [scrolled, setScrolled] = useState(false);
@@ -84,7 +96,7 @@ export default function Layout() {
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                <div className={`fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 ease-out pr-[var(--removed-body-scroll-bar-size,0px)] ${scrolled ? '-translate-y-6 sm:-translate-y-7' : 'translate-y-0'}`}>
+                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 ease-out pr-[var(--removed-body-scroll-bar-size,0px)]">
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
                         className={`border-b border-rule/60 bg-paper-2/80 backdrop-blur-md transition-all duration-700 overflow-hidden ${

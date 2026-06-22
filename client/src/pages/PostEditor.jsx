@@ -377,6 +377,9 @@ export default function PostEditor() {
   // ── Save as draft ─────────────────────────────────────────────────────────
   const saveDraft = async () => {
     if (!title.trim()) { setError("Title is required"); return; }
+    if (body.length > 100000) { setError("Post body exceeds maximum length of 100,000 characters"); return; }
+    const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
+    if (wordCount > 5000) { setError(`Post body exceeds maximum length of 5000 words (currently ${wordCount} words)`); return; }
     setSaving(true);
     setError(null);
     try {
@@ -424,6 +427,9 @@ export default function PostEditor() {
   const handlePublish = async () => {
     if (!title.trim()) { setError("Title is required to publish"); return; }
     if (body.length < 50) { setError("Post needs at least 50 characters in the body to publish"); return; }
+    if (body.length > 100000) { setError("Post body exceeds maximum length of 100,000 characters"); return; }
+    const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
+    if (wordCount > 5000) { setError(`Post body exceeds maximum length of 5000 words (currently ${wordCount} words)`); return; }
 
     setPublishing(true);
     setError(null);
@@ -532,8 +538,12 @@ export default function PostEditor() {
               placeholder="Your post title…"
               rows={2}
               maxLength={300}
-              className="w-full resize-none border-0 border-b-2 border-rule bg-transparent pb-3 font-display text-3xl text-ink placeholder:text-ink-3/50 focus:border-accent/60 focus:outline-none"
+              disabled={status === "published"}
+              className={`w-full resize-none border-0 border-b-2 border-rule bg-transparent pb-3 font-display text-3xl text-ink placeholder:text-ink-3/50 focus:border-accent/60 focus:outline-none ${status === "published" ? "opacity-60 cursor-not-allowed" : ""}`}
             />
+            {status === "published" && (
+              <p className="mt-1 text-xs text-ink-3">Title cannot be changed after publishing to preserve links.</p>
+            )}
           </div>
 
           {/* Markdown toolbar + mode toggle */}
@@ -614,6 +624,11 @@ export default function PostEditor() {
               )}
             </div>
           )}
+          <div className="flex justify-end mt-1">
+            <span className={`text-xs font-mono ${body.trim().split(/\s+/).filter(w => w.length > 0).length > 5000 ? 'text-red-500 font-bold' : 'text-ink-3'}`}>
+              {body.trim().split(/\s+/).filter(w => w.length > 0).length} / 5000 words
+            </span>
+          </div>
         </div>
 
         {/* ── Sidebar settings ──────────────────────────────────────────── */}

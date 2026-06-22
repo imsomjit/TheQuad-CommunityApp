@@ -5,8 +5,14 @@ const { z } = require("zod");
 const RESOURCE_TYPES = ["notes", "pyq", "assignment", "cheatsheet", "other"];
 
 const createResourceSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters").max(300).trim(),
-  description: z.string().max(2000).trim().optional(),
+  title: z.string().min(5, "Title must be at least 5 characters").max(300).trim()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 50, {
+      message: "Title cannot exceed 50 words",
+    }),
+  description: z.string().max(2000).trim().optional()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 500, {
+      message: "Description cannot exceed 500 words",
+    }),
   type: z.enum(RESOURCE_TYPES, {
     errorMap: () => ({ message: `Type must be one of: ${RESOURCE_TYPES.join(", ")}` }),
   }),

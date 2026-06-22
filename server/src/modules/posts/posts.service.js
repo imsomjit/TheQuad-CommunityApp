@@ -174,7 +174,8 @@ const updatePost = async (id, userId, patch) => {
   }
 
   if (post.status === "published") {
-    throw new AppError("Published posts cannot be edited. Unpublish to edit.", 403, "FORBIDDEN");
+    // If published, we ignore title changes because slug is immutable and we don't want title/slug mismatch
+    delete patch.title;
   }
 
   const { tags, ...meta } = patch;

@@ -276,7 +276,7 @@ export default function Profile() {
                                         to="/settings/profile"
                                         className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
                                     >
-                                        <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit profile</span><span className="sm:hidden">Edit</span>
+                                        <Edit3 className="w-3.5 h-3.5" /> Edit
                                     </Link>
                                     <button
                                         onClick={() => logout()}

@@ -12,18 +12,28 @@
     /* default to dark/ink */
     color-scheme: dark;
 
-    --paper: 9 11 17; /* #090b11 */
-    --paper-2: 17 21 34; /* #111522 */
-    --paper-3: 26 32 48; /* #1a2030 */
-    --ink: 246 244 237; /* #f6f4ed */
-    --ink-2: 199 195 183; /* #c7c3b7 */
-    --ink-3: 139 135 125; /* #8b877d */
-    --rule: 30 35 48; /* #1e2330 */
-    --rule-2: 42 48 64; /* #2a3040 */
+    --paper: 9 11 17;
+    /* #090b11 */
+    --paper-2: 17 21 34;
+    /* #111522 */
+    --paper-3: 26 32 48;
+    /* #1a2030 */
+    --ink: 246 244 237;
+    /* #f6f4ed */
+    --ink-2: 199 195 183;
+    /* #c7c3b7 */
+    --ink-3: 139 135 125;
+    /* #8b877d */
+    --rule: 30 35 48;
+    /* #1e2330 */
+    --rule-2: 42 48 64;
+    /* #2a3040 */
 
-    --accent: 255 184 77; /* #ffb84d */
+    --accent: 255 184 77;
+    /* #ffb84d */
     --accent-soft: rgba(255, 184, 77, 0.14);
-    --accent-2: 157 230 95; /* #9de65f */
+    --accent-2: 157 230 95;
+    /* #9de65f */
     --accent-2-soft: rgba(157, 230, 95, 0.12);
 
     /* glow / shimmer (dark only) */
@@ -33,17 +43,26 @@
     --card-glow-hover: 0 0 0 1px rgb(var(--rule-2)), 0 8px 32px -8px rgba(0, 0, 0, 0.65), 0 0 60px -10px var(--glow-accent);
 
     /* syntax palette (used across tags / categories / charts) */
-    --syntax-cyan: 108 212 255; /* #6cd4ff */
-    --syntax-magenta: 249 168 212; /* #f9a8d4 */
-    --syntax-lime: 190 242 100; /* #bef264 */
-    --syntax-amber: 252 211 77; /* #fcd34d */
-    --syntax-violet: 196 181 253; /* #c4b5fd */
-    --syntax-rose: 253 164 175; /* #fda4af */
-    --syntax-mint: 110 231 183; /* #6ee7b7 */
+    --syntax-cyan: 108 212 255;
+    /* #6cd4ff */
+    --syntax-magenta: 249 168 212;
+    /* #f9a8d4 */
+    --syntax-lime: 190 242 100;
+    /* #bef264 */
+    --syntax-amber: 252 211 77;
+    /* #fcd34d */
+    --syntax-violet: 196 181 253;
+    /* #c4b5fd */
+    --syntax-rose: 253 164 175;
+    /* #fda4af */
+    --syntax-mint: 110 231 183;
+    /* #6ee7b7 */
 
     /* code surface */
-    --code-bg: 13 16 24; /* #0d1018 */
-    --code-fg: 240 239 230; /* #f0efe6 */
+    --code-bg: 13 16 24;
+    /* #0d1018 */
+    --code-fg: 240 239 230;
+    /* #f0efe6 */
 
     /* selection / highlighter */
     --highlight: rgba(255, 184, 77, 0.28);
@@ -55,30 +74,49 @@
 html.light {
     color-scheme: light;
 
-    --paper: 250 248 242; /* #faf8f2 */
-    --paper-2: 245 241 232; /* #f5f1e8 */
-    --paper-3: 238 234 223; /* #eeeadf */
-    --ink: 35 29 23; /* #231d17 */
-    --ink-2: 98 88 77; /* #62584d */
-    --ink-3: 139 129 117; /* #8b8175 */
-    --rule: 216 207 185; /* #d8cfb9 */
-    --rule-2: 195 184 158; /* #c3b89e */
+    --paper: 250 248 242;
+    /* #faf8f2 */
+    --paper-2: 245 241 232;
+    /* #f5f1e8 */
+    --paper-3: 238 234 223;
+    /* #eeeadf */
+    --ink: 35 29 23;
+    /* #231d17 */
+    --ink-2: 98 88 77;
+    /* #62584d */
+    --ink-3: 139 129 117;
+    /* #8b8175 */
+    --rule: 216 207 185;
+    /* #d8cfb9 */
+    --rule-2: 195 184 158;
+    /* #c3b89e */
 
-    --accent: 204 85 33; /* #cc5521 */
+    --accent: 204 85 33;
+    /* #cc5521 */
     --accent-soft: rgba(204, 85, 33, 0.10);
-    --accent-2: 42 105 67; /* #2a6943 */
+    --accent-2: 42 105 67;
+    /* #2a6943 */
     --accent-2-soft: rgba(42, 105, 67, 0.10);
 
-    --syntax-cyan: 14 116 144; /* #0e7490 */
-    --syntax-magenta: 157 23 77; /* #9d174d */
-    --syntax-lime: 63 98 18; /* #3f6212 */
-    --syntax-amber: 180 83 9; /* #b45309 */
-    --syntax-violet: 91 33 182; /* #5b21b6 */
-    --syntax-rose: 190 18 60; /* #be123c */
-    --syntax-mint: 4 120 87; /* #047857 */
+    --syntax-cyan: 14 116 144;
+    /* #0e7490 */
+    --syntax-magenta: 157 23 77;
+    /* #9d174d */
+    --syntax-lime: 63 98 18;
+    /* #3f6212 */
+    --syntax-amber: 180 83 9;
+    /* #b45309 */
+    --syntax-violet: 91 33 182;
+    /* #5b21b6 */
+    --syntax-rose: 190 18 60;
+    /* #be123c */
+    --syntax-mint: 4 120 87;
+    /* #047857 */
 
-    --code-bg: 235 226 204; /* #ebe2cc */
-    --code-fg: 28 24 20; /* #1c1814 */
+    --code-bg: 235 226 204;
+    /* #ebe2cc */
+    --code-fg: 28 24 20;
+    /* #1c1814 */
 
     --highlight: rgba(255, 220, 110, 0.55);
 
@@ -166,6 +204,8 @@ pre,
 .dot-bg {
     background-image: radial-gradient(rgba(127, 127, 127, 0.25) 1px, transparent 1px);
     background-size: 22px 22px;
+    mask-image: radial-gradient(circle at center, black 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 100%);
 }
 
 html.light .dot-bg {
@@ -753,6 +793,7 @@ html.light .ring-glow:focus-visible {
 body[data-scroll-locked] .fixed.top-0 {
     padding-right: var(--removed-body-scroll-bar-size, 0px);
 }
+
 /* ---------------------------------------------------------
    Skeleton Shimmer Effect
    --------------------------------------------------------- */
@@ -772,22 +813,18 @@ body[data-scroll-locked] .fixed.top-0 {
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background-image: linear-gradient(
-        90deg,
-        transparent 0,
-        rgba(255, 255, 255, 0.05) 20%,
-        rgba(255, 255, 255, 0.1) 60%,
-        transparent
-    );
+    background-image: linear-gradient(90deg,
+            transparent 0,
+            rgba(255, 255, 255, 0.05) 20%,
+            rgba(255, 255, 255, 0.1) 60%,
+            transparent);
     animation: shimmer 1.5s infinite;
 }
 
 html.light .shimmer::after {
-    background-image: linear-gradient(
-        90deg,
-        transparent 0,
-        rgba(0, 0, 0, 0.05) 20%,
-        rgba(0, 0, 0, 0.1) 60%,
-        transparent
-    );
+    background-image: linear-gradient(90deg,
+            transparent 0,
+            rgba(0, 0, 0, 0.05) 20%,
+            rgba(0, 0, 0, 0.1) 60%,
+            transparent);
 }
