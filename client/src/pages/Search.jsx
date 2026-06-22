@@ -122,7 +122,7 @@ export default function Search() {
             {/* Animated Glow Behind Search Bar */}
             <div className="absolute -inset-1 bg-gradient-to-r from-accent via-syntax-purple to-syntax-cyan rounded-3xl blur-md opacity-20 group-hover:opacity-40 group-focus-within:opacity-60 transition duration-500"></div>
             
-            <div className="relative bg-paper backdrop-blur-xl border-2 border-rule hover:border-rule-2 focus-within:border-accent rounded-2xl shadow-sm hover:shadow-lg focus-within:shadow-lg transition-all duration-300 flex items-center">
+            <div className="relative bg-paper/80 backdrop-blur-xl border-2 border-rule hover:border-rule-2 focus-within:border-accent rounded-2xl shadow-sm hover:shadow-lg focus-within:shadow-lg transition-all duration-300 flex items-center">
               <div className="pl-5 flex items-center pointer-events-none">
                 <SearchIcon className="h-5 w-5 text-ink-3 group-focus-within:text-accent transition-colors duration-300" />
               </div>

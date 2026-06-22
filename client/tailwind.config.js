@@ -25,29 +25,29 @@ export default {
 
       colors: {
         // semantic tokens — surface
-        paper: "var(--paper)",
-        "paper-2": "var(--paper-2)",
-        "paper-3": "var(--paper-3)",
-        ink: "var(--ink)",
-        "ink-2": "var(--ink-2)",
-        "ink-3": "var(--ink-3)",
-        rule: "var(--rule)",
-        "rule-2": "var(--rule-2)",
+        paper: "rgb(var(--paper) / <alpha-value>)",
+        "paper-2": "rgb(var(--paper-2) / <alpha-value>)",
+        "paper-3": "rgb(var(--paper-3) / <alpha-value>)",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        "ink-2": "rgb(var(--ink-2) / <alpha-value>)",
+        "ink-3": "rgb(var(--ink-3) / <alpha-value>)",
+        rule: "rgb(var(--rule) / <alpha-value>)",
+        "rule-2": "rgb(var(--rule-2) / <alpha-value>)",
 
         // brand
-        accent: "var(--accent)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
         "accent-soft": "var(--accent-soft)",
-        "accent-2": "var(--accent-2)",
+        "accent-2": "rgb(var(--accent-2) / <alpha-value>)",
         "accent-2-soft": "var(--accent-2-soft)",
 
         // syntax palette
-        "syntax-cyan": "var(--syntax-cyan)",
-        "syntax-magenta": "var(--syntax-magenta)",
-        "syntax-lime": "var(--syntax-lime)",
-        "syntax-amber": "var(--syntax-amber)",
-        "syntax-violet": "var(--syntax-violet)",
-        "syntax-rose": "var(--syntax-rose)",
-        "syntax-mint": "var(--syntax-mint)",
+        "syntax-cyan": "rgb(var(--syntax-cyan) / <alpha-value>)",
+        "syntax-magenta": "rgb(var(--syntax-magenta) / <alpha-value>)",
+        "syntax-lime": "rgb(var(--syntax-lime) / <alpha-value>)",
+        "syntax-amber": "rgb(var(--syntax-amber) / <alpha-value>)",
+        "syntax-violet": "rgb(var(--syntax-violet) / <alpha-value>)",
+        "syntax-rose": "rgb(var(--syntax-rose) / <alpha-value>)",
+        "syntax-mint": "rgb(var(--syntax-mint) / <alpha-value>)",
 
         // shadcn primitives (resolve to CSS vars above)
         background: "hsl(var(--background))",

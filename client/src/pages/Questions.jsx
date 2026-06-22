@@ -197,7 +197,7 @@ export default function Questions({ inExplore = false }) {
                 </div>
 
                 <aside className="lg:col-span-3">
-                    <div className="sticky top-24 space-y-4 rounded-sm border border-rule bg-paper-2/40 p-4">
+                    <div className="sticky top-24 space-y-4 rounded-sm border border-rule bg-paper-2/40 backdrop-blur-md p-4">
                         <h3 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // filter by tag
                         </h3>

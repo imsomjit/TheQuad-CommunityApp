@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useCurrentTheme } from "../components/MarkdownEditor";
 import {
   Bold, Italic, Heading2, Heading3, Code, Link2, List, ListOrdered,
   Quote, Table, ImageIcon, Eye, Edit3, Save, Send, ChevronDown,
@@ -259,6 +260,7 @@ export default function PostEditor() {
   const navigate = useNavigate();
   const { currentUser } = useApp();
   const textareaRef = useRef(null);
+  const isLight = useCurrentTheme();
 
   const [mode, setMode] = useState("write"); // "write" | "preview"
   const [title, setTitle] = useState("");
@@ -579,13 +581,25 @@ export default function PostEditor() {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    code({ inline, className, children }) {
-                      if (inline) return <code className="rounded-sm bg-paper-2 px-1.5 py-0.5 font-mono text-[0.8125rem] border border-rule">{children}</code>;
-                      const lang = className?.replace("language-", "") || "text";
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      const isBlock = match || String(children).includes('\n');
+                      
+                      if (!isBlock) {
+                        return <code className="rounded-sm bg-paper-2 px-1.5 py-0.5 font-mono text-[0.8125rem] border border-rule text-ink" {...props}>{children}</code>;
+                      }
+                      
+                      const lang = match ? match[1] : "text";
                       return (
                         <div className="my-4 overflow-hidden rounded-sm border border-rule">
                           <div className="border-b border-rule bg-paper-2/80 px-4 py-1.5 font-mono text-[10px] uppercase text-ink-3">{lang}</div>
-                          <SyntaxHighlighter style={oneDark} language={lang} PreTag="div" customStyle={{ margin: 0, borderRadius: 0, fontSize: "0.8125rem" }}>
+                          <SyntaxHighlighter 
+                            style={isLight ? oneLight : oneDark} 
+                            language={lang} 
+                            PreTag="div" 
+                            customStyle={{ margin: 0, borderRadius: 0, fontSize: "0.8125rem", padding: "1rem", background: "rgb(var(--code-bg) / 0.4)" }}
+                            codeTagProps={{ style: { background: "transparent" } }}
+                          >
                             {String(children).replace(/\n$/, "")}
                           </SyntaxHighlighter>
                         </div>

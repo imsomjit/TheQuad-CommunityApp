@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 // ── Detect theme from <html> class ────────────────────────────────────────────
-function useCurrentTheme() {
+export function useCurrentTheme() {
   const [isLight, setIsLight] = useState(() =>
     typeof document !== "undefined" && document.documentElement.classList.contains("light")
   );
@@ -83,8 +83,10 @@ function CodeBlock({ children, className }) {
           borderRadius: 0,
           fontSize: "0.8125rem",
           lineHeight: "1.6",
-          background: isLight ? "var(--code-bg, #ebe2cc)" : "var(--code-bg, #0d1018)",
+          padding: "1rem",
+          background: "rgb(var(--code-bg) / 0.4)",
         }}
+        codeTagProps={{ style: { background: "transparent" } }}
       >
         {code}
       </SyntaxHighlighter>
@@ -94,8 +96,11 @@ function CodeBlock({ children, className }) {
 
 // ── Markdown components for ReactMarkdown ─────────────────────────────────────
 const mdComponents = {
-  code({ inline, className, children, ...props }) {
-    if (inline) {
+  code({ className, children, ...props }) {
+    const match = /language-(\w+)/.exec(className || '');
+    const isBlock = match || String(children).includes('\n');
+    
+    if (!isBlock) {
       return (
         <code
           className="rounded-sm bg-paper-2 px-1.5 py-0.5 font-mono text-[0.8125rem] text-ink border border-rule"

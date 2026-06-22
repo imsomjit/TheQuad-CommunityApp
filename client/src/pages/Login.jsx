@@ -177,7 +177,7 @@ export default function Login() {
           </div>
 
           {/* Bottom — Quote */}
-          <div className="rounded-md mt-16 border border-rule bg-paper p-5 backdrop-blur-sm">
+          <div className="rounded-md mt-16 border border-rule bg-paper/80 p-5 backdrop-blur-sm">
             <p className="text-sm leading-relaxed text-ink italic">
               <span className="text-accent">❝</span> Live as if you were to die tomorrow. Learn as if you were to live forever. <span className="text-accent">❞</span>
             </p>

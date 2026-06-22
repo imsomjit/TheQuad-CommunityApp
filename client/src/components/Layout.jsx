@@ -87,8 +87,8 @@ export default function Layout() {
                 <div className={`fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 ease-out pr-[var(--removed-body-scroll-bar-size,0px)] ${scrolled ? '-translate-y-6 sm:-translate-y-7' : 'translate-y-0'}`}>
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
-                        className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md h-6 sm:h-7 transition-opacity duration-300 ease-out overflow-hidden ${
-                            scrolled ? "opacity-0" : "opacity-100"
+                        className={`border-b border-rule/60 bg-paper-2/80 backdrop-blur-md transition-all duration-700 overflow-hidden ${
+                            scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
                         {siteSettings?.announcementActive && siteSettings?.announcementText ? (

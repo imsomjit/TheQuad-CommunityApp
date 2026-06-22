@@ -262,7 +262,7 @@ export default function AdminUsers() {
         {/* Action Panel */}
         <div className="lg:col-span-1">
           {selectedUser ? (
-            <div className="border border-rule rounded-xl bg-paper p-5 sticky top-24">
+            <div className="border border-rule rounded-xl bg-paper/80 backdrop-blur-xl p-5 sticky top-24">
               <h3 className="font-bold text-lg mb-1">{selectedUser.name}</h3>
               <p className="text-sm text-ink-2 mb-6">@{selectedUser.username}</p>
 

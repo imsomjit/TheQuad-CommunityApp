@@ -60,7 +60,7 @@ export default function AdminLayout() {
                     <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 pr-[var(--removed-body-scroll-bar-size,0px)]">
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
-                        className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md transition-all duration-700 overflow-hidden ${
+                        className={`border-b border-rule/60 bg-paper-2/80 backdrop-blur-md transition-all duration-700 overflow-hidden ${
                             scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >

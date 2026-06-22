@@ -12,38 +12,38 @@
     /* default to dark/ink */
     color-scheme: dark;
 
-    --paper: #090b11;
-    --paper-2: #111522;
-    --paper-3: #1a2030;
-    --ink: #f6f4ed;
-    --ink-2: #c7c3b7;
-    --ink-3: #8b877d;
-    --rule: #1e2330;
-    --rule-2: #2a3040;
+    --paper: 9 11 17; /* #090b11 */
+    --paper-2: 17 21 34; /* #111522 */
+    --paper-3: 26 32 48; /* #1a2030 */
+    --ink: 246 244 237; /* #f6f4ed */
+    --ink-2: 199 195 183; /* #c7c3b7 */
+    --ink-3: 139 135 125; /* #8b877d */
+    --rule: 30 35 48; /* #1e2330 */
+    --rule-2: 42 48 64; /* #2a3040 */
 
-    --accent: #ffb84d;
+    --accent: 255 184 77; /* #ffb84d */
     --accent-soft: rgba(255, 184, 77, 0.14);
-    --accent-2: #9de65f;
+    --accent-2: 157 230 95; /* #9de65f */
     --accent-2-soft: rgba(157, 230, 95, 0.12);
 
     /* glow / shimmer (dark only) */
     --glow-accent: rgba(255, 179, 64, 0.12);
     --glow-accent-2: rgba(184, 242, 78, 0.10);
-    --card-glow: 0 0 0 1px var(--rule), 0 4px 24px -6px rgba(0, 0, 0, 0.55), 0 0 40px -14px var(--glow-accent);
-    --card-glow-hover: 0 0 0 1px var(--rule-2), 0 8px 32px -8px rgba(0, 0, 0, 0.65), 0 0 60px -10px var(--glow-accent);
+    --card-glow: 0 0 0 1px rgb(var(--rule)), 0 4px 24px -6px rgba(0, 0, 0, 0.55), 0 0 40px -14px var(--glow-accent);
+    --card-glow-hover: 0 0 0 1px rgb(var(--rule-2)), 0 8px 32px -8px rgba(0, 0, 0, 0.65), 0 0 60px -10px var(--glow-accent);
 
     /* syntax palette (used across tags / categories / charts) */
-    --syntax-cyan: #6cd4ff;
-    --syntax-magenta: #f9a8d4;
-    --syntax-lime: #bef264;
-    --syntax-amber: #fcd34d;
-    --syntax-violet: #c4b5fd;
-    --syntax-rose: #fda4af;
-    --syntax-mint: #6ee7b7;
+    --syntax-cyan: 108 212 255; /* #6cd4ff */
+    --syntax-magenta: 249 168 212; /* #f9a8d4 */
+    --syntax-lime: 190 242 100; /* #bef264 */
+    --syntax-amber: 252 211 77; /* #fcd34d */
+    --syntax-violet: 196 181 253; /* #c4b5fd */
+    --syntax-rose: 253 164 175; /* #fda4af */
+    --syntax-mint: 110 231 183; /* #6ee7b7 */
 
     /* code surface */
-    --code-bg: #0d1018;
-    --code-fg: #f0efe6;
+    --code-bg: 13 16 24; /* #0d1018 */
+    --code-fg: 240 239 230; /* #f0efe6 */
 
     /* selection / highlighter */
     --highlight: rgba(255, 184, 77, 0.28);
@@ -55,30 +55,30 @@
 html.light {
     color-scheme: light;
 
-    --paper: #faf8f2;
-    --paper-2: #f5f1e8;
-    --paper-3: #eeeadf;
-    --ink: #231d17;
-    --ink-2: #62584d;
-    --ink-3: #8b8175;
-    --rule: #d8cfb9;
-    --rule-2: #c3b89e;
+    --paper: 250 248 242; /* #faf8f2 */
+    --paper-2: 245 241 232; /* #f5f1e8 */
+    --paper-3: 238 234 223; /* #eeeadf */
+    --ink: 35 29 23; /* #231d17 */
+    --ink-2: 98 88 77; /* #62584d */
+    --ink-3: 139 129 117; /* #8b8175 */
+    --rule: 216 207 185; /* #d8cfb9 */
+    --rule-2: 195 184 158; /* #c3b89e */
 
-    --accent: #cc5521;
+    --accent: 204 85 33; /* #cc5521 */
     --accent-soft: rgba(204, 85, 33, 0.10);
-    --accent-2: #2a6943;
+    --accent-2: 42 105 67; /* #2a6943 */
     --accent-2-soft: rgba(42, 105, 67, 0.10);
 
-    --syntax-cyan: #0e7490;
-    --syntax-magenta: #9d174d;
-    --syntax-lime: #3f6212;
-    --syntax-amber: #b45309;
-    --syntax-violet: #5b21b6;
-    --syntax-rose: #be123c;
-    --syntax-mint: #047857;
+    --syntax-cyan: 14 116 144; /* #0e7490 */
+    --syntax-magenta: 157 23 77; /* #9d174d */
+    --syntax-lime: 63 98 18; /* #3f6212 */
+    --syntax-amber: 180 83 9; /* #b45309 */
+    --syntax-violet: 91 33 182; /* #5b21b6 */
+    --syntax-rose: 190 18 60; /* #be123c */
+    --syntax-mint: 4 120 87; /* #047857 */
 
-    --code-bg: #ebe2cc;
-    --code-fg: #1c1814;
+    --code-bg: 235 226 204; /* #ebe2cc */
+    --code-fg: 28 24 20; /* #1c1814 */
 
     --highlight: rgba(255, 220, 110, 0.55);
 
@@ -88,8 +88,8 @@ html.light {
 html,
 body,
 #root {
-    background-color: var(--paper);
-    color: var(--ink);
+    background-color: rgb(var(--paper));
+    color: rgb(var(--ink));
 }
 
 body {
@@ -132,22 +132,22 @@ pre,
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--paper);
+    background: rgb(var(--paper));
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--rule-2);
+    background: rgb(var(--rule-2));
     border-radius: 6px;
-    border: 1px solid var(--paper);
+    border: 1px solid rgb(var(--paper));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--ink-3);
+    background: rgb(var(--ink-3));
 }
 
 ::selection {
     background-color: var(--highlight);
-    color: var(--ink);
+    color: rgb(var(--ink));
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -214,13 +214,13 @@ html.light .paper-grain::before {
 }
 
 .aurora::before {
-    background: var(--accent);
+    background: rgb(var(--accent));
     top: -200px;
     left: -120px;
 }
 
 .aurora::after {
-    background: var(--accent-2);
+    background: rgb(var(--accent-2));
     bottom: -200px;
     right: -120px;
     animation-delay: -6s;
@@ -260,7 +260,7 @@ html.light .aurora::after {
     font-size: 5.2rem;
     line-height: 0.85;
     padding: 0.35rem 0.7rem 0 0;
-    color: var(--accent);
+    color: rgb(var(--accent));
 }
 
 /* IDE-style line gutter (used left of cards) */
@@ -276,7 +276,7 @@ html.light .aurora::after {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
     letter-spacing: 0.05em;
-    color: var(--ink-3);
+    color: rgb(var(--ink-3));
     text-align: right;
     width: 1.75rem;
     opacity: 0.7;
@@ -291,10 +291,10 @@ html.light .aurora::after {
     gap: 0.4rem;
     height: 2.5rem;
     padding: 0 1rem;
-    background: var(--accent);
-    color: var(--paper);
+    background: rgb(var(--accent));
+    color: rgb(var(--paper));
     border-radius: 4px;
-    border: 1px solid var(--accent);
+    border: 1px solid rgb(var(--accent));
     font-weight: 600;
     font-size: 0.875rem;
     transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.25s ease;
@@ -318,17 +318,17 @@ html.light .aurora::after {
     height: 2.5rem;
     padding: 0 0.875rem;
     border-radius: 4px;
-    border: 1px solid var(--rule);
+    border: 1px solid rgb(var(--rule));
     background: transparent;
-    color: var(--ink);
+    color: rgb(var(--ink));
     font-weight: 500;
     font-size: 0.875rem;
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .btn-ghost:hover {
-    border-color: var(--ink-3);
-    background: var(--paper-2);
+    border-color: rgb(var(--ink-3));
+    background: rgb(var(--paper-2));
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -339,9 +339,9 @@ html.light .aurora::after {
     font-size: 11px;
     padding: 2px 6px;
     border-radius: 3px;
-    border: 1px solid var(--rule);
-    background: var(--paper-2);
-    color: var(--ink-2);
+    border: 1px solid rgb(var(--rule));
+    background: rgb(var(--paper-2));
+    color: rgb(var(--ink-2));
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -383,7 +383,7 @@ html.light .aurora::after {
     display: inline-block;
     width: 0.55ch;
     height: 1em;
-    background: var(--accent);
+    background: rgb(var(--accent));
     margin-left: 2px;
     vertical-align: -0.12em;
     animation: blink-caret 1.05s steps(1) infinite;
@@ -468,11 +468,11 @@ html.light .card-elevated:hover {
 /* Glowing border ring on focus — dark only */
 .ring-glow:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent), 0 0 20px -4px var(--glow-accent);
+    box-shadow: 0 0 0 2px rgb(var(--paper)), 0 0 0 4px rgb(var(--accent)), 0 0 20px -4px var(--glow-accent);
 }
 
 html.light .ring-glow:focus-visible {
-    box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent);
+    box-shadow: 0 0 0 2px rgb(var(--paper)), 0 0 0 4px rgb(var(--accent));
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -544,7 +544,7 @@ html.light .ring-glow:focus-visible {
    ───────────────────────────────────────────────────────── */
 
 .prose-dev {
-    color: var(--ink);
+    color: rgb(var(--ink));
     line-height: 1.8;
     font-size: 1.125rem;
     font-family: 'Charter', 'Bitstream Charter', 'Iowan Old Style', 'Georgia', serif;
@@ -561,7 +561,7 @@ html.light .ring-glow:focus-visible {
 .prose-dev h4 {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     line-height: 1.3;
-    color: var(--ink);
+    color: rgb(var(--ink));
     margin-top: 2em;
     margin-bottom: 0.5em;
     font-weight: 700;
@@ -574,7 +574,7 @@ html.light .ring-glow:focus-visible {
 
 .prose-dev h2 {
     font-size: 1.5rem;
-    border-bottom: 1px solid var(--rule);
+    border-bottom: 1px solid rgb(var(--rule));
     padding-bottom: 0.4em;
 }
 
@@ -587,13 +587,13 @@ html.light .ring-glow:focus-visible {
 }
 
 .prose-dev p {
-    color: var(--ink-2);
+    color: rgb(var(--ink-2));
     line-height: 1.9;
     margin-bottom: 1.25em;
 }
 
 .prose-dev strong {
-    color: var(--ink);
+    color: rgb(var(--ink));
     font-weight: 600;
 }
 
@@ -602,7 +602,7 @@ html.light .ring-glow:focus-visible {
 }
 
 .prose-dev a {
-    color: var(--accent);
+    color: rgb(var(--accent));
     text-decoration: underline;
     text-underline-offset: 3px;
     transition: opacity 0.15s;
@@ -615,7 +615,7 @@ html.light .ring-glow:focus-visible {
 .prose-dev ul,
 .prose-dev ol {
     padding-left: 1.6em;
-    color: var(--ink-2);
+    color: rgb(var(--ink-2));
 }
 
 .prose-dev ul {
@@ -632,23 +632,18 @@ html.light .ring-glow:focus-visible {
 }
 
 .prose-dev blockquote {
-    border-left: 3px solid var(--accent);
+    border-left: 3px solid rgb(var(--accent));
     margin-left: 0;
     padding: 0.6em 1.2em;
     background: var(--accent-soft);
     border-radius: 0 2px 2px 0;
-    color: var(--ink-2);
+    color: rgb(var(--ink-2));
     font-style: italic;
 }
 
 .prose-dev code {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
-    background: var(--paper-2);
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    padding: 0.1em 0.45em;
-    color: var(--ink);
 }
 
 .prose-dev pre {
@@ -659,14 +654,14 @@ html.light .ring-glow:focus-visible {
 
 .prose-dev img {
     border-radius: 2px;
-    border: 1px solid var(--rule);
+    border: 1px solid rgb(var(--rule));
     max-width: 100%;
     height: auto;
 }
 
 .prose-dev hr {
     border: none;
-    border-top: 1px solid var(--rule);
+    border-top: 1px solid rgb(var(--rule));
     margin: 2em 0;
 }
 
@@ -678,26 +673,26 @@ html.light .ring-glow:focus-visible {
 }
 
 .prose-dev th {
-    background: var(--paper-2);
+    background: rgb(var(--paper-2));
     font-family: var(--font-mono);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 0.6em 0.9em;
-    border: 1px solid var(--rule);
+    border: 1px solid rgb(var(--rule));
     text-align: left;
-    color: var(--ink-3);
+    color: rgb(var(--ink-3));
 }
 
 .prose-dev td {
     padding: 0.5em 0.9em;
-    border: 1px solid var(--rule);
-    color: var(--ink-2);
+    border: 1px solid rgb(var(--rule));
+    color: rgb(var(--ink-2));
     vertical-align: top;
 }
 
 .prose-dev tr:nth-child(even) td {
-    background: color-mix(in srgb, var(--paper-2) 30%, transparent);
+    background: color-mix(in srgb, rgb(var(--paper-2)) 30%, transparent);
 }
 
 @layer components {
@@ -711,29 +706,29 @@ html.light .ring-glow:focus-visible {
         font-size: 0.625rem;
         text-transform: uppercase;
         letter-spacing: 0.2em;
-        color: var(--ink-3);
+        color: rgb(var(--ink-3));
         margin-bottom: 0.75rem;
     }
 
     .field-input {
         width: 100%;
-        background: var(--paper);
-        border: 1px solid var(--rule);
+        background: rgb(var(--paper));
+        border: 1px solid rgb(var(--rule));
         border-radius: 2px;
         padding: 0.5rem 0.75rem;
         font-size: 0.875rem;
-        color: var(--ink);
+        color: rgb(var(--ink));
         outline: none;
         transition: border-color 0.15s;
     }
 
     .field-input:focus {
-        border-color: color-mix(in srgb, var(--accent) 60%, transparent);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+        border-color: color-mix(in srgb, rgb(var(--accent)) 60%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, rgb(var(--accent)) 12%, transparent);
     }
 
     .field-input::placeholder {
-        color: var(--ink-3);
+        color: rgb(var(--ink-3));
     }
 
     .field-icon-wrap {
@@ -747,7 +742,7 @@ html.light .ring-glow:focus-visible {
         transform: translateY(-50%);
         width: 0.875rem;
         height: 0.875rem;
-        color: var(--ink-3);
+        color: rgb(var(--ink-3));
         pointer-events: none;
     }
 }
