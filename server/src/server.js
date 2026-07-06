@@ -8,6 +8,7 @@ const logger = require("./utils/logger");
 const { startSyncJobs } = require("./modules/opportunities/sync/sync.service");
 const { startCronJobs } = require("./utils/cron");
 const sseManager = require("./config/sse");
+const initSocket = require("./modules/chat/chat.socket");
 
 const start = async () => {
   try {
@@ -24,6 +25,9 @@ const start = async () => {
     const server = app.listen(PORT, () => {
       logger.info(`🚀  PeerVerse API running on http://localhost:${PORT}`);
       logger.info(`📦  Environment: ${env.NODE_ENV}`);
+      
+      // Initialize WebSockets
+      initSocket(server);
       
       // Start background sync jobs
       startSyncJobs();

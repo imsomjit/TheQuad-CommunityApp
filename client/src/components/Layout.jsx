@@ -9,6 +9,7 @@ import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
+import ChatSidebar from "./chat/ChatSidebar";
 
 const ROUTE_LABELS = [
     { match: /^\/$/, label: "the feed", section: "§01", pathName: "Home feed" },
@@ -74,6 +75,7 @@ export default function Layout() {
 
     const [scrolled, setScrolled] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
@@ -149,8 +151,11 @@ export default function Layout() {
 
                 {/* Main content area offset by sidebar on desktop */}
                 <div 
-                    className={`${hideSidebar ? "" : isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
-                    style={{ "--sidebar-width": hideSidebar ? "0px" : isSidebarCollapsed ? "80px" : "16rem" }}
+                    className={`pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
+                    style={{ 
+                        paddingLeft: hideSidebar ? "0px" : isSidebarCollapsed ? "calc(65px + 1rem)" : "calc(14rem + 1rem)",
+                        paddingRight: isChatOpen ? "calc(21rem + 2rem)" : "0px"
+                    }}
                 >
 
                     {/* Main content */}
@@ -165,6 +170,13 @@ export default function Layout() {
         </div>
 
         <Toaster position="bottom-right" theme={theme === "light" ? "light" : "dark"} />
+        {!hideSidebar && (
+            <ChatSidebar 
+                isOpen={isChatOpen} 
+                onToggle={() => setIsChatOpen(!isChatOpen)}
+                scrolled={scrolled}
+            />
+        )}
     </div>
   );
 }

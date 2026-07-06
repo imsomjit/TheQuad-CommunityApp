@@ -37,6 +37,8 @@ const { siteSettings } = require("./settings");
 const { broadcasts, broadcastTypeEnum } = require("./broadcasts");
 const { books } = require("./books");
 const { contentViews } = require("./content_views");
+const { chatRooms, roomTypeEnum, chatRoomsRelations } = require("./chat_rooms");
+const { chatMessages, chatMessagesRelations } = require("./chat_messages");
 
 module.exports = {
   // Tables
@@ -63,6 +65,12 @@ module.exports = {
   broadcasts,
   books,
   contentViews,
+  chatRooms,
+  chatMessages,
+
+  // Relations
+  chatRoomsRelations,
+  chatMessagesRelations,
 
   // Enums
   userRoleEnum,
@@ -85,4 +93,5 @@ module.exports = {
   opportunityModerationStatusEnum,
   actionTypeEnum,
   broadcastTypeEnum,
+  roomTypeEnum,
 };

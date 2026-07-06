@@ -1,0 +1,349 @@
+import React, { useState, useEffect, useRef } from "react";
+import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { socket } from "../../services/socket";
+import api, { getAccessToken } from "../../services/api";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import CreateRoomModal from "./CreateRoomModal";
+import JoinRoomModal from "./JoinRoomModal";
+
+export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
+  const { user, isAuthenticated } = useAuth();
+  
+  const [rooms, setRooms] = useState([]);
+  const [activeRoom, setActiveRoom] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  const messagesEndRef = useRef(null);
+
+  // Fetch rooms on open
+  useEffect(() => {
+    if (isOpen && isAuthenticated) {
+      fetchRooms();
+      if (!socket.connected) {
+        socket.auth = { token: getAccessToken() };
+        socket.connect();
+      }
+    }
+  }, [isOpen, isAuthenticated]);
+
+  const fetchRooms = async () => {
+    setLoadingRooms(true);
+    try {
+      const res = await api.get("/chat/rooms");
+      setRooms(res.data.data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load chat rooms");
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  // Listen for room updates (creates and deletes)
+  useEffect(() => {
+    const handleRoomCreated = (room) => {
+      setRooms((prev) => {
+        // Prevent duplicates
+        if (prev.find(r => r.id === room.id)) return prev;
+        return [...prev, room];
+      });
+    };
+
+    const handleRoomDeleted = (roomId) => {
+      setRooms((prev) => prev.filter(r => r.id !== roomId));
+      // If we are currently in this room, kick us out
+      if (activeRoom && activeRoom.id === roomId) {
+        setActiveRoom(null);
+        toast.info("This room was closed due to inactivity.");
+      }
+    };
+
+    socket.on("room_created", handleRoomCreated);
+    socket.on("room_deleted", handleRoomDeleted);
+
+    return () => {
+      socket.off("room_created", handleRoomCreated);
+      socket.off("room_deleted", handleRoomDeleted);
+    };
+  }, [activeRoom]);
+
+  // Join room and fetch history
+  const joinRoom = async (room) => {
+    setActiveRoom(room);
+    setLoadingMessages(true);
+    try {
+      // Fetch history
+      const res = await api.get(`/chat/rooms/${room.id}/messages`);
+      setMessages(res.data.data);
+      
+      // Join socket room
+      socket.emit("join_room", room.id);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load messages");
+      setActiveRoom(null);
+    } finally {
+      setLoadingMessages(false);
+      scrollToBottom();
+    }
+  };
+
+  // Listen for new messages & reconnects
+  useEffect(() => {
+    const handleReceiveMessage = (msg) => {
+      if (activeRoom && msg.roomId === activeRoom.id) {
+        setMessages((prev) => [...prev, msg]);
+        scrollToBottom();
+      }
+    };
+    
+    const handleReconnect = () => {
+      if (activeRoom) {
+        socket.emit("join_room", activeRoom.id);
+      }
+    };
+    
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("connect", handleReconnect);
+    
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+      socket.off("connect", handleReconnect);
+    };
+  }, [activeRoom]);
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (!inputValue.trim() || !activeRoom) return;
+
+    // We can emit to socket immediately and it will be broadcasted back to us
+    socket.emit("send_message", {
+      roomId: activeRoom.id,
+      content: inputValue,
+    });
+    setInputValue("");
+  };
+
+  if (!isAuthenticated) return null;
+
+  return (
+    <>
+      {/* Floating Toggle Button */}
+      {!isOpen && (
+        <button
+          onClick={onToggle}
+          className="fixed bottom-6 right-6 z-50 hidden h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/20 transition-transform hover:scale-110 active:scale-95 md:flex"
+        >
+          <MessageSquare size={24} />
+        </button>
+      )}
+
+      {/* Slide-over Sidebar */}
+      <div
+        className={`fixed right-0 bottom-0 z-30 hidden w-[22rem] transform flex-col border-l border-rule/70 bg-paper/50 backdrop-blur-md transition-all duration-300 ease-in-out md:flex ${scrolled ? 'top-[56px]' : 'top-[92px]'} ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {!activeRoom ? (
+          // --- ROOM LIST VIEW ---
+          <>
+            <div className="flex items-center justify-between border-b border-rule bg-paper-2/50 p-4 backdrop-blur-sm">
+              <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Tech Lounges</h2>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => setIsJoinModalOpen(true)}
+                  className="rounded p-1 text-ink-3 hover:bg-rule hover:text-ink"
+                  title="Join Private Room"
+                >
+                  <Key size={18} />
+                </button>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="rounded p-1 text-ink-3 hover:bg-rule hover:text-ink"
+                  title="Create Study Room"
+                >
+                  <Plus size={18} />
+                </button>
+                <button 
+                  onClick={onToggle}
+                  className="rounded p-1 text-ink-3 hover:bg-rule hover:text-ink"
+                  title="Close Chat"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4">
+              {loadingRooms ? (
+                <div className="flex h-32 items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
+                </div>
+              ) : rooms.length > 0 ? (
+                <div className="space-y-2">
+                  {rooms.map((room) => (
+                    <button
+                      key={room.id}
+                      onClick={() => joinRoom(room)}
+                      className="flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:border-rule hover:bg-paper-2"
+                    >
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${room.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
+                        {room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-ink flex items-center gap-2">
+                          {room.name}
+                          {room.type === "ephemeral" && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-accent">Live</span>}
+                        </p>
+                        <p className="text-xs text-ink-3 line-clamp-1">{room.description || "Join the discussion"}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-sm text-ink-3 mt-10">No rooms available.</p>
+              )}
+            </div>
+          </>
+        ) : (
+          // --- CHAT WINDOW VIEW ---
+          <>
+            <div className="flex items-center justify-between border-b border-rule bg-paper-2/50 p-3 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    socket.emit("leave_room", activeRoom.id);
+                    setActiveRoom(null);
+                  }}
+                  className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent">
+                    {activeRoom.type === "global" ? <Hash size={14} /> : activeRoom.type === "ephemeral" ? <Sparkles size={14} /> : <Users size={14} />}
+                  </div>
+                  <h2 className="font-medium text-sm text-ink truncate max-w-[140px]">{activeRoom.name}</h2>
+                </div>
+              </div>
+              <button 
+                onClick={onToggle}
+                className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors"
+                title="Close Chat"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Secret Code Header for Private Rooms */}
+            {activeRoom.isPrivate && (
+              <div className="border-b border-rule bg-accent/5 px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Key size={16} className="text-accent" />
+                  <span className="text-sm font-medium text-ink-2">Secret Code:</span>
+                  <span className="font-mono font-bold tracking-widest text-accent">{activeRoom.joinCode}</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeRoom.joinCode);
+                    setCopied(true);
+                    toast.success("Code copied!");
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center gap-1 rounded bg-white px-2 py-1 text-xs font-medium text-ink-2 shadow-sm border border-rule hover:bg-paper"
+                >
+                  {copied ? <Check size={14} className="text-accent" /> : <Copy size={14} />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+            )}
+            
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+              {loadingMessages ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
+                </div>
+              ) : messages.length > 0 ? (
+                messages.map((msg, i) => {
+                  const isMe = msg.senderId === user.id;
+                  return (
+                    <div key={msg.id || i} className={`flex max-w-[85%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}>
+                      {!isMe && msg.sender && (
+                        <span className="mb-1 text-[10px] text-ink-3 ml-1">{msg.sender.name}</span>
+                      )}
+                      <div className={`rounded-2xl px-4 py-2 text-sm ${isMe ? "bg-accent text-white rounded-tr-sm" : "bg-paper-2 text-ink rounded-tl-sm border border-rule"}`}>
+                        {msg.content}
+                      </div>
+                      <span className="mt-1 text-[10px] text-ink-3 mx-1">
+                        {format(new Date(msg.createdAt), "HH:mm")}
+                      </span>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="flex flex-1 items-center justify-center flex-col text-ink-3 text-sm">
+                  <MessageSquare size={32} className="mb-2 opacity-20" />
+                  No messages yet. Be the first!
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="border-t border-rule bg-paper-2/50 p-3 backdrop-blur-sm">
+              <form onSubmit={sendMessage} className="flex gap-2 relative">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 rounded-full border border-rule bg-paper-2 px-4 py-2.5 text-sm text-ink placeholder-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputValue.trim()}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  <Send size={16} className="ml-1" />
+                </button>
+              </form>
+            </div>
+          </>
+        )}
+      </div>
+
+      <CreateRoomModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onRoomCreated={(room) => {
+          if (!room.isPrivate) {
+            // Only add to global feed if not private
+            setRooms(prev => [...prev, room]);
+          }
+          joinRoom(room);
+        }}
+      />
+
+      <JoinRoomModal
+        isOpen={isJoinModalOpen}
+        onClose={() => setIsJoinModalOpen(false)}
+        onRoomJoined={(room) => {
+          joinRoom(room);
+        }}
+      />
+    </>
+  );
+}
