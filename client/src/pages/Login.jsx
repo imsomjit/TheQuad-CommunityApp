@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
-import { resourcesApi, booksApi, opportunitiesApi, usersApi } from "../services/api";
+import { resourcesApi, booksApi, opportunitiesApi, usersApi, API_BASE } from "../services/api";
 
 export default function Login() {
   const { login } = useAuth();
@@ -131,7 +131,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect to server-side Google OAuth flow
-    window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/google`;
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (

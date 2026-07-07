@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { toast } from "sonner";
-import { usersApi } from "../services/api";
+import { usersApi, API_BASE } from "../services/api";
 
 export default function Register() {
   const { register } = useAuth();
@@ -89,7 +89,7 @@ export default function Register() {
   };
 
   const handleGoogleRegister = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/google`;
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   // Password strength indicator
