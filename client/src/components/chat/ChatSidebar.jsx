@@ -20,10 +20,11 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   
   const messagesEndRef = useRef(null);
+  const hasAutoJoined = useRef(false);
 
-  // Fetch rooms on open
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       fetchRooms();
@@ -34,16 +35,38 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     }
   }, [isOpen, isAuthenticated]);
 
+
+
   const fetchRooms = async () => {
     setLoadingRooms(true);
+    // Only show the full init spinner if we don't have rooms yet
+    if (rooms.length === 0) setIsInitializing(true);
+    
     try {
       const res = await api.get("/chat/rooms");
-      setRooms(res.data.data);
+      const fetchedRooms = res.data.data;
+      setRooms(fetchedRooms);
+
+      // Auto-join previously active room
+      if (user && user.id && !activeRoom && !hasAutoJoined.current) {
+        const savedRoomId = localStorage.getItem(`peerverse_chat_room_${user.id}`);
+        if (savedRoomId) {
+          const roomToJoin = fetchedRooms.find(r => r.id === savedRoomId);
+          if (roomToJoin) {
+            hasAutoJoined.current = true;
+            await joinRoom(roomToJoin);
+          } else {
+            // Room no longer exists
+            localStorage.removeItem(`peerverse_chat_room_${user.id}`);
+          }
+        }
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to load chat rooms");
     } finally {
       setLoadingRooms(false);
+      setIsInitializing(false);
     }
   };
 
@@ -78,6 +101,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   // Join room and fetch history
   const joinRoom = async (room) => {
     setActiveRoom(room);
+    if (user && user.id) {
+      localStorage.setItem(`peerverse_chat_room_${user.id}`, room.id);
+    }
     setLoadingMessages(true);
     try {
       // Fetch history
@@ -253,7 +279,12 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {!activeRoom ? (
+        {isInitializing ? (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-accent" />
+            <p className="text-xs font-mono tracking-wide text-ink-3 uppercase">Restoring Session...</p>
+          </div>
+        ) : !activeRoom ? (
           // --- ROOM LIST VIEW ---
           <>
             <div className="flex items-center justify-between border-b border-rule bg-paper-2/50 p-4 backdrop-blur-sm">
@@ -317,6 +348,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   onClick={() => {
                     socket.emit("leave_room", activeRoom.id);
                     setActiveRoom(null);
+                    if (user && user.id) {
+                      localStorage.removeItem(`peerverse_chat_room_${user.id}`);
+                    }
                   }}
                   className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors"
                 >

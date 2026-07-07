@@ -17,6 +17,9 @@ const initSocket = (server) => {
     },
   });
 
+  // Track scheduled ephemeral room deletions
+  const deletionTimers = new Map();
+
   // Middleware for authentication
   io.use((socket, next) => {
     try {
@@ -43,6 +46,13 @@ const initSocket = (server) => {
     socket.on("join_room", (roomId) => {
       socket.join(roomId);
       logger.debug(`User ${socket.user.id} joined room ${roomId}`);
+
+      // Cancel pending deletion if it exists
+      if (deletionTimers.has(roomId)) {
+        clearTimeout(deletionTimers.get(roomId));
+        deletionTimers.delete(roomId);
+        logger.info(`🛑 Canceled scheduled deletion for room ${roomId} because a user joined.`);
+      }
     });
 
     const checkEmptyRoom = async (roomId) => {
@@ -54,9 +64,30 @@ const initSocket = (server) => {
         try {
           const [room] = await db.select().from(chatRooms).where(eq(chatRooms.id, roomId)).limit(1);
           if (room && room.type === 'ephemeral') {
-            await db.delete(chatRooms).where(eq(chatRooms.id, roomId));
-            logger.info(`🗑️ Ephemeral room deleted due to inactivity: ${roomId}`);
-            io.emit('room_deleted', roomId);
+            logger.info(`⏳ Ephemeral room ${roomId} is empty. Scheduling deletion in 10 minutes.`);
+            
+            // Clear any existing timer just in case
+            if (deletionTimers.has(roomId)) {
+              clearTimeout(deletionTimers.get(roomId));
+            }
+
+            const timer = setTimeout(async () => {
+              try {
+                // Double check if it's STILL empty before deleting
+                const clientsNow = io.sockets.adapter.rooms.get(roomId);
+                if (clientsNow && clientsNow.size > 0) return;
+
+                await db.delete(chatRooms).where(eq(chatRooms.id, roomId));
+                logger.info(`🗑️ Ephemeral room deleted due to 10m inactivity: ${roomId}`);
+                io.emit('room_deleted', roomId);
+              } catch (err) {
+                logger.error("Error deleting ephemeral room:", err);
+              } finally {
+                deletionTimers.delete(roomId);
+              }
+            }, 600000); // 10 minutes
+
+            deletionTimers.set(roomId, timer);
           }
         } catch (err) {
           logger.error("Error checking empty room:", err);

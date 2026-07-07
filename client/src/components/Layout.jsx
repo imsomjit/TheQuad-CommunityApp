@@ -75,8 +75,14 @@ export default function Layout() {
 
     const [scrolled, setScrolled] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(() => {
+        return localStorage.getItem("peerverse_is_chat_open") === "true";
+    });
     const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        localStorage.setItem("peerverse_is_chat_open", isChatOpen);
+    }, [isChatOpen]);
 
     useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 60000);
