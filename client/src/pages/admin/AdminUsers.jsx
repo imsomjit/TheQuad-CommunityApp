@@ -287,7 +287,7 @@ export default function AdminUsers() {
                       type="url"
                       value={contentUrl}
                       onChange={(e) => setContentUrl(e.target.value)}
-                      placeholder="e.g. https://peerverse.com/resources/..."
+                      placeholder="e.g. https://thequad.web.app/resources/..."
                       className="w-full rounded-md border border-rule bg-paper-2 p-2 text-sm text-ink focus:border-accent focus:outline-none"
                     />
                   </div>

@@ -83,7 +83,7 @@ const uploadResourceFile = [
 
     const isImage = req.file.mimetype.startsWith("image/");
     const options = {
-      folder: "peerverse/resources",
+      folder: "thequad/resources",
       public_id: `${Date.now()}-${req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`,
       resource_type: isImage ? "image" : "raw",
     };
@@ -113,7 +113,7 @@ const uploadAvatar = [
     }
 
     const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/avatars",
+      folder: "thequad/avatars",
       resource_type: "image",
       transformation: [
         { width: 400, height: 400, crop: "fill", gravity: "face" },
@@ -142,7 +142,7 @@ const uploadBanner = [
     }
 
     const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/banners",
+      folder: "thequad/banners",
       resource_type: "image",
       transformation: [
         { width: 1500, height: 500, crop: "fill", gravity: "center" },
@@ -171,7 +171,7 @@ const uploadPostCover = [
     }
 
     const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/posts/covers",
+      folder: "thequad/posts/covers",
       resource_type: "image",
       transformation: [
         { width: 1200, height: 630, crop: "fill", gravity: "center" },

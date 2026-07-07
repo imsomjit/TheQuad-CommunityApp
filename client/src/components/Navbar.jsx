@@ -79,11 +79,11 @@ export default function Navbar({ scrolled }) {
 
                     <span className="flex items-baseline">
                         <span className="font-display text-2xl sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
-                            Peer
+                            The
                         </span>
 
-                        <span className="font-display-italic text-2xl sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent group-hover:text-ink transition-colors">
-                            Verse
+                        <span className="font-display-italic text-2xl sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent group-hover:text-ink transition-colors pl-1">
+                            Quad
                         </span>
 
                         <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">

@@ -1,5 +1,5 @@
 /**
- * PeerVerse API Service
+ * The Quad API Service
  *
  * Centralized Axios wrapper with:
  * - Access token injection via interceptor
@@ -12,7 +12,7 @@ import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
 
 // ── Base instance ────────────────────────────────────────────────────────────
 
-export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-peerverse.onrender.com/api");
+export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-thequad.onrender.com/api");
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -279,7 +279,7 @@ const notifText = (type) => {
     content_removed: "your content was removed",
     like_blog: "liked your post",
     comment_on_blog: "commented on your post",
-    system_welcome: "Welcome to PeerVerse! Please take a moment to set up your profile.",
+    system_welcome: "Welcome to The Quad! Please take a moment to set up your profile.",
     system_broadcast: "sent a notification",
   };
   return map[type] || "interacted with your content";
@@ -301,7 +301,7 @@ const mapNotification = (n) => {
       target = n.targetTitle || "";
     }
   } else if (n.type === "system_welcome") {
-    titleOverride = "PeerVerse Team";
+    titleOverride = "The Quad Team";
   }
 
   return {

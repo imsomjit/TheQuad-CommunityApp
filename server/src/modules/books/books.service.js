@@ -15,7 +15,7 @@ const uploadBook = async (adminId, data, file, coverFile) => {
 
   // Upload PDF to Cloudinary
   const uploadResult = await uploadToCloudinary(file.buffer, {
-    folder: "peerverse/books",
+    folder: "thequad/books",
     resource_type: "raw", // PDF
   });
 
@@ -23,7 +23,7 @@ const uploadBook = async (adminId, data, file, coverFile) => {
   let coverResult = null;
   if (coverFile) {
     coverResult = await uploadToCloudinary(coverFile.buffer, {
-      folder: "peerverse/books/covers",
+      folder: "thequad/books/covers",
       resource_type: "image",
     });
   }
@@ -198,7 +198,7 @@ const updateBook = async (id, data, coverFile) => {
 
   if (coverFile) {
     const coverResult = await uploadToCloudinary(coverFile.buffer, {
-      folder: "peerverse/books/covers",
+      folder: "thequad/books/covers",
       resource_type: "image",
     });
     updateData.coverUrl = coverResult.secure_url;

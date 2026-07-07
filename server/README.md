@@ -1,6 +1,6 @@
-# PeerVerse Server
+# The Quad Server
 
-Backend API for the PeerVerse academic collaboration platform.
+Backend API for the quad academic collaboration platform.
 
 ## Tech Stack
 - **Runtime**: Node.js 20 + Express.js

@@ -298,7 +298,7 @@ export default function Home() {
                             <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
                                 <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
                                     <Terminal className="h-3.5 w-3.5 text-accent" />
-                                    PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
+                                    TQ · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
                                 </p>
 
                                 <h1 className="relative grid grid-cols-1 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
@@ -322,10 +322,9 @@ export default function Home() {
                                 </h1>
 
                                 <p className="mt-4 sm:mt-8 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
-                                    Share annotated notes, debate past-year papers, and grow a
-                                    public technical profile linked to your GitHub. PeerVerse is
-                                    built like a developer tool — and reads like a journal you
-                                    actually want to open.
+                                    Your campus quad, digitized. Share annotated notes, debate technical concepts, 
+                                    and socialize with peers while growing a public profile linked to your GitHub. 
+                                    The Quad combines collaborative study spaces with dev-grade tools.
                                 </p>
 
                                 <div className="mt-9 flex flex-wrap items-center gap-4">

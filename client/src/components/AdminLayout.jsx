@@ -6,6 +6,7 @@ import AdminSidebar from "./AdminSidebar";
 import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { ShieldAlert } from "lucide-react";
 
 export default function AdminLayout() {
     const { theme } = useTheme();
@@ -65,10 +66,12 @@ export default function AdminLayout() {
                         }`}
                     >
                         <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
-                            <span className="flex items-center gap-2">
-                                <span className="text-red-500 animate-pulse">●</span>
-                                the peerverse / {user?.role === 'admin' ? 'admin' : 'moderator'} console
-                            </span>
+                            <div className="flex items-center space-x-1.5 opacity-80">
+                                <ShieldAlert size={14} className="text-accent" />
+                                <span className="font-mono text-[10px] tracking-widest uppercase">
+                                    the quad / {user?.role === 'admin' ? 'admin' : 'moderator'} console
+                                </span>
+                            </div>
                             <span className="hidden items-center gap-2 sm:flex">
                                 <span>§admin</span>
                                 <span>·</span>
@@ -101,7 +104,7 @@ export default function AdminLayout() {
                     <footer className="mt-10 border-t border-rule/60 py-6">
                         <div className="mx-auto max-w-6xl w-full flex flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6 lg:px-2">
                             <p className="font-mono text-[10px] text-ink-3">
-                                © {new Date().getFullYear()} PeerVerse {user?.role === 'admin' ? 'Admin' : 'Moderator'}. Restricted Access.
+                                © {new Date().getFullYear()} The Quad {user?.role === 'admin' ? 'Admin' : 'Moderator'}. Restricted Access.
                             </p>
                             <p className="font-mono text-[10px] text-ink-3">
                                 Logged in as <span className="text-accent">{user?.username}</span>

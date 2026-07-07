@@ -3,7 +3,7 @@
 const rateLimit = require("express-rate-limit");
 
 /**
- * Per-module rate limiters for PeerVerse API.
+ * Per-module rate limiters for The Quad API.
  *
  * Design rationale:
  * - Auth routes: very strict (brute-force protection)

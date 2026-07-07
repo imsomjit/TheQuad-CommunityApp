@@ -23,7 +23,7 @@ const start = async () => {
     const PORT = parseInt(env.PORT) || 5000;
 
     const server = app.listen(PORT, () => {
-      logger.info(`🚀  PeerVerse API running on http://localhost:${PORT}`);
+      logger.info(`🚀  The Quad API running on http://localhost:${PORT}`);
       logger.info(`📦  Environment: ${env.NODE_ENV}`);
       
       // Initialize WebSockets

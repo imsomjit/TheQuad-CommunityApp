@@ -12,7 +12,7 @@ export default function Footer() {
                 <div className="marquee whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3/50">
                     {Array(4)
                         .fill(
-                            "peerverse - share · debate · learn · grow · collaborate · build · ship | "
+                            "the quad - share · debate · learn · grow · collaborate · build · ship | "
                         )
                         .join("")}
                 </div>
@@ -23,11 +23,11 @@ export default function Footer() {
                 <div className="col-span-2 sm:col-span-1">
                     <span className="flex items-baseline gap-0.5">
                         <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
-                            Peer
+                            The
                         </span>
 
-                        <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent">
-                            Verse
+                        <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent pl-1">
+                            Quad
                         </span>
 
                         <span className="ml-1 font-mono text-[10px] text-ink-3">
@@ -35,9 +35,8 @@ export default function Footer() {
                         </span>
                     </span>
                     <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-2">
-                        A community-driven study notebook for tech
-                        students. Built like a developer tool. Read like
-                        a journal.
+                        Your digital campus quad. A dedicated space for tech students 
+                        to socialize, study together, and build the future.
                     </p>
                     <div className="mt-5 flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-accent-2 animate-pulse" />
@@ -139,7 +138,7 @@ export default function Footer() {
             <div className="border-t border-rule/60">
                 <div className="mx-auto mb-20 sm:mb-2 max-w-7xl w-full flex flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row sm:px-6 lg:px-2">
                     <p className="font-mono text-[10px] text-ink-3">
-                        © {new Date().getFullYear()} PeerVerse. All rights
+                        © {new Date().getFullYear()} The Quad. All rights
                         reserved.
                     </p>
                     <div className="flex items-center gap-4">

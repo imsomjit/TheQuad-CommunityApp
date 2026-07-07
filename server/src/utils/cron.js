@@ -44,12 +44,12 @@ const startCronJobs = () => {
           type: "system_broadcast",
           targetType: "birthday",
           targetId: user.id,
-          targetTitle: `[Birthday] PeerVerse: Happy Birthday, ${user.name}! 🥳 Wishing you a fantastic day ahead!`,
+          targetTitle: `[Birthday] The Quad: Happy Birthday, ${user.name}! 🥳 Wishing you a fantastic day ahead!`,
           isRead: false,
         });
 
         // Send Email
-        const emailSubject = "Happy Birthday from PeerVerse! 🎉";
+        const emailSubject = "Happy Birthday from The Quad! 🎉";
         const emailHtml = getBirthdayEmailTemplate(user.name);
         
         await sendEmail({

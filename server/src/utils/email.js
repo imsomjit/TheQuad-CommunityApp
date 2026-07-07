@@ -45,7 +45,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
   while (retries > 0) {
     try {
       await mailTransporter.sendMail({
-        from: `"PeerVerse Community" <${env.GMAIL_USER}>`,
+        from: `"The Quad Community" <${env.GMAIL_USER}>`,
         to,
         subject,
         html,

@@ -19,7 +19,7 @@ export const useTheme = () => {
     return ctx;
 };
 
-const STORAGE_KEY = "peerverse:theme";
+const STORAGE_KEY = "thequad:theme";
 
 function applyTheme(theme) {
     const root = document.documentElement;

@@ -55,7 +55,7 @@ export default function Privacy() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-syntax-cyan to-accent">& Policy</span>
                 </h1>
                 <p className="text-lg sm:text-xl text-ink-2 leading-relaxed">
-                    We care about your privacy. This policy explains how we collect, use, and protect your personal information when you use PeerVerse.
+                    We care about your privacy. This policy explains how we collect, use, and protect your personal information when you use The Quad.
                 </p>
             </header>
 
@@ -199,7 +199,7 @@ export default function Privacy() {
                     </p>
                     
                     <a 
-                        href="mailto:peerverse.community@gmail.com" 
+                        href="mailto:thequad.community@gmail.com" 
                         className="relative z-10 inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-ink text-paper font-semibold hover:bg-ink-2 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-ink/20"
                     >
                         Email Privacy Team

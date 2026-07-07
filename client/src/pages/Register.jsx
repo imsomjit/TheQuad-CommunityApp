@@ -222,7 +222,7 @@ export default function Register() {
               Join the <span className="text-accent">Community.</span>
             </h2>
             <p className="mt-2 text-sm text-ink-2">
-              Create your PeerVerse profile and start contributing.
+              Create your The Quad profile and start contributing.
             </p>
           </div>
 

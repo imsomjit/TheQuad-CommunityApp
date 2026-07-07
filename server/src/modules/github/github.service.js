@@ -42,7 +42,7 @@ async function githubFetch(path) {
 
   const headers = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "PeerVerse/1.0",
+    "User-Agent": "thequad/1.0",
   };
 
   // Optional: add PAT for higher rate limit (60 → 5000 req/hr)
@@ -80,7 +80,7 @@ async function githubGraphQL(query, variables) {
 
   const headers = {
     "Content-Type": "application/json",
-    "User-Agent": "PeerVerse/1.0",
+    "User-Agent": "thequad/1.0",
     "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
   };
 

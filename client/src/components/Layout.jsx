@@ -76,12 +76,12 @@ export default function Layout() {
     const [scrolled, setScrolled] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(() => {
-        return localStorage.getItem("peerverse_is_chat_open") === "true";
+        return localStorage.getItem("thequad_is_chat_open") === "true";
     });
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
-        localStorage.setItem("peerverse_is_chat_open", isChatOpen);
+        localStorage.setItem("thequad_is_chat_open", isChatOpen);
     }, [isChatOpen]);
 
     useEffect(() => {
@@ -126,7 +126,7 @@ export default function Layout() {
                             <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                                 <span className="flex items-center gap-2">
                                     <span className="text-accent animate-pulse">●</span>
-                                    peerverse / vol.01 / {meta.pathName}
+                                    the quad / vol.01 / {meta.pathName}
                                 </span>
 
                                 <span className="hidden items-center gap-2 sm:flex">

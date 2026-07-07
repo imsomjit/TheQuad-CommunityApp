@@ -4,12 +4,12 @@ export default async function handler(req, res) {
     const identifier = id || slug;
     
     // Default OG tags
-    let title = "PeerVerse | Learners Community Platform";
+    let title = "The Quad | Learners Community Platform";
     let description = "A modern, community-driven platform for learners to share resources, ask questions, and collaborate.";
-    let image = "https://peerverse-web.vercel.app/default-og.png"; // Fallback image
+    let image = "https://thequad.web.app/default-og.png"; // Fallback image
 
     // VITE_API_URL should be available in Vercel environment variables
-    const apiUrl = process.env.VITE_API_URL || "https://peerverse-api.onrender.com/api";
+    const apiUrl = process.env.VITE_API_URL || "https://api-thequad.onrender.com/api";
     
     if (identifier && type) {
       let endpoint = '';
@@ -28,11 +28,11 @@ export default async function handler(req, res) {
           
           if (item) {
              if (type === 'post') {
-               title = `${item.title} | PeerVerse`;
+               title = `${item.title} | The Quad`;
                description = item.excerpt || item.body?.substring(0, 150)?.replace(/<[^>]+>/g, '') || description;
                image = item.coverImageUrl || item.coverUrl || image;
              } else if (type === 'resource') {
-               title = `${item.title} | Resource on PeerVerse`;
+               title = `${item.title} | Resource on The Quad`;
                description = item.description || description;
                // Resources might not have covers, fallback to default
              } else if (type === 'book') {

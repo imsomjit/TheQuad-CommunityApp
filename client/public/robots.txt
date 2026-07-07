@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /settings/
 
-Sitemap: https://peerverse.com/sitemap.xml
+Sitemap: https://thequad.web.app/sitemap.xml

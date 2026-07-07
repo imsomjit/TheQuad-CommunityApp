@@ -1,4 +1,4 @@
-# 🌐 PeerVerse Community App
+# 🌐 The Quad Community App
 
 
 <p align="center">
@@ -16,9 +16,9 @@
 
 ## 📖 Overview
 
-**PeerVerse** is a modern, full-stack, community-driven platform built explicitly for college students and learners in the tech ecosystem. 
+**The Quad** is a modern, full-stack, community-driven platform built explicitly for college students and learners in the tech ecosystem. 
 
-Designed with a premium dark/light mode UI and a focus on speed, PeerVerse combines the best parts of a university resource repository, a StackOverflow-style Q&A forum, a tech blogging platform, and an opportunities board into one cohesive hub. It features rich integrations (like GitHub & LeetCode tracking on profiles) and a comprehensive moderation architecture to maintain a high-quality community environment.
+Designed with a premium dark/light mode UI and a focus on speed, The Quad combines the best parts of a university resource repository, a StackOverflow-style Q&A forum, a tech blogging platform, and an opportunities board into one cohesive hub. It features rich integrations (like GitHub & LeetCode tracking on profiles) and a comprehensive moderation architecture to maintain a high-quality community environment.
 
 ---
 
@@ -61,7 +61,7 @@ Designed with a premium dark/light mode UI and a focus on speed, PeerVerse combi
 
 ## 🏗️ Architecture & Tech Stack
 
-PeerVerse is structured as a monorepo containing a `client` and `server`.
+The Quad is structured as a monorepo containing a `client` and `server`.
 
 ### Frontend (`client/`)
 - **Framework**: React 18 powered by Vite.
@@ -98,7 +98,7 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
 # Database Connection
-DATABASE_URL=postgresql://user:password@localhost:5432/peerverse
+DATABASE_URL=postgresql://user:password@localhost:5432/the quad
 
 # JWT Secrets (Generate secure random strings)
 JWT_ACCESS_SECRET=your_access_secret
@@ -130,7 +130,7 @@ To create your first admin or moderator user, you can manually insert them into 
 ## 📂 Project Structure
 
 ```text
-PeerVerse-CommunityApp/
+The Quad-CommunityApp/
 ├── client/
 │   ├── public/              # Static assets, Favicons, SEO files
 │   ├── src/

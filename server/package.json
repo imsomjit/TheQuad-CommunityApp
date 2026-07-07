@@ -1,7 +1,7 @@
 {
-  "name": "peerverse-server",
+  "name": "thequad-server",
   "version": "1.0.0",
-  "description": "PeerVerse backend API — Node.js + Express + PostgreSQL + Drizzle ORM",
+  "description": "The Quad backend API — Node.js + Express + PostgreSQL + Drizzle ORM",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {

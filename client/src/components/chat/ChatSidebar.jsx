@@ -49,7 +49,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
       // Auto-join previously active room
       if (user && user.id && !activeRoom && !hasAutoJoined.current) {
-        const savedRoomId = localStorage.getItem(`peerverse_chat_room_${user.id}`);
+        const savedRoomId = localStorage.getItem(`thequad_chat_room_${user.id}`);
         if (savedRoomId) {
           const roomToJoin = fetchedRooms.find(r => r.id === savedRoomId);
           if (roomToJoin) {
@@ -57,7 +57,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
             await joinRoom(roomToJoin);
           } else {
             // Room no longer exists
-            localStorage.removeItem(`peerverse_chat_room_${user.id}`);
+            localStorage.removeItem(`thequad_chat_room_${user.id}`);
           }
         }
       }
@@ -102,7 +102,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const joinRoom = async (room) => {
     setActiveRoom(room);
     if (user && user.id) {
-      localStorage.setItem(`peerverse_chat_room_${user.id}`, room.id);
+      localStorage.setItem(`thequad_chat_room_${user.id}`, room.id);
     }
     setLoadingMessages(true);
     try {
@@ -349,7 +349,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                     socket.emit("leave_room", activeRoom.id);
                     setActiveRoom(null);
                     if (user && user.id) {
-                      localStorage.removeItem(`peerverse_chat_room_${user.id}`);
+                      localStorage.removeItem(`thequad_chat_room_${user.id}`);
                     }
                   }}
                   className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors"

@@ -56,7 +56,7 @@ export default function Terms() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-syntax-rose to-accent">Service</span>
                 </h1>
                 <p className="text-lg sm:text-xl text-ink-2 leading-relaxed">
-                    Please read these terms carefully before using the PeerVerse platform. By accessing or using our services, you agree to be bound by these terms and all terms incorporated by reference.
+                    Please read these terms carefully before using the quad platform. By accessing or using our services, you agree to be bound by these terms and all terms incorporated by reference.
                 </p>
             </header>
 
@@ -68,7 +68,7 @@ export default function Terms() {
                             1. Acceptance of Terms
                         </h2>
                         <p className="leading-relaxed">
-                            By accessing or using PeerVerse ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any services. PeerVerse provides a community-driven platform for developers, students, and professionals to share resources, code, and collaborate.
+                            By accessing or using The Quad ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any services. The Quad provides a community-driven platform for developers, students, and professionals to share resources, code, and collaborate.
                         </p>
                         <p className="leading-relaxed mt-4">
                             You must be at least 13 years old to use the Platform. By agreeing to these Terms, you represent and warrant that you are legally capable of entering into a binding contract.
@@ -80,7 +80,7 @@ export default function Terms() {
                             2. User Conduct & Acceptable Use
                         </h2>
                         <p className="leading-relaxed mb-4">
-                            PeerVerse is built on mutual respect. You agree to use the Platform only for lawful purposes and in a way that does not infringe the rights of, restrict, or inhibit anyone else's use and enjoyment of the Platform.
+                            The Quad is built on mutual respect. You agree to use the Platform only for lawful purposes and in a way that does not infringe the rights of, restrict, or inhibit anyone else's use and enjoyment of the Platform.
                         </p>
                         <div className="bg-paper border border-rule rounded-xl p-6">
                             <h4 className="font-semibold text-ink mb-3">You agree not to:</h4>
@@ -102,10 +102,10 @@ export default function Terms() {
                             <strong>Your Content:</strong> You retain all ownership rights to any content you submit, post, or display on or through the Platform (including code, articles, questions, and resources).
                         </p>
                         <p className="leading-relaxed mt-4">
-                            <strong>License to PeerVerse:</strong> By submitting content, you grant us a worldwide, non-exclusive, royalty-free, transferable license to use, copy, reproduce, process, adapt, modify, publish, transmit, display, and distribute such content to operate and improve the Platform. 
+                            <strong>License to The Quad:</strong> By submitting content, you grant us a worldwide, non-exclusive, royalty-free, transferable license to use, copy, reproduce, process, adapt, modify, publish, transmit, display, and distribute such content to operate and improve the Platform. 
                         </p>
                         <p className="leading-relaxed mt-4">
-                            <strong>Responsibility:</strong> You are solely responsible for your content and the consequences of posting it. PeerVerse takes no responsibility and assumes no liability for any content posted by you or any third party.
+                            <strong>Responsibility:</strong> You are solely responsible for your content and the consequences of posting it. The Quad takes no responsibility and assumes no liability for any content posted by you or any third party.
                         </p>
                     </section>
 
@@ -127,10 +127,10 @@ export default function Terms() {
                         </h2>
                         <div className="border-l-4 border-syntax-amber pl-5 italic text-ink-2">
                             <p className="leading-relaxed mb-4">
-                                The Platform is provided on an "AS IS" and "AS AVAILABLE" basis. PeerVerse makes no representations or warranties of any kind, express or implied, as to the operation of their services, or the information, content, or materials included therein.
+                                The Platform is provided on an "AS IS" and "AS AVAILABLE" basis. The Quad makes no representations or warranties of any kind, express or implied, as to the operation of their services, or the information, content, or materials included therein.
                             </p>
                             <p className="leading-relaxed">
-                                In no event shall PeerVerse, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Platform.
+                                In no event shall The Quad, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Platform.
                             </p>
                         </div>
                     </section>
@@ -189,7 +189,7 @@ export default function Terms() {
                     </p>
                     
                     <a 
-                        href="mailto:peerverse.community@gmail.com" 
+                        href="mailto:thequad.community@gmail.com" 
                         className="relative z-10 inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-ink text-paper font-semibold hover:bg-ink-2 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-ink/20"
                     >
                         Contact Legal Team
