@@ -39,6 +39,7 @@ const { books } = require("./books");
 const { contentViews } = require("./content_views");
 const { chatRooms, roomTypeEnum, chatRoomsRelations } = require("./chat_rooms");
 const { chatMessages, chatMessagesRelations } = require("./chat_messages");
+const { chatPins, chatPinsRelations } = require("./chat_pins");
 
 module.exports = {
   // Tables
@@ -67,10 +68,12 @@ module.exports = {
   contentViews,
   chatRooms,
   chatMessages,
+  chatPins,
 
   // Relations
   chatRoomsRelations,
   chatMessagesRelations,
+  chatPinsRelations,
 
   // Enums
   userRoleEnum,

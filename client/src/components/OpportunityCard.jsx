@@ -100,7 +100,7 @@ export default function OpportunityCard({ opportunity }) {
                     <span className="text-ink">{opportunity.organizer || "Unknown"}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-ink-2 px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
-                    <Trophy className="w-3.5 h-3.5" fill="var(--accent)" />
+                    <Trophy className="w-3.5 h-3.5 text-accent" fill="currentColor" />
                     <span>{opportunity.type === "CODING_CONTEST" ? "Contest" : "Competition"}</span>
                 </div>
             </div>

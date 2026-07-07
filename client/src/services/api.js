@@ -597,6 +597,11 @@ export const adminApi = {
   getDeletedContent: () => api.get("/moderation/deleted-content").then((r) => r.data.data),
   restoreContent: (type, id) => api.patch(`/moderation/content/${type}/${id}/restore`).then((r) => r.data.data),
   removeContent: (type, id, reason) => api.delete(`/moderation/content/${type}/${id}`, { data: { reason } }).then((r) => r.data),
+  
+  // Admin Chat Rooms
+  getGlobalRooms: () => api.get("/chat/rooms").then((r) => r.data.data.filter(room => room.type === 'global')),
+  createGlobalRoom: (data) => api.post("/chat/admin/rooms", data).then((r) => r.data.data),
+  deleteGlobalRoom: (roomId) => api.delete(`/chat/admin/rooms/${roomId}`).then((r) => r.data),
 };
 
 // Settings

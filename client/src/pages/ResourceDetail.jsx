@@ -258,7 +258,7 @@ export default function ResourceDetail() {
     const type =
         RESOURCE_TYPES.find((t) => t.key === resource.type) || RESOURCE_TYPES[4];
     const Icon = ICONS[type.icon] || Folder;
-    const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
+    const colorVar = `rgb(var(${TYPE_VAR[resource.type] || "--ink-2"}))`;
 
     const isMine = currentUser?.id === resource.uploader.id;
     const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';

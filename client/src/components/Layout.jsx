@@ -145,17 +145,15 @@ export default function Layout() {
                             onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
                             scrolled={scrolled}
                         />
-                        <MobileNav />
+                        <MobileNav onChatToggle={() => setIsChatOpen(!isChatOpen)} />
                     </>
                 )}
 
                 {/* Main content area offset by sidebar on desktop */}
                 <div 
-                    className={`pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
-                    style={{ 
-                        paddingLeft: hideSidebar ? "0px" : isSidebarCollapsed ? "calc(65px + 1rem)" : "calc(14rem + 1rem)",
-                        paddingRight: isChatOpen ? "calc(21rem + 2rem)" : "0px"
-                    }}
+                    className={`pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out pl-0 pr-0 ${
+                        hideSidebar ? "md:pl-0" : isSidebarCollapsed ? "md:pl-[81px]" : "md:pl-[15rem]"
+                    } ${isChatOpen ? "md:pr-[23rem]" : "md:pr-0"}`}
                 >
 
                     {/* Main content */}

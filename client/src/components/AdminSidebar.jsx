@@ -11,7 +11,8 @@ import {
     Target,
     Star,
     Trash2,
-    Library
+    Library,
+    MessageSquare
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
@@ -43,6 +44,10 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
 
                 <NavLink to="/admin/reports" className={linkClass} title="Moderation Queue">
                     <ShieldAlert className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Reports Queue</span>}
+                </NavLink>
+
+                <NavLink to="/admin/lounges" className={linkClass} title="Global Lounges">
+                    <MessageSquare className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Global Lounges</span>}
                 </NavLink>
 
                 <NavLink to="/admin/deleted-content" className={linkClass} title="Deleted Content">

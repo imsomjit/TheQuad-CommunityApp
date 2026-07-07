@@ -60,7 +60,7 @@ export default function ResourceCard({ resource, variant = "list" }) {
 
     const { bookmarks, toggleBookmark } = useApp();
     const isBookmarked = bookmarks.has(`resource:${resource.id}`);
-    const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
+    const colorVar = `rgb(var(${TYPE_VAR[resource.type] || "--ink-2"}))`;
     const Icon = ICONS[type.icon] || Folder;
 
     return (

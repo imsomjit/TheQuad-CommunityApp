@@ -46,6 +46,7 @@ const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminDeletedContent = lazy(() => import("./pages/admin/AdminDeletedContent"));
 const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
+const AdminChatRooms = lazy(() => import("./pages/admin/AdminChatRooms"));
 const Search = lazy(() => import("./pages/Search"));
 const Bookmarks = lazy(() => import("./pages/Bookmarks"));
 
@@ -207,6 +208,10 @@ function App() {
                   <Route
                     path="/admin/books/upload"
                     element={<AdminBooks />}
+                  />
+                  <Route
+                    path="/admin/lounges"
+                    element={<AdminChatRooms />}
                   />
                 </Route>
               </Routes>

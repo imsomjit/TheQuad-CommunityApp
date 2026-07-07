@@ -56,7 +56,7 @@ const getRankNumberStyle = (index) => {
 };
 
 function StatTile({ icon: Icon, label, value, colorKey }) {
-    const c = `var(${STAT_COLOR[colorKey]})`;
+    const c = `rgb(var(${STAT_COLOR[colorKey]}))`;
 
     return (
         <div className="group relative overflow-hidden rounded-md border border-rule bg-paper-2 p-4 transition-colors hover:border-ink-3">
@@ -861,7 +861,7 @@ export default function Home() {
                                             <span className="text-ink">{opp.organizer || "Unknown"}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-ink-2 px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
-                                            <Trophy className="w-3.5 h-3.5" fill="var(--accent)" />
+                                            <Trophy className="w-3.5 h-3.5 text-accent" fill="currentColor" />
                                             <span>{opp.type === "CODING_CONTEST" ? "Contest" : "Competition"}</span>
                                         </div>
                                     </div>

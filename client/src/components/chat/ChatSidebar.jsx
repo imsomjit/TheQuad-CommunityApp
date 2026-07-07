@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check } from "lucide-react";
+import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { socket } from "../../services/socket";
 import api, { getAccessToken } from "../../services/api";
@@ -106,17 +106,40 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     };
     
     const handleReconnect = () => {
+      console.log("Socket reconnected!");
       if (activeRoom) {
         socket.emit("join_room", activeRoom.id);
       }
     };
     
+    const handleError = (err) => {
+      toast.error(err.message || "An error occurred");
+    };
+
+    const handleConnectError = async (err) => {
+      console.error("Socket connect_error:", err.message);
+      if (err.message.includes("Authentication")) {
+        try {
+          // Force token refresh by making an API call
+          await api.get("/auth/me");
+          socket.auth = { token: getAccessToken() };
+          socket.connect(); // Retry connection with new token
+        } catch (e) {
+          toast.error("Session expired. Please refresh the page.");
+        }
+      }
+    };
+
     socket.on("receive_message", handleReceiveMessage);
     socket.on("connect", handleReconnect);
+    socket.on("error", handleError);
+    socket.on("connect_error", handleConnectError);
     
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("connect", handleReconnect);
+      socket.off("error", handleError);
+      socket.off("connect_error", handleConnectError);
     };
   }, [activeRoom]);
 
@@ -130,6 +153,15 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     e.preventDefault();
     if (!inputValue.trim() || !activeRoom) return;
 
+    console.log("Sending message...", inputValue);
+    console.log("Socket connected?", socket.connected);
+    
+    if (!socket.connected) {
+      toast.error("Not connected to chat server. Reconnecting...");
+      socket.auth = { token: getAccessToken() };
+      socket.connect();
+    }
+
     // We can emit to socket immediately and it will be broadcasted back to us
     socket.emit("send_message", {
       roomId: activeRoom.id,
@@ -138,7 +170,70 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     setInputValue("");
   };
 
+  const handlePin = async (e, roomId) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/chat/rooms/${roomId}/pin`);
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, isPinned: true } : r));
+      toast.success("Room pinned!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to pin room");
+    }
+  };
+
+  const handleUnpin = async (e, roomId) => {
+    e.stopPropagation();
+    try {
+      await api.delete(`/chat/rooms/${roomId}/pin`);
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, isPinned: false } : r));
+      toast.success("Room unpinned!");
+    } catch (err) {
+      toast.error("Failed to unpin room");
+    }
+  };
+
   if (!isAuthenticated) return null;
+
+  const pinnedRooms = rooms.filter(r => r.isPinned);
+  const regularRooms = rooms.filter(r => !r.isPinned);
+
+  const renderRoom = (room) => (
+    <button
+      key={room.id}
+      onClick={() => joinRoom(room)}
+      className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:border-rule hover:bg-paper-2"
+    >
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${room.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
+        {room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-ink flex items-center gap-2 truncate">
+          <span className="truncate">{room.name}</span>
+          {room.type === "ephemeral" && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-accent shrink-0">Live</span>}
+        </p>
+        <p className="text-xs text-ink-3 line-clamp-1">{room.description || "Join the discussion"}</p>
+      </div>
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+        {room.isPinned ? (
+          <div 
+            onClick={(e) => handleUnpin(e, room.id)}
+            className="rounded p-1.5 text-accent hover:bg-rule"
+            title="Unpin"
+          >
+            <PinOff size={16} />
+          </div>
+        ) : (
+          <div 
+            onClick={(e) => handlePin(e, room.id)}
+            className="rounded p-1.5 text-ink-3 hover:text-accent hover:bg-rule"
+            title="Pin"
+          >
+            <Pin size={16} />
+          </div>
+        )}
+      </div>
+    </button>
+  );
 
   return (
     <>
@@ -146,15 +241,15 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed bottom-6 right-6 z-50 hidden h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg shadow-accent/20 transition-transform hover:scale-110 active:scale-95 md:flex"
+          className="fixed bottom-6 right-6 z-50 hidden h-12 w-12 items-center justify-center rounded-full bg-accent text-rule shadow-lg shadow-accent/20 transition-transform hover:scale-110 active:scale-95 md:flex"
         >
-          <MessageSquare size={24} />
+          <MessageSquare size={22} />
         </button>
       )}
 
       {/* Slide-over Sidebar */}
       <div
-        className={`fixed right-0 bottom-0 z-30 hidden w-[22rem] transform flex-col border-l border-rule/70 bg-paper/50 backdrop-blur-md transition-all duration-300 ease-in-out md:flex ${scrolled ? 'top-[56px]' : 'top-[92px]'} ${
+        className={`fixed right-0 bottom-0 z-50 flex w-full md:w-[22rem] transform flex-col border-l border-rule/70 bg-paper/95 backdrop-blur-xl transition-all duration-300 ease-in-out md:z-30 top-0 md:bg-paper/50 md:backdrop-blur-md ${scrolled ? 'md:top-[56px]' : 'md:top-[92px]'} ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -166,21 +261,21 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => setIsJoinModalOpen(true)}
-                  className="rounded p-1 text-ink-3 hover:bg-rule hover:text-ink"
+                  className="rounded p-1 text-accent/70 hover:bg-rule"
                   title="Join Private Room"
                 >
                   <Key size={18} />
                 </button>
                 <button 
                   onClick={() => setIsModalOpen(true)}
-                  className="rounded p-1 text-ink-3 hover:bg-rule hover:text-ink"
+                  className="rounded p-1 text-green-500/70 hover:bg-rule"
                   title="Create Study Room"
                 >
                   <Plus size={18} />
                 </button>
                 <button 
                   onClick={onToggle}
-                  className="rounded p-1 text-ink-3 hover:bg-rule hover:text-ink"
+                  className="rounded p-1 text-red-500/70 hover:bg-rule"
                   title="Close Chat"
                 >
                   <X size={18} />
@@ -194,25 +289,19 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
                 </div>
               ) : rooms.length > 0 ? (
-                <div className="space-y-2">
-                  {rooms.map((room) => (
-                    <button
-                      key={room.id}
-                      onClick={() => joinRoom(room)}
-                      className="flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:border-rule hover:bg-paper-2"
-                    >
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${room.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
-                        {room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
-                      </div>
-                      <div>
-                        <p className="font-medium text-ink flex items-center gap-2">
-                          {room.name}
-                          {room.type === "ephemeral" && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-accent">Live</span>}
-                        </p>
-                        <p className="text-xs text-ink-3 line-clamp-1">{room.description || "Join the discussion"}</p>
-                      </div>
-                    </button>
-                  ))}
+                <div className="space-y-4">
+                  {pinnedRooms.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-ink-3 px-1">Pinned Lounges</p>
+                      {pinnedRooms.map(renderRoom)}
+                    </div>
+                  )}
+                  {regularRooms.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-ink-3 px-1">All Lounges</p>
+                      {regularRooms.map(renderRoom)}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-center text-sm text-ink-3 mt-10">No rooms available.</p>
@@ -283,9 +372,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   return (
                     <div key={msg.id || i} className={`flex max-w-[85%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}>
                       {!isMe && msg.sender && (
-                        <span className="mb-1 text-[10px] text-ink-3 ml-1">{msg.sender.name}</span>
+                        <span className="mb-1 text-[10px] text-ink-3 ml-1">@{msg.sender.username}</span>
                       )}
-                      <div className={`rounded-2xl px-4 py-2 text-sm ${isMe ? "bg-accent text-white rounded-tr-sm" : "bg-paper-2 text-ink rounded-tl-sm border border-rule"}`}>
+                      <div className={`rounded-2xl px-4 py-2 text-sm ${isMe ? "bg-accent text-paper rounded-tr-sm" : "bg-paper-3 text-ink rounded-tl-sm border border-rule"}`}>
                         {msg.content}
                       </div>
                       <span className="mt-1 text-[10px] text-ink-3 mx-1">

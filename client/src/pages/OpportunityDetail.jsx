@@ -143,7 +143,7 @@ export default function OpportunityDetail() {
                         </div>
                         <span>•</span>
                         <div className="flex items-center gap-1.5">
-                            <Trophy className="w-4 h-4" fill="var(--accent)" />
+                            <Trophy className="w-4 h-4 text-accent" fill="currentColor" />
                             <span className="capitalize">{opp.type?.toLowerCase().replace(/_/g, " ")}</span>
                         </div>
                     </div>

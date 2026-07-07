@@ -120,6 +120,13 @@
       "when": 1783359241563,
       "tag": "0016_daily_kylun",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1783396700193,
+      "tag": "0017_plain_satana",
+      "breakpoints": true
     }
   ]
 }

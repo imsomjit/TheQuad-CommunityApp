@@ -5,7 +5,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const AppError = require("../../utils/AppError");
 
 exports.getRooms = asyncHandler(async (req, res) => {
-  const rooms = await chatService.getRooms();
+  const rooms = await chatService.getRooms(req.user.id);
   res.status(200).json({
     success: true,
     data: rooms,
@@ -58,5 +58,59 @@ exports.joinRoom = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: room,
+  });
+});
+
+exports.pinRoom = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  
+  if (!roomId) {
+    throw new AppError("Room ID is required", 400);
+  }
+
+  await chatService.pinRoom(req.user.id, roomId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Room pinned successfully",
+  });
+});
+
+exports.unpinRoom = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  
+  if (!roomId) {
+    throw new AppError("Room ID is required", 400);
+  }
+
+  await chatService.unpinRoom(req.user.id, roomId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Room unpinned successfully",
+  });
+});
+
+exports.createAdminRoom = asyncHandler(async (req, res) => {
+  const { name, description } = req.body;
+  if (!name) {
+    throw new AppError("Room name is required", 400);
+  }
+  const room = await chatService.createGlobalRoom(name, description, req.user.id);
+  res.status(201).json({
+    success: true,
+    data: room,
+  });
+});
+
+exports.deleteAdminRoom = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  if (!roomId) {
+    throw new AppError("Room ID is required", 400);
+  }
+  await chatService.deleteGlobalRoom(roomId);
+  res.status(200).json({
+    success: true,
+    message: "Room deleted successfully",
   });
 });

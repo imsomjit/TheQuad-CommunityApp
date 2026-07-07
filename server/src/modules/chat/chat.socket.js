@@ -36,6 +36,9 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     logger.info(`🔌  User connected via socket: ${socket.user.id}`);
 
+    // Initialize rate limit tracker (10 messages per 10 seconds)
+    socket.messageLimits = { count: 0, resetTime: Date.now() + 10000 };
+
     // Join a specific room
     socket.on("join_room", (roomId) => {
       socket.join(roomId);
@@ -71,6 +74,20 @@ const initSocket = (server) => {
     // Handle incoming messages
     socket.on("send_message", async (data) => {
       try {
+        const now = Date.now();
+        if (now > socket.messageLimits.resetTime) {
+          socket.messageLimits.count = 1;
+          socket.messageLimits.resetTime = now + 10000;
+        } else {
+          socket.messageLimits.count++;
+        }
+
+        if (socket.messageLimits.count > 10) {
+          logger.warn(`[SOCKET] User ${socket.user.id} exceeded message rate limit.`);
+          socket.emit("error", { message: "Slow down! You're sending messages too fast." });
+          return;
+        }
+
         const { roomId, content } = data;
         logger.debug(`[SOCKET] User ${socket.user.id} attempting to send message to room ${roomId}`);
         
@@ -96,7 +113,7 @@ const initSocket = (server) => {
         // Fetch sender details
         const { users } = require("../../db/schema");
         const [sender] = await db
-          .select({ id: users.id, name: users.name, avatarUrl: users.avatarUrl })
+          .select({ id: users.id, name: users.name, username: users.username, avatarUrl: users.avatarUrl })
           .from(users)
           .where(eq(users.id, socket.user.id))
           .limit(1);
@@ -122,6 +139,15 @@ const initSocket = (server) => {
       if (!room.isPrivate) {
         socket.broadcast.emit("room_created", room);
       }
+    });
+
+    // Broadcast room deletion (Admin)
+    socket.on("delete_room_broadcast", (roomId) => {
+      // Broadcast to all other clients
+      socket.broadcast.emit("room_deleted", roomId);
+      
+      // Also emit to all clients in the room to force them out
+      io.to(roomId).emit("room_deleted", roomId);
     });
 
     socket.on("disconnecting", () => {

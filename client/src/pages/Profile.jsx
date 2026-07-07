@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     Award, MapPin, Calendar, Sparkles, FolderGit2,
     FolderOpen, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap, Bookmark
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -273,10 +273,16 @@ export default function Profile() {
                             {isOwnProfile ? (
                                 <>
                                     <Link
+                                        to={`/u/${currentUser?.username}/bookmarks`}
+                                        className="inline-flex sm:hidden items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
+                                    >
+                                        <Bookmark className="w-3.5 h-3.5 text-syntax-rose" /> Saved
+                                    </Link>
+                                    <Link
                                         to="/settings/profile"
                                         className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
                                     >
-                                        <Edit3 className="w-3.5 h-3.5" /> Edit
+                                        <Edit3 className="w-3.5 h-3.5 text-syntax-mint" /> Edit
                                     </Link>
                                     <button
                                         onClick={() => logout()}
@@ -310,16 +316,16 @@ export default function Profile() {
                     {/* Name & tags */}
                     <div className="flex flex-col gap-3 mt-2">
                         <h1 className="font-display text-4xl sm:text-5xl font-extrabold text-ink tracking-tight leading-none">
-                            <span className="marker">{profile.name}</span>
+                            {profile.name}
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-ink-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-accent">
                                 @{profile.username}
                             </span>
                             {profile.website && (
                                 <a href={profile.website} target="_blank" rel="noreferrer"
                                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors truncate max-w-[150px] sm:max-w-none">
-                                    <Globe className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//, "")}</span>
+                                    <Globe className="w-3.5 h-3.5 text-syntax-cyan shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//, "")}</span>
                                 </a>
                             )}
                         </div>
@@ -334,19 +340,19 @@ export default function Profile() {
                     <div className="mt-6 flex flex-wrap gap-4 text-sm font-mono text-ink-2">
                         {profile.organization && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1"><Building2 className="w-4 h-4 text-ink-2" fill="var(--syntax-amber)" /></div>
+                                <div className="p-1"><Building2 className="w-4 h-4 text-syntax-amber" /></div>
                                 <span>{profile.organization}</span>
                             </div>
                         )}
                         {profile.location && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1"><MapPin className="w-4 h-4 text-ink-2" fill="var(--syntax-rose)" /></div>
+                                <div className="p-1"><MapPin className="w-4 h-4 text-syntax-rose" /></div>
                                 <span>{profile.location}</span>
                             </div>
                         )}
                         {profile.college && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1"><BookOpen className="w-4 h-4 text-ink-2" fill="var(--syntax-mint)" /></div>
+                                <div className="p-1"><BookOpen className="w-4 h-4 text-syntax-mint" /></div>
                                 <span>
                                     {profile.college}
                                     {profile.branch && <span className="text-accent mx-1">•</span>}
@@ -725,7 +731,7 @@ function ActivityTabs({ profile }) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function StatTile({ icon: Icon, label, value, colorVar }) {
-    const c = `var(${colorVar})`;
+    const c = `rgb(var(${colorVar}))`;
     return (
         <div className="relative overflow-hidden p-4 sm:p-6 border border-rule rounded-xl bg-paper-2/40 card-elevated group transition-all duration-300 hover:border-ink-3 hover:-translate-y-1 hover:shadow-lg">
             <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20 transition-opacity group-hover:opacity-40" style={{ backgroundColor: c }} />

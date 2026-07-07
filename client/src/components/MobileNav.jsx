@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Compass, Plus, Search, User } from "lucide-react";
+import { Home, Compass, Plus, Search, MessageSquare } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MobileAddMenu from "./MobileAddMenu";
 
-export default function MobileNav() {
+export default function MobileNav({ onChatToggle }) {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -22,6 +22,8 @@ export default function MobileNav() {
             ? "text-accent scale-110 drop-shadow-sm"
             : "text-ink-3 hover:text-ink hover:scale-105"
         }`;
+
+    const buttonClass = `group relative flex flex-col items-center justify-center p-2 text-xs font-medium transition-all duration-300 ease-out active:scale-90 text-ink-3 hover:text-ink hover:scale-105`;
 
     const handlePointerDown = (e) => {
         // Only trigger on primary touch/mouse
@@ -62,7 +64,7 @@ export default function MobileNav() {
 
     return (
         <>
-            <div className="fixed inset-x-0 bottom-5 z-50 md:hidden flex justify-center pointer-events-none">
+            <div className="fixed inset-x-0 bottom-5 z-40 md:hidden flex justify-center pointer-events-none">
                 <nav className="pointer-events-auto w-[92%] max-w-sm flex items-center justify-between rounded-full border border-rule bg-paper/95 backdrop-blur-xl px-5 py-2.5 shadow-2xl relative transition-all duration-500 animate-in slide-in-from-bottom-8 fade-in duration-700 ease-out">
                     <NavLink to="/" className={linkClass} end title="Home">
                         <Home className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
@@ -90,14 +92,14 @@ export default function MobileNav() {
                         <Search className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
                         <span className="sr-only">Search</span>
                     </NavLink>
-                    <NavLink
-                        to={user ? `/u/${user.username}` : "/login"}
-                        className={linkClass}
-                        title="Profile"
+                    <button
+                        onClick={user ? onChatToggle : () => navigate('/login')}
+                        className={buttonClass}
+                        title="Chat"
                     >
-                        <User className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
-                        <span className="sr-only">Profile</span>
-                    </NavLink>
+                        <MessageSquare className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
+                        <span className="sr-only">Chat</span>
+                    </button>
                 </nav>
             </div>
 

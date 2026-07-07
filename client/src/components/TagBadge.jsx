@@ -36,7 +36,7 @@ export default function TagBadge({
 
     // derive a color from the tag's literal string when possible
     const label = typeof children === "string" ? children : "";
-    const colorVar = `var(--${PALETTE[hashIndex(label)]})`;
+    const colorVar = `rgb(var(--${PALETTE[hashIndex(label)]}))`;
 
     const baseClass = active
         ? "border-current text-current"

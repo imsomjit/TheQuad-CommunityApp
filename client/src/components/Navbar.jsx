@@ -78,15 +78,15 @@ export default function Navbar({ scrolled }) {
                     </span>
 
                     <span className="flex items-baseline">
-                        <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
+                        <span className="font-display text-2xl sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
                             Peer
                         </span>
 
-                        <span className="font-display-italic text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent group-hover:text-ink transition-colors">
+                        <span className="font-display-italic text-2xl sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-accent group-hover:text-ink transition-colors">
                             Verse
                         </span>
 
-                        <span className="ml-1 font-mono text-[10px] text-ink-3">
+                        <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">
                             /vol.01
                         </span>
                     </span>
@@ -115,7 +115,7 @@ export default function Navbar({ scrolled }) {
                 )}
 
                 {/* Right Actions */}
-                <div className="ml-auto flex items-center gap-2.5">
+                <div className="ml-auto flex items-center gap-1.5 sm:gap-2.5">
                     {isAuthenticated ? (
                         <>
                             <DropdownMenu>
@@ -179,7 +179,7 @@ export default function Navbar({ scrolled }) {
                         data-testid="theme-toggle"
                         aria-label="Toggle theme"
                         title={theme === "light" ? "Switch to ink (dark)" : "Switch to paper (light)"}
-                        className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-cyan transition-colors hover:border-accent"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-cyan transition-colors hover:border-accent"
                     >
                         {theme === "light" ? (
                             <Moon className="h-4 w-4" />
@@ -196,7 +196,7 @@ export default function Navbar({ scrolled }) {
                                 data-testid="nav-bookmarks-link"
                                 aria-label="Bookmarks"
                                 title="Saved Bookmarks"
-                                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-rose transition-colors hover:border-accent"
+                                className="hidden sm:flex shrink-0 h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 text-syntax-rose transition-colors hover:border-accent"
                             >
                                 <Bookmark className="h-4 w-4" />
                             </Link>
@@ -225,7 +225,7 @@ export default function Navbar({ scrolled }) {
                             <Link
                                 to={`/u/${currentUser?.username || ''}`}
                                 data-testid="nav-avatar-link"
-                                className="relative hidden sm:inline"
+                                className="relative inline-block"
                             >
                                 <img
                                     src={currentUser?.avatar || getAvatarFallback(currentUser?.name, currentUser?.username)}
