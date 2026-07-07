@@ -128,7 +128,7 @@ export default function Footer() {
                         </p>
                         <p className="mt-1 font-mono text-[10px] text-ink-3">
                             <span className="text-accent">$</span>{" "}
-                            build with ❤️ for peers by <span className="text-ink"><a href="https://github.com/soumyajiitdas" target="_blank" rel="noopener noreferrer">me_</a></span>
+                            build with ❤️ for peers by <span className="text-ink"><a href="https://github.com/imsomjit" target="_blank" rel="noopener noreferrer">me_</a></span>
                         </p>
                     </div>
                 </div>
