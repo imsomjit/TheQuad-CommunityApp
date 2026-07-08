@@ -33,7 +33,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
     };
 
     return (
-        <aside className={`fixed left-0 bottom-0 z-30 hidden flex-col justify-between border-r border-rule bg-paper-2/90 backdrop-blur-md py-6 md:flex animate-in fade-in slide-in-from-left-8 duration-700 ease-out transition-all duration-700 ease-in-out ${scrolled ? 'top-[56px]' : 'top-[92px]'} ${isCollapsed ? 'w-[70px] px-2' : 'w-60 px-4'}`}>
+        <aside className={`fixed left-0 bottom-0 z-30 hidden flex-col justify-between border-r border-rule bg-paper-2/90 backdrop-blur-md py-6 md:flex transition-all duration-300 ease-out ${scrolled ? 'top-[56px]' : 'top-[92px]'} ${isCollapsed ? 'w-[70px] px-2' : 'w-60 px-4'}`}>
             <nav className="flex flex-col gap-3">
                 <div className={`flex items-center pb-1 ${isCollapsed ? 'justify-center' : 'justify-between px-3'}`}>
                     {!isCollapsed && <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent">{currentUser?.role === 'admin' ? 'Admin Console' : 'Moderator Console'}</p>}

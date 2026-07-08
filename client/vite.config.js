@@ -16,6 +16,13 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      // Proxy WebSocket connections for socket.io in dev
+      '/socket.io': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        ws: true, // Enable WebSocket proxying
+      },
     },
   },
   build: {

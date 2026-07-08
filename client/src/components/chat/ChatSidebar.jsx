@@ -379,7 +379,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       <div
         ref={sidebarRef}
         style={{ touchAction: 'none' }} // Prevents browser from panning the whole page when dragging the sidebar
-        className={`fixed right-0 z-50 flex w-full md:w-[22rem] transform flex-col border-l border-rule/70 bg-paper/95 backdrop-blur-xl transition-transform duration-300 ease-in-out md:z-30 top-0 md:bg-paper/50 md:backdrop-blur-md md:bottom-0 md:h-auto ${scrolled ? 'md:top-[56px]' : 'md:top-[92px]'} ${
+        className={`fixed right-0 z-50 flex w-full md:w-[22rem] transform flex-col border-l border-rule/70 bg-paper/95 backdrop-blur-xl transition-all duration-300 ease-out md:z-30 top-0 md:bg-paper/50 md:backdrop-blur-md md:bottom-0 md:h-auto ${scrolled ? 'md:top-[56px]' : 'md:top-[92px]'} ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

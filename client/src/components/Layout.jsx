@@ -107,7 +107,7 @@ export default function Layout() {
                 <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 ease-out pr-[var(--removed-body-scroll-bar-size,0px)]">
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
-                        className={`border-b border-rule/60 bg-paper-2/80 backdrop-blur-md transition-all duration-700 overflow-hidden ${
+                        className={`border-b border-rule/60 bg-paper-2/80 backdrop-blur-md transition-all duration-300 ease-out overflow-hidden ${
                             scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
@@ -157,7 +157,7 @@ export default function Layout() {
 
                 {/* Main content area offset by sidebar on desktop */}
                 <div 
-                    className={`pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out pl-0 pr-0 ${
+                    className={`transition-all duration-300 ease-out pt-[92px] flex flex-col min-h-screen pl-0 pr-0 ${
                         hideSidebar ? "md:pl-0" : isSidebarCollapsed ? "md:pl-[81px]" : "md:pl-[15rem]"
                     } ${isChatOpen ? "md:pr-[23rem]" : "md:pr-0"}`}
                 >
