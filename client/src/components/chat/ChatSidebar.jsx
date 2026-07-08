@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { socket } from "../../services/socket";
-import api, { getAccessToken } from "../../services/api";
+import api, { getAccessToken, setAccessToken, authApi } from "../../services/api";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import CreateRoomModal from "./CreateRoomModal";
@@ -21,21 +21,89 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isConnected, setIsConnected] = useState(socket.connected);
   
   const messagesEndRef = useRef(null);
   const hasAutoJoined = useRef(false);
+  const sidebarRef = useRef(null);
+
+  // Helper: ensure we have a valid token before connecting socket
+  const connectSocket = useCallback(async () => {
+    if (socket.connected) return;
+    
+    let token = getAccessToken();
+    if (!token) {
+      // Token not in memory — refresh it first
+      try {
+        const { data } = await authApi.refresh();
+        token = data.data.accessToken;
+        setAccessToken(token);
+      } catch (e) {
+        console.error("Could not refresh token for socket:", e.message);
+        return;
+      }
+    }
+    
+    socket.auth = { token };
+    socket.connect();
+  }, []);
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       fetchRooms();
-      if (!socket.connected) {
-        socket.auth = { token: getAccessToken() };
-        socket.connect();
+      connectSocket();
+    }
+    
+    // Prevent body scroll strictly on mobile when chat is open
+    if (isOpen && window.innerWidth < 768) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.setAttribute("data-scroll-y", scrollY);
+    } else {
+      const scrollY = document.body.getAttribute("data-scroll-y");
+      if (scrollY !== null) {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, parseInt(scrollY || "0"));
+        document.body.removeAttribute("data-scroll-y");
       }
     }
-  }, [isOpen, isAuthenticated]);
+
+    return () => {
+      const scrollY = document.body.getAttribute("data-scroll-y");
+      if (scrollY !== null) {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, parseInt(scrollY || "0"));
+        document.body.removeAttribute("data-scroll-y");
+      }
+    };
+  }, [isOpen, isAuthenticated, connectSocket]);
 
 
+
+  useEffect(() => {
+    const onConnect = () => {
+      console.log("Socket connected globally!");
+      setIsConnected(true);
+    };
+    const onDisconnect = () => setIsConnected(false);
+
+    // Initial check
+    setIsConnected(socket.connected);
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+    };
+  }, []);
 
   const fetchRooms = async () => {
     setLoadingRooms(true);
@@ -132,7 +200,6 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     };
     
     const handleReconnect = () => {
-      console.log("Socket reconnected!");
       if (activeRoom) {
         socket.emit("join_room", activeRoom.id);
       }
@@ -145,12 +212,15 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     const handleConnectError = async (err) => {
       console.error("Socket connect_error:", err.message);
       if (err.message.includes("Authentication")) {
+        // Token is expired or missing — refresh it and reconnect
         try {
-          // Force token refresh by making an API call
-          await api.get("/auth/me");
-          socket.auth = { token: getAccessToken() };
-          socket.connect(); // Retry connection with new token
+          const { data } = await authApi.refresh();
+          const newToken = data.data.accessToken;
+          setAccessToken(newToken);
+          socket.auth = { token: newToken };
+          socket.connect();
         } catch (e) {
+          console.error("Token refresh failed during socket reconnect:", e.message);
           toast.error("Session expired. Please refresh the page.");
         }
       }
@@ -169,6 +239,41 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     };
   }, [activeRoom]);
 
+  // Handle mobile visual viewport changes (e.g. keyboard appearing)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport && window.innerWidth < 768) {
+        if (sidebarRef.current) {
+          sidebarRef.current.style.height = `${window.visualViewport.height}px`;
+          sidebarRef.current.style.top = `${window.visualViewport.offsetTop}px`;
+        }
+        // We also might need to adjust the body scroll if the browser panned
+        if (document.activeElement?.tagName === 'INPUT') {
+          // window.scrollTo(0, 0); // No longer needed with body position fixed
+        }
+      } else {
+        if (sidebarRef.current) {
+          sidebarRef.current.style.height = '';
+          sidebarRef.current.style.top = '';
+        }
+      }
+      scrollToBottom();
+    };
+
+    window.visualViewport?.addEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('scroll', handleResize);
+    window.addEventListener('resize', handleResize);
+    
+    // Initial check
+    handleResize();
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('scroll', handleResize);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,20 +284,18 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     e.preventDefault();
     if (!inputValue.trim() || !activeRoom) return;
 
-    console.log("Sending message...", inputValue);
-    console.log("Socket connected?", socket.connected);
-    
     if (!socket.connected) {
-      toast.error("Not connected to chat server. Reconnecting...");
-      socket.auth = { token: getAccessToken() };
-      socket.connect();
+      // Try to reconnect before sending
+      connectSocket();
+      toast.info("Reconnecting... Please try again in a moment.");
+      return;
     }
 
-    // We can emit to socket immediately and it will be broadcasted back to us
     socket.emit("send_message", {
       roomId: activeRoom.id,
       content: inputValue,
     });
+
     setInputValue("");
   };
 
@@ -233,11 +336,11 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
         {room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-ink flex items-center gap-2 truncate">
+        <p className="font-medium text-base text-ink flex items-center gap-2 truncate">
           <span className="truncate">{room.name}</span>
-          {room.type === "ephemeral" && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-accent shrink-0">Live</span>}
+          {room.type === "ephemeral" && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent shrink-0">Live</span>}
         </p>
-        <p className="text-xs text-ink-3 line-clamp-1">{room.description || "Join the discussion"}</p>
+        <p className="text-sm text-ink-3 line-clamp-1">{room.description || "Join the discussion"}</p>
       </div>
       <div className="opacity-0 group-hover:opacity-100 transition-opacity">
         {room.isPinned ? (
@@ -273,9 +376,10 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
         </button>
       )}
 
-      {/* Slide-over Sidebar */}
       <div
-        className={`fixed right-0 bottom-0 z-50 flex w-full md:w-[22rem] transform flex-col border-l border-rule/70 bg-paper/95 backdrop-blur-xl transition-all duration-300 ease-in-out md:z-30 top-0 md:bg-paper/50 md:backdrop-blur-md ${scrolled ? 'md:top-[56px]' : 'md:top-[92px]'} ${
+        ref={sidebarRef}
+        style={{ touchAction: 'none' }} // Prevents browser from panning the whole page when dragging the sidebar
+        className={`fixed right-0 z-50 flex w-full md:w-[22rem] transform flex-col border-l border-rule/70 bg-paper/95 backdrop-blur-xl transition-transform duration-300 ease-in-out md:z-30 top-0 md:bg-paper/50 md:backdrop-blur-md md:bottom-0 md:h-auto ${scrolled ? 'md:top-[56px]' : 'md:top-[92px]'} ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -314,7 +418,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4" style={{ touchAction: 'pan-y' }}>
               {loadingRooms ? (
                 <div className="flex h-32 items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
@@ -323,13 +427,13 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                 <div className="space-y-4">
                   {pinnedRooms.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-ink-3 px-1">Pinned Lounges</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-ink-3 px-1">Pinned Lounges</p>
                       {pinnedRooms.map(renderRoom)}
                     </div>
                   )}
                   {regularRooms.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-ink-3 px-1">All Lounges</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-ink-3 px-1">All Lounges</p>
                       {regularRooms.map(renderRoom)}
                     </div>
                   )}
@@ -360,7 +464,10 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent">
                     {activeRoom.type === "global" ? <Hash size={14} /> : activeRoom.type === "ephemeral" ? <Sparkles size={14} /> : <Users size={14} />}
                   </div>
-                  <h2 className="font-medium text-sm text-ink truncate max-w-[140px]">{activeRoom.name}</h2>
+                  <h2 className="font-medium text-base text-ink truncate max-w-[140px]">{activeRoom.name}</h2>
+                  {!isConnected && (
+                    <span className="flex h-2 w-2 rounded-full bg-yellow-500 animate-pulse" title="Connecting..."></span>
+                  )}
                 </div>
               </div>
               <button 
@@ -395,7 +502,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               </div>
             )}
             
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 flex flex-col gap-3" style={{ touchAction: 'pan-y' }}>
               {loadingMessages ? (
                 <div className="flex flex-1 items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
@@ -406,12 +513,12 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   return (
                     <div key={msg.id || i} className={`flex max-w-[85%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}>
                       {!isMe && msg.sender && (
-                        <span className="mb-1 text-[10px] text-ink-3 ml-1">@{msg.sender.username}</span>
+                        <span className="mb-1 text-xs text-ink-3 ml-1">@{msg.sender.username}</span>
                       )}
-                      <div className={`rounded-2xl px-4 py-2 text-sm ${isMe ? "bg-accent text-paper rounded-tr-sm" : "bg-paper-3 text-ink rounded-tl-sm border border-rule"}`}>
+                      <div className={`rounded-2xl px-4 py-2 text-base md:text-sm ${isMe ? "bg-accent text-paper rounded-tr-sm" : "bg-paper-3 text-ink rounded-tl-sm border border-rule"}`}>
                         {msg.content}
                       </div>
-                      <span className="mt-1 text-[10px] text-ink-3 mx-1">
+                      <span className="mt-1 text-xs text-ink-3 mx-1">
                         {format(new Date(msg.createdAt), "HH:mm")}
                       </span>
                     </div>
@@ -433,7 +540,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 rounded-full border border-rule bg-paper-2 px-4 py-2.5 text-sm text-ink placeholder-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="flex-1 rounded-full border border-rule bg-paper-2 px-4 py-2.5 text-base md:text-sm text-ink placeholder-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <button
                   type="submit"

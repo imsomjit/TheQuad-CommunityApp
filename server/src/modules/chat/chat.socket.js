@@ -14,7 +14,14 @@ const initSocket = (server) => {
     cors: {
       origin: env.CLIENT_URL,
       credentials: true,
+      methods: ["GET", "POST"],
     },
+    // Allow both transports — websocket is faster; polling is the reliable fallback
+    // when corporate/university firewalls block raw WebSocket connections
+    transports: ["websocket", "polling"],
+    // Increase ping timeout and interval to keep connections alive on mobile
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   // Track scheduled ephemeral room deletions
