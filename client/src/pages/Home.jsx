@@ -22,7 +22,7 @@ import {
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { usersApi, postsApi, opportunitiesApi, booksApi, resourcesApi } from "../services/api";
+import { usersApi, postsApi, opportunitiesApi, booksApi, resourcesApi, tagsApi } from "../services/api";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
@@ -165,18 +165,26 @@ export default function Home() {
     const [opportunitiesCount, setOpportunitiesCount] = useState(0);
     const [contentsCount, setContentsCount] = useState(0);
 
+    const [globalTags, setGlobalTags] = useState([]);
+
     useEffect(() => {
-        const fetchContributors = async () => {
+        const fetchContributorsAndTags = async () => {
             try {
-                const data = await usersApi.getTopContributors();
-                setTopContributors(data);
+                const [usersData, tagsData] = await Promise.all([
+                    usersApi.getTopContributors(),
+                    tagsApi.getAll()
+                ]);
+                setTopContributors(usersData);
+                if (tagsData.success) {
+                    setGlobalTags(tagsData.data);
+                }
             } catch (err) {
-                console.error("Failed to fetch top contributors", err);
+                console.error("Failed to fetch top contributors or tags", err);
             } finally {
                 setContributorsLoading(false);
             }
         };
-        fetchContributors();
+        fetchContributorsAndTags();
     }, []);
 
     useEffect(() => {
@@ -253,15 +261,6 @@ export default function Home() {
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 3);
     }, [questions]);
-
-    const allTags = useMemo(() => {
-        const counts = {};
-
-        resources.forEach(r => r.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
-        questions.forEach(q => q.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
-
-        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    }, [resources, questions]);
 
     return (
         <div className="px-2 sm:px-6 md:px-0 space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -552,12 +551,12 @@ export default function Home() {
                                     <Skeleton className="h-6 w-20" />
                                     <Skeleton className="h-6 w-14" />
                                 </>
-                            ) : allTags.length > 0 ? (
-                                allTags.map(([tag, count]) => (
-                                    <Link key={tag} to={`/resources?tag=${tag}`}>
+                            ) : globalTags.length > 0 ? (
+                                globalTags.map((tagObj) => (
+                                    <Link key={tagObj.tag} to={`/search?q=${encodeURIComponent(tagObj.tag)}`}>
                                         <TagBadge>
-                                            {tag}
-                                            <span className="ml-1.5 text-ink-3">{count}</span>
+                                            {tagObj.tag}
+                                            <span className="ml-1.5 text-ink-3">{tagObj.count}</span>
                                         </TagBadge>
                                     </Link>
                                 ))

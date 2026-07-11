@@ -5,23 +5,29 @@ const { db } = require("../../db/index");
 const { postTags, resourceTags, questionTags } = require("../../db/schema/index");
 
 const getAllUniqueTags = async () => {
-  // Use UNION to get distinct tags from all three tables
+  // Use UNION ALL to get all tags from all tables, then count and order them
   const query = sql`
-    SELECT tag FROM ${postTags}
-    UNION
-    SELECT tag FROM ${resourceTags}
-    UNION
-    SELECT tag FROM ${questionTags}
+    SELECT tag, COUNT(*) as count
+    FROM (
+      SELECT tag FROM ${postTags}
+      UNION ALL
+      SELECT tag FROM ${resourceTags}
+      UNION ALL
+      SELECT tag FROM ${questionTags}
+    ) as combined_tags
+    GROUP BY tag
+    ORDER BY count DESC
+    LIMIT 15
   `;
   
   const result = await db.execute(query);
   
-  // result format differs slightly depending on the pg driver (postgres vs pg)
-  // Usually, db.execute returns an array of objects.
   if (Array.isArray(result)) {
-    return result.map(row => row.tag);
+    // some drivers return array directly
+    return result.map(row => ({ tag: row.tag, count: Number(row.count) }));
   } else if (result.rows) {
-    return result.rows.map(row => row.tag);
+    // pg driver returns an object with rows property
+    return result.rows.map(row => ({ tag: row.tag, count: Number(row.count) }));
   }
   return [];
 };

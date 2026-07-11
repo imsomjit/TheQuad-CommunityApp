@@ -27,7 +27,8 @@ export default function AutocompleteTagInput({
     tagsApi.getAll()
       .then((res) => {
         if (res.success && Array.isArray(res.data)) {
-          const uniqueTags = Array.from(new Set([...PREDEFINED_TAGS, ...res.data]));
+          const apiTags = res.data.map(item => (typeof item === 'string' ? item : item.tag));
+          const uniqueTags = Array.from(new Set([...PREDEFINED_TAGS, ...apiTags]));
           setAllTags(uniqueTags);
         }
       })
