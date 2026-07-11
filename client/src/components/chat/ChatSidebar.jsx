@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
 import api, { getAccessToken, setAccessToken, authApi } from "../../services/api";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { chatApi } from "../../services/api";
 import CreateRoomModal from "./CreateRoomModal";
 import JoinRoomModal from "./JoinRoomModal";
 
 export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   
   const [rooms, setRooms] = useState([]);
   const [activeRoom, setActiveRoom] = useState(null);
@@ -22,7 +25,11 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const [copied, setCopied] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isConnected, setIsConnected] = useState(socket.connected);
+  const [activeTab, setActiveTab] = useState("lounges");
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [typingUsers, setTypingUsers] = useState({});
   
+  const typingTimeoutRef = useRef({});
   const messagesEndRef = useRef(null);
   const hasAutoJoined = useRef(false);
   const sidebarRef = useRef(null);
@@ -49,9 +56,15 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   }, []);
 
   useEffect(() => {
-    if (isOpen && isAuthenticated) {
-      fetchRooms();
+    if (rooms.length === 0) fetchRooms();
+    
+    if (isAuthenticated) {
       connectSocket();
+
+      // Fetch initial online users
+      chatApi.getOnlineUsers().then(res => {
+        if (res.data) setOnlineUsers(new Set(res.data));
+      }).catch(console.error);
     }
     
     // Prevent body scroll strictly on mobile when chat is open
@@ -168,6 +181,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
   // Join room and fetch history
   const joinRoom = async (room) => {
+    if (!isAuthenticated) {
+      return navigate("/login");
+    }
     setActiveRoom(room);
     if (user && user.id) {
       localStorage.setItem(`thequad_chat_room_${user.id}`, room.id);
@@ -180,6 +196,14 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       
       // Join socket room
       socket.emit("join_room", room.id);
+      
+      // Emit mark read if it's a DM
+      if (room.type === 'direct') {
+        socket.emit("mark_read", room.id);
+        
+        // Optimistically clear the unread count in local state
+        setRooms(prev => prev.map(r => r.id === room.id ? { ...r, unreadCount: 0 } : r));
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to load messages");
@@ -193,9 +217,32 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   // Listen for new messages & reconnects
   useEffect(() => {
     const handleReceiveMessage = (msg) => {
-      if (activeRoom && msg.roomId === activeRoom.id) {
+      // If the chat is open AND the user is looking at this exact room
+      if (isOpen && activeRoom && msg.roomId === activeRoom.id) {
         setMessages((prev) => [...prev, msg]);
         scrollToBottom();
+        // Send mark_read immediately since they are looking at it
+        if (activeRoom.type === 'direct') {
+          socket.emit("mark_read", activeRoom.id);
+        }
+      } else if (msg.senderId !== user?.id) {
+        // Increment unread count for the room
+        setRooms(prev => prev.map(r => r.id === msg.roomId ? { ...r, unreadCount: (r.unreadCount || 0) + 1 } : r));
+        // Otherwise, if it's a DM, show a notification toast
+        const room = rooms.find(r => r.id === msg.roomId);
+        if (room && room.type === 'direct') {
+           const sender = room.participants?.find(p => p.id === msg.senderId);
+           toast.info(`New message from ${sender ? sender.name : 'someone'}`, {
+             description: msg.text,
+             action: {
+               label: "View",
+               onClick: () => {
+                 window.dispatchEvent(new CustomEvent("open_chat_sidebar"));
+                 window.dispatchEvent(new CustomEvent("open_chat_room", { detail: { roomId: room.id } }));
+               }
+             }
+           });
+        }
       }
     };
     
@@ -226,18 +273,89 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       }
     };
 
+    const handleUserOnline = (userId) => {
+      setOnlineUsers(prev => {
+        const next = new Set(prev);
+        next.add(userId);
+        return next;
+      });
+    };
+
+    const handleUserOffline = (userId) => {
+      setOnlineUsers(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+    };
+
+    const handleTypingStart = ({ roomId, userId }) => {
+      setTypingUsers(prev => ({
+        ...prev,
+        [roomId]: new Set([...(prev[roomId] || []), userId])
+      }));
+    };
+
+    const handleTypingEnd = ({ roomId, userId }) => {
+      setTypingUsers(prev => {
+        const next = { ...prev };
+        if (next[roomId]) {
+          next[roomId] = new Set([...next[roomId]].filter(id => id !== userId));
+        }
+        return next;
+      });
+    };
+
+    const handleMessagesRead = ({ roomId, byUserId }) => {
+      if (activeRoom && activeRoom.id === roomId) {
+        setMessages(prev => prev.map(m => ({ ...m, readBy: [...(m.readBy || []), byUserId] })));
+      }
+    };
+
     socket.on("receive_message", handleReceiveMessage);
     socket.on("connect", handleReconnect);
     socket.on("error", handleError);
     socket.on("connect_error", handleConnectError);
+    socket.on("user_online", handleUserOnline);
+    socket.on("user_offline", handleUserOffline);
+    socket.on("typing_start", handleTypingStart);
+    socket.on("typing_end", handleTypingEnd);
+    socket.on("messages_read", handleMessagesRead);
     
     return () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("connect", handleReconnect);
       socket.off("error", handleError);
       socket.off("connect_error", handleConnectError);
+      socket.off("user_online", handleUserOnline);
+      socket.off("user_offline", handleUserOffline);
+      socket.off("typing_start", handleTypingStart);
+      socket.off("typing_end", handleTypingEnd);
+      socket.off("messages_read", handleMessagesRead);
     };
-  }, [activeRoom]);
+  }, [activeRoom, isOpen, rooms, user]);
+
+  // Handle open_chat_room custom event
+  useEffect(() => {
+    const handleOpenChat = (e) => {
+      const { roomId } = e.detail;
+      const navigateToRoom = (rs) => {
+        const targetRoom = rs.find(r => r.id === roomId);
+        if (targetRoom) {
+          setActiveTab(targetRoom.type === 'direct' ? 'messages' : 'lounges');
+          joinRoom(targetRoom);
+        }
+      };
+
+      if (rooms.length > 0) {
+        navigateToRoom(rooms);
+      } else {
+        fetchRooms().then(rs => navigateToRoom(rs));
+      }
+    };
+    window.addEventListener("open_chat_room", handleOpenChat);
+    return () => window.removeEventListener("open_chat_room", handleOpenChat);
+  }, [rooms, joinRoom]);
 
   // Handle mobile visual viewport changes (e.g. keyboard appearing)
   useEffect(() => {
@@ -285,7 +403,6 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     if (!inputValue.trim() || !activeRoom) return;
 
     if (!socket.connected) {
-      // Try to reconnect before sending
       connectSocket();
       toast.info("Reconnecting... Please try again in a moment.");
       return;
@@ -297,6 +414,32 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     });
 
     setInputValue("");
+    
+    // Stop typing
+    socket.emit("typing_end", activeRoom.id);
+    if (typingTimeoutRef.current[activeRoom.id]) {
+      clearTimeout(typingTimeoutRef.current[activeRoom.id]);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+    
+    if (!activeRoom) return;
+    
+    if (e.target.value.trim() !== "") {
+      socket.emit("typing_start", activeRoom.id);
+      
+      if (typingTimeoutRef.current[activeRoom.id]) {
+        clearTimeout(typingTimeoutRef.current[activeRoom.id]);
+      }
+      
+      typingTimeoutRef.current[activeRoom.id] = setTimeout(() => {
+        socket.emit("typing_end", activeRoom.id);
+      }, 2000);
+    } else {
+      socket.emit("typing_end", activeRoom.id);
+    }
   };
 
   const handlePin = async (e, roomId) => {
@@ -312,6 +455,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
   const handleUnpin = async (e, roomId) => {
     e.stopPropagation();
+    if (!isAuthenticated) return navigate("/login");
     try {
       await api.delete(`/chat/rooms/${roomId}/pin`);
       setRooms(prev => prev.map(r => r.id === roomId ? { ...r, isPinned: false } : r));
@@ -321,48 +465,77 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     }
   };
 
-  if (!isAuthenticated) return null;
+  const lounges = rooms.filter(r => r.type !== 'direct');
+  const dms = rooms.filter(r => r.type === 'direct');
 
-  const pinnedRooms = rooms.filter(r => r.isPinned);
-  const regularRooms = rooms.filter(r => !r.isPinned);
+  const visibleRooms = activeTab === "lounges" ? lounges : dms;
+  
+  const dmsUnreadCount = dms.reduce((acc, r) => acc + (r.unreadCount || 0), 0);
+  const loungesUnreadCount = lounges.reduce((acc, r) => acc + (r.unreadCount || 0), 0);
+  const pinnedRooms = visibleRooms.filter(r => r.isPinned);
+  const regularRooms = visibleRooms.filter(r => !r.isPinned);
 
-  const renderRoom = (room) => (
-    <button
-      key={room.id}
-      onClick={() => joinRoom(room)}
-      className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:border-rule hover:bg-paper-2"
-    >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${room.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
-        {room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-base text-ink flex items-center gap-2 truncate">
-          <span className="truncate">{room.name}</span>
-          {room.type === "ephemeral" && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent shrink-0">Live</span>}
-        </p>
-        <p className="text-sm text-ink-3 line-clamp-1">{room.description || "Join the discussion"}</p>
-      </div>
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-        {room.isPinned ? (
-          <div 
-            onClick={(e) => handleUnpin(e, room.id)}
-            className="rounded p-1.5 text-accent hover:bg-rule"
-            title="Unpin"
-          >
-            <PinOff size={16} />
+  const renderRoom = (room) => {
+    const isDirect = room.type === 'direct';
+    const otherParticipant = isDirect ? room.participants?.find(p => p.id !== user.id) : null;
+
+    return (
+      <button
+        key={room.id}
+        onClick={() => joinRoom(room)}
+        className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:border-rule hover:bg-paper-2"
+      >
+        <div className="relative">
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden ${room.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
+            {isDirect && otherParticipant ? (
+                <img src={otherParticipant.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${otherParticipant.username}`} alt={otherParticipant.name} className="h-full w-full object-cover" />
+            ) : room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
           </div>
-        ) : (
-          <div 
-            onClick={(e) => handlePin(e, room.id)}
-            className="rounded p-1.5 text-ink-3 hover:text-accent hover:bg-rule"
-            title="Pin"
-          >
-            <Pin size={16} />
+          {isDirect && otherParticipant && onlineUsers.has(otherParticipant.id) && (
+            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-paper bg-green-500"></div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-base text-ink flex items-center gap-2 truncate">
+            <span className="truncate">{isDirect && otherParticipant ? otherParticipant.name : room.name}</span>
+            {room.type === "ephemeral" && !room.isPrivate && <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent shrink-0">Live</span>}
+            {room.isPrivate && room.type !== "direct" && <span className="rounded bg-yellow-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-yellow-600 shrink-0 border border-yellow-500/20">Private</span>}
+          </p>
+          <p className="text-sm text-ink-3 line-clamp-1">{isDirect && otherParticipant ? `@${otherParticipant.username}` : (room.description || "Join the discussion")}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {room.unreadCount > 0 && (
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-rule shadow-sm">
+              {room.unreadCount > 99 ? '99+' : room.unreadCount}
+            </span>
+          )}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            {room.isPinned ? (
+              <div 
+                onClick={(e) => handleUnpin(e, room.id)}
+                className="rounded p-1.5 text-accent hover:bg-rule"
+                title="Unpin"
+              >
+                <PinOff size={16} />
+              </div>
+            ) : (
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isAuthenticated) return navigate("/login");
+                  handlePin(e, room.id);
+                }}
+                className="rounded p-1.5 text-ink-3 hover:text-accent hover:bg-rule"
+                title="Pin"
+              >
+                <Pin size={16} />
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </button>
-  );
+        </div>
+      </button>
+    );
+  };
 
   return (
     <>
@@ -391,30 +564,65 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
         ) : !activeRoom ? (
           // --- ROOM LIST VIEW ---
           <>
-            <div className="flex items-center justify-between border-b border-rule bg-paper-2/50 p-4 backdrop-blur-sm">
-              <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Tech Lounges</h2>
-              <div className="flex items-center gap-1">
+            <div className="flex flex-col border-b border-rule bg-paper-2/50 backdrop-blur-sm">
+              <div className="flex items-center justify-between p-4 pb-1">
+                <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Chats</h2>
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => {
+                      if (!isAuthenticated) return navigate("/login");
+                      setIsJoinModalOpen(true);
+                    }}
+                    className="rounded p-1 text-accent/70 hover:bg-rule"
+                    title="Join Private Room"
+                  >
+                    <Key size={18} />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (!isAuthenticated) return navigate("/login");
+                      setIsModalOpen(true);
+                    }}
+                    className="rounded p-1 text-green-500/70 hover:bg-rule"
+                    title="Create Study Room"
+                  >
+                    <Plus size={18} />
+                  </button>
+                  <button 
+                    onClick={onToggle}
+                    className="rounded p-1 text-red-500/70 hover:bg-rule"
+                    title="Close Chat"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+              {/* Tabs */}
+              <div className="flex px-4 pt-1 gap-4">
                 <button 
-                  onClick={() => setIsJoinModalOpen(true)}
-                  className="rounded p-1 text-accent/70 hover:bg-rule"
-                  title="Join Private Room"
+                  onClick={() => setActiveTab("lounges")}
+                  className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'lounges' ? 'border-accent text-accent' : 'border-transparent text-ink-3 hover:text-ink'}`}
                 >
-                  <Key size={18} />
+                  Lounges
+                  {loungesUnreadCount > 0 && (
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent">
+                      {loungesUnreadCount > 99 ? '99+' : loungesUnreadCount}
+                    </span>
+                  )}
                 </button>
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="rounded p-1 text-green-500/70 hover:bg-rule"
-                  title="Create Study Room"
-                >
-                  <Plus size={18} />
-                </button>
-                <button 
-                  onClick={onToggle}
-                  className="rounded p-1 text-red-500/70 hover:bg-rule"
-                  title="Close Chat"
-                >
-                  <X size={18} />
-                </button>
+                {isAuthenticated && (
+                  <button 
+                    onClick={() => setActiveTab("messages")}
+                    className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'messages' ? 'border-accent text-accent' : 'border-transparent text-ink-3 hover:text-ink'}`}
+                  >
+                    Messages
+                    {dmsUnreadCount > 0 && (
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-rule shadow-sm">
+                        {dmsUnreadCount > 99 ? '99+' : dmsUnreadCount}
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
             
@@ -423,23 +631,23 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                 <div className="flex h-32 items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
                 </div>
-              ) : rooms.length > 0 ? (
+              ) : visibleRooms.length > 0 ? (
                 <div className="space-y-4">
                   {pinnedRooms.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-ink-3 px-1">Pinned Lounges</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-ink-3 px-1">Pinned</p>
                       {pinnedRooms.map(renderRoom)}
                     </div>
                   )}
                   {regularRooms.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-ink-3 px-1">All Lounges</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-ink-3 px-1">All {activeTab === "lounges" ? "Lounges" : "Messages"}</p>
                       {regularRooms.map(renderRoom)}
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-center text-sm text-ink-3 mt-10">No rooms available.</p>
+                <p className="text-center text-sm text-ink-3 mt-10">No {activeTab} available.</p>
               )}
             </div>
           </>
@@ -461,10 +669,24 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   <ChevronLeft size={18} />
                 </button>
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    {activeRoom.type === "global" ? <Hash size={14} /> : activeRoom.type === "ephemeral" ? <Sparkles size={14} /> : <Users size={14} />}
+                  <div className="relative">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full overflow-hidden ${activeRoom.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
+                      {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) ? (
+                          <img src={activeRoom.participants.find(p => p.id !== user.id).avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${activeRoom.participants.find(p => p.id !== user.id).username}`} alt="Avatar" className="h-full w-full object-cover" />
+                      ) : activeRoom.type === "global" ? <Hash size={14} /> : activeRoom.type === "ephemeral" ? <Sparkles size={14} /> : <Users size={14} />}
+                    </div>
+                    {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user.id).id) && (
+                      <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-paper bg-green-500"></div>
+                    )}
                   </div>
-                  <h2 className="font-medium text-base text-ink truncate max-w-[140px]">{activeRoom.name}</h2>
+                  <div className="flex flex-col">
+                    <h2 className="font-medium text-base text-ink truncate max-w-[140px] leading-tight">
+                      {activeRoom.type === "direct" && activeRoom.participants ? activeRoom.participants.find(p => p.id !== user.id)?.name || activeRoom.name : activeRoom.name}
+                    </h2>
+                    {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user.id).id) && (
+                      <span className="text-[10px] text-green-500 font-medium leading-none mt-0.5">Online</span>
+                    )}
+                  </div>
                   {!isConnected && (
                     <span className="flex h-2 w-2 rounded-full bg-yellow-500 animate-pulse" title="Connecting..."></span>
                   )}
@@ -479,8 +701,8 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               </button>
             </div>
 
-            {/* Secret Code Header for Private Rooms */}
-            {activeRoom.isPrivate && (
+            {/* Secret Code Header for Private Rooms (not Direct) */}
+            {activeRoom.isPrivate && activeRoom.type !== "direct" && (
               <div className="border-b border-rule bg-accent/5 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Key size={16} className="text-accent" />
@@ -510,6 +732,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               ) : messages.length > 0 ? (
                 messages.map((msg, i) => {
                   const isMe = msg.senderId === user.id;
+                  const isLastMessage = i === messages.length - 1;
+                  const isReadByOther = msg.readBy && msg.readBy.length > 0;
+                  
                   return (
                     <div key={msg.id || i} className={`flex max-w-[85%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}>
                       {!isMe && msg.sender && (
@@ -518,9 +743,14 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                       <div className={`rounded-2xl px-4 py-2 text-base md:text-sm ${isMe ? "bg-accent text-paper rounded-tr-sm" : "bg-paper-3 text-ink rounded-tl-sm border border-rule"}`}>
                         {msg.content}
                       </div>
-                      <span className="mt-1 text-xs text-ink-3 mx-1">
-                        {format(new Date(msg.createdAt), "HH:mm")}
-                      </span>
+                      <div className="flex items-center gap-1 mt-1 mx-1">
+                        <span className="text-xs text-ink-3">
+                          {format(new Date(msg.createdAt), "HH:mm")}
+                        </span>
+                        {isMe && isLastMessage && isReadByOther && (
+                          <span className="text-[10px] text-accent flex items-center gap-0.5"><Check size={12} /> Read</span>
+                        )}
+                      </div>
                     </div>
                   )
                 })
@@ -530,6 +760,17 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   No messages yet. Be the first!
                 </div>
               )}
+              
+              {activeRoom && typingUsers[activeRoom.id] && typingUsers[activeRoom.id].size > 0 && (
+                <div className="flex self-start items-center gap-2 mb-2 ml-2">
+                  <div className="flex bg-paper-3 rounded-2xl px-4 py-2 border border-rule items-center gap-1.5 h-[34px]">
+                    <span className="w-1.5 h-1.5 bg-ink-3 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="w-1.5 h-1.5 bg-ink-3 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-1.5 h-1.5 bg-ink-3 rounded-full animate-bounce"></span>
+                  </div>
+                </div>
+              )}
+              
               <div ref={messagesEndRef} />
             </div>
 
@@ -538,7 +779,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                 <input
                   type="text"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder="Type a message..."
                   className="flex-1 rounded-full border border-rule bg-paper-2 px-4 py-2.5 text-base md:text-sm text-ink placeholder-ink-3 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                 />
@@ -559,10 +800,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onRoomCreated={(room) => {
-          if (!room.isPrivate) {
-            // Only add to global feed if not private
-            setRooms(prev => [...prev, room]);
-          }
+          setRooms(prev => [...prev, room]);
           joinRoom(room);
         }}
       />

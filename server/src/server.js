@@ -8,7 +8,7 @@ const logger = require("./utils/logger");
 const { startSyncJobs } = require("./modules/opportunities/sync/sync.service");
 const { startCronJobs } = require("./utils/cron");
 const sseManager = require("./config/sse");
-const initSocket = require("./modules/chat/chat.socket");
+const { initSocket } = require("./modules/chat/chat.socket");
 
 const start = async () => {
   try {
@@ -44,19 +44,28 @@ const start = async () => {
       // Force shutdown after 10 seconds if graceful shutdown hangs
       setTimeout(() => {
         logger.error("Could not close connections in time, forcefully shutting down");
-        process.exit(1);
+        if (signal === "SIGUSR2") {
+          process.kill(process.pid, "SIGUSR2");
+        } else {
+          process.exit(1);
+        }
       }, 10000).unref();
 
       server.close(async () => {
         sseManager.closeAll();
         await pool.end();
         logger.info("PostgreSQL pool closed");
-        process.exit(0);
+        if (signal === "SIGUSR2") {
+          process.kill(process.pid, "SIGUSR2");
+        } else {
+          process.exit(0);
+        }
       });
     };
 
     process.on("SIGTERM", () => shutdown("SIGTERM"));
     process.on("SIGINT", () => shutdown("SIGINT"));
+    process.once("SIGUSR2", () => shutdown("SIGUSR2"));
 
     // ── Unhandled rejections & exceptions → log and exit ─────────────────────
     process.on("unhandledRejection", (reason) => {

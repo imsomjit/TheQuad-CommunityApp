@@ -3,9 +3,10 @@
 const chatService = require("./chat.service");
 const asyncHandler = require("../../utils/asyncHandler");
 const AppError = require("../../utils/AppError");
+const { getIo } = require("./chat.socket");
 
 exports.getRooms = asyncHandler(async (req, res) => {
-  const rooms = await chatService.getRooms(req.user.id);
+  const rooms = await chatService.getRooms(req.user?.id);
   res.status(200).json({
     success: true,
     data: rooms,
@@ -112,5 +113,41 @@ exports.deleteAdminRoom = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Room deleted successfully",
+  });
+});
+
+exports.createDirectRoom = asyncHandler(async (req, res) => {
+  const { targetUserId } = req.params;
+  
+  if (!targetUserId) {
+    throw new AppError("Target user ID is required", 400);
+  }
+
+  const roomId = await chatService.getOrCreateDirectRoom(req.user.id, parseInt(targetUserId, 10));
+  
+  res.status(200).json({
+    success: true,
+    data: { id: roomId },
+  });
+});
+
+exports.getOnlineUsers = asyncHandler(async (req, res) => {
+  const io = getIo();
+  const onlineUserIds = [];
+  
+  // Iterate through all rooms in the socket adapter
+  for (const [roomName, sockets] of io.sockets.adapter.rooms.entries()) {
+    if (roomName.startsWith("user_") && sockets.size > 0) {
+      const userIdStr = roomName.replace("user_", "");
+      const userId = parseInt(userIdStr, 10);
+      if (!isNaN(userId)) {
+        onlineUserIds.push(userId);
+      }
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    data: onlineUserIds,
   });
 });

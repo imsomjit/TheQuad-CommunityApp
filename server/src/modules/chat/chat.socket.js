@@ -9,6 +9,8 @@ const { chatRooms, chatMessages } = require("../../db/schema");
 const { db } = require("../../db/index");
 const { eq } = require("drizzle-orm");
 
+let ioInstance;
+
 const initSocket = (server) => {
   const io = new Server(server, {
     cors: {
@@ -16,13 +18,12 @@ const initSocket = (server) => {
       credentials: true,
       methods: ["GET", "POST"],
     },
-    // Allow both transports — websocket is faster; polling is the reliable fallback
-    // when corporate/university firewalls block raw WebSocket connections
     transports: ["websocket", "polling"],
-    // Increase ping timeout and interval to keep connections alive on mobile
     pingTimeout: 60000,
     pingInterval: 25000,
   });
+  
+  ioInstance = io;
 
   // Track scheduled ephemeral room deletions
   const deletionTimers = new Map();
@@ -43,8 +44,31 @@ const initSocket = (server) => {
     }
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     logger.info(`🔌  User connected via socket: ${socket.user.id}`);
+    
+    // Join a dedicated room for this user to track online presence
+    const userRoom = `user_${socket.user.id}`;
+    socket.join(userRoom);
+    
+    // Announce to everyone that this user is online
+    socket.broadcast.emit("user_online", socket.user.id);
+
+    // Auto-join direct message rooms so users receive DMs in real-time
+    try {
+      const { chatParticipants } = require("../../db/schema");
+      const userDirectRooms = await db
+        .select({ roomId: chatParticipants.roomId })
+        .from(chatParticipants)
+        .where(eq(chatParticipants.userId, socket.user.id));
+      
+      userDirectRooms.forEach(room => {
+        socket.join(room.roomId);
+      });
+      logger.debug(`User ${socket.user.id} auto-joined ${userDirectRooms.length} DM rooms.`);
+    } catch (err) {
+      logger.error("Error auto-joining DM rooms:", err);
+    }
 
     // Initialize rate limit tracker (10 messages per 10 seconds)
     socket.messageLimits = { count: 0, resetTime: Date.now() + 10000 };
@@ -172,6 +196,38 @@ const initSocket = (server) => {
       }
     });
 
+    // Handle typing indicators
+    socket.on("typing_start", (roomId) => {
+      socket.to(roomId).emit("typing_start", { roomId, userId: socket.user.id });
+    });
+
+    socket.on("typing_end", (roomId) => {
+      socket.to(roomId).emit("typing_end", { roomId, userId: socket.user.id });
+    });
+
+    // Handle read receipts
+    socket.on("mark_read", async (roomId) => {
+      try {
+        const { chatParticipants } = require("../../db/schema");
+        const { and } = require("drizzle-orm");
+        
+        await db
+          .update(chatParticipants)
+          .set({ lastReadAt: new Date() })
+          .where(
+            and(
+              eq(chatParticipants.roomId, roomId),
+              eq(chatParticipants.userId, socket.user.id)
+            )
+          );
+
+        // Notify others in the room that this user has read the messages
+        socket.to(roomId).emit("messages_read", { roomId, byUserId: socket.user.id });
+      } catch (err) {
+        logger.error("Error marking messages as read:", err);
+      }
+    });
+
     // Broadcast new room creation
     socket.on("create_room_broadcast", (room) => {
       if (!room.isPrivate) {
@@ -193,12 +249,26 @@ const initSocket = (server) => {
       roomsToLeave.forEach(roomId => checkEmptyRoom(roomId));
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       logger.info(`🔌  User disconnected: ${socket.user.id}`);
+      
+      // Check if user has any other active socket connections
+      const userSockets = io.sockets.adapter.rooms.get(`user_${socket.user.id}`);
+      if (!userSockets || userSockets.size === 0) {
+        // Only emit offline if this was their last active tab/device
+        socket.broadcast.emit("user_offline", socket.user.id);
+      }
     });
   });
 
   return io;
 };
 
-module.exports = initSocket;
+const getIo = () => {
+  if (!ioInstance) {
+    throw new Error("Socket.io has not been initialized!");
+  }
+  return ioInstance;
+};
+
+module.exports = { initSocket, getIo };

@@ -605,6 +605,20 @@ export const adminApi = {
 };
 
 // Settings
+export const chatApi = {
+  getRooms: () => api.get("/chat/rooms").then((res) => res.data),
+  createRoom: (data) => api.post("/chat/rooms", data).then((res) => res.data),
+  createDirectRoom: (targetUserId) => api.post(`/chat/direct/${targetUserId}`).then((res) => res.data),
+  joinRoom: (code) => api.post("/chat/rooms/join", { code }).then((res) => res.data),
+  getMessages: (roomId) =>
+    api.get(`/chat/rooms/${roomId}/messages`).then((res) => res.data),
+  pinRoom: (roomId) => api.post(`/chat/rooms/${roomId}/pin`).then((res) => res.data),
+  unpinRoom: (roomId) => api.delete(`/chat/rooms/${roomId}/pin`).then((res) => res.data),
+  createAdminRoom: (data) => api.post("/chat/admin/rooms", data).then((res) => res.data),
+  deleteAdminRoom: (roomId) => api.delete(`/chat/admin/rooms/${roomId}`).then((res) => res.data),
+  getOnlineUsers: () => api.get("/chat/online").then((res) => res.data),
+};
+
 export const settingsApi = {
   get: () => api.get("/settings").then((r) => r.data),
   update: (data) => api.put("/settings", data).then((r) => r.data),

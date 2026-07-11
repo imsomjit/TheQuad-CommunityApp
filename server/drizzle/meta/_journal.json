@@ -127,6 +127,20 @@
       "when": 1783396700193,
       "tag": "0017_plain_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783743227430,
+      "tag": "0018_ordinary_speed_demon",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783745556147,
+      "tag": "0019_tough_risque",
+      "breakpoints": true
     }
   ]
 }

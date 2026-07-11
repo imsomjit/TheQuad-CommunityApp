@@ -32,6 +32,7 @@ const chatRoomsRelations = relations(chatRooms, ({ one, many }) => ({
     references: [users.id],
   }),
   messages: many(require("./chat_messages").chatMessages),
+  participants: many(require("./chat_participants").chatParticipants),
 }));
 
 module.exports = { chatRooms, roomTypeEnum, chatRoomsRelations };

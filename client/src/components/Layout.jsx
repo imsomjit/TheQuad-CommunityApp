@@ -76,13 +76,24 @@ export default function Layout() {
     const [scrolled, setScrolled] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(() => {
-        return localStorage.getItem("thequad_is_chat_open") === "true";
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("thequad_is_chat_open") === "true";
+        }
+        return false;
     });
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
         localStorage.setItem("thequad_is_chat_open", isChatOpen);
     }, [isChatOpen]);
+
+    useEffect(() => {
+        const handleOpenChatSidebar = () => {
+            setIsChatOpen(true);
+        };
+        window.addEventListener("open_chat_sidebar", handleOpenChatSidebar);
+        return () => window.removeEventListener("open_chat_sidebar", handleOpenChatSidebar);
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 60000);
@@ -159,7 +170,7 @@ export default function Layout() {
                 <div 
                     className={`transition-all duration-300 ease-out pt-[92px] flex flex-col min-h-screen pl-0 pr-0 ${
                         hideSidebar ? "md:pl-0" : isSidebarCollapsed ? "md:pl-[81px]" : "md:pl-[15rem]"
-                    } ${isChatOpen ? "md:pr-[23rem]" : "md:pr-0"}`}
+                    } ${(isChatOpen && !hideSidebar) ? "md:pr-[23rem]" : "md:pr-0"}`}
                 >
 
                     {/* Main content */}

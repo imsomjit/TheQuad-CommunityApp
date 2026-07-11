@@ -4,7 +4,7 @@ import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
     Award, MapPin, Calendar, Sparkles, FolderGit2,
     FolderOpen, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap, Bookmark
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap, Bookmark, MessageSquare
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -167,6 +167,27 @@ export default function Profile() {
         setFollowLoading(false);
     };
 
+    // ── Direct Messaging ────────────────────────────────────────────────────────
+    const [messageLoading, setMessageLoading] = useState(false);
+    const handleMessage = async () => {
+        if (!isAuthenticated) { navigate("/login"); return; }
+        if (!profile || profile.id === currentUser?.id) return;
+        
+        setMessageLoading(true);
+        try {
+            const { chatApi } = await import("../services/api");
+            const res = await chatApi.createDirectRoom(profile.id);
+            if (res.data && res.data.id) {
+                // Open ChatSidebar if closed, and select the direct room
+                window.dispatchEvent(new CustomEvent("open_chat_sidebar"));
+                window.dispatchEvent(new CustomEvent("open_chat_room", { detail: { roomId: res.data.id } }));
+            }
+        } catch (e) {
+            toast.error(e.response?.data?.message || "Failed to start conversation");
+        }
+        setMessageLoading(false);
+    };
+
     // ── Avatar quick-upload ──────────────────────────────────────────────────────
     const handleAvatarUpload = async (e) => {
         const file = e.target.files?.[0];
@@ -292,23 +313,36 @@ export default function Profile() {
                                     </button>
                                 </>
                             ) : (
-                                <button
-                                    onClick={handleFollow}
-                                    disabled={followLoading}
-                                    className={`inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-semibold transition-all shrink-0 ${
-                                        following
-                                            ? "text-ink bg-paper border border-rule hover:border-red-300 hover:text-red-400"
-                                            : "text-paper bg-accent btn-primary hover:brightness-110"
-                                    }`}
-                                >
-                                    {followLoading ? (
-                                        <Loader inline size="sm" />
-                                    ) : following ? (
-                                        <><UserCheck className="w-3.5 h-3.5" /> Following</>
-                                    ) : (
-                                        <><UserPlus className="w-3.5 h-3.5" /> Follow</>
-                                    )}
-                                </button>
+                                <>
+                                    <button
+                                        onClick={handleFollow}
+                                        disabled={followLoading}
+                                        className={`inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-sm font-semibold transition-all shrink-0 shadow-sm ${
+                                            following
+                                                ? "text-ink bg-paper border border-rule hover:border-red-300 hover:text-red-400"
+                                                : "text-paper bg-accent hover:brightness-110"
+                                        }`}
+                                    >
+                                        {followLoading ? (
+                                            <Loader inline size="sm" />
+                                        ) : following ? (
+                                            <><UserCheck className="w-4 h-4" /> Following</>
+                                        ) : (
+                                            <><UserPlus className="w-4 h-4" /> Follow</>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={handleMessage}
+                                        disabled={messageLoading}
+                                        className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-sm font-semibold text-ink bg-paper border border-rule hover:bg-paper-2 transition-all shrink-0 shadow-sm"
+                                    >
+                                        {messageLoading ? (
+                                            <Loader inline size="sm" />
+                                        ) : (
+                                            <><MessageSquare className="w-4 h-4" /> Message</>
+                                        )}
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>

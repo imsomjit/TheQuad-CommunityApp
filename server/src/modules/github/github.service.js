@@ -63,6 +63,9 @@ async function githubFetch(path) {
       "GITHUB_RATE_LIMITED"
     );
   }
+  if (res.status === 401) {
+    throw new AppError("Invalid GitHub Token. Please check your credentials.", 401, "GITHUB_UNAUTHORIZED");
+  }
   if (!res.ok) {
     throw new AppError("Failed to fetch from GitHub", 502, "GITHUB_API_ERROR");
   }
@@ -86,6 +89,7 @@ async function githubGraphQL(query, variables) {
 
   const res = await fetch(url, { method: "POST", headers, body: JSON.stringify({ query, variables }) });
   
+  if (res.status === 401) throw new AppError("Invalid GitHub Token. Please check your credentials.", 401, "GITHUB_UNAUTHORIZED");
   if (res.status === 403) throw new AppError("GitHub API rate limit exceeded.", 429, "GITHUB_RATE_LIMITED");
   if (!res.ok) throw new AppError("Failed to fetch from GitHub GraphQL", 502, "GITHUB_API_ERROR");
 

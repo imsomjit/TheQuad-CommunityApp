@@ -40,6 +40,7 @@ const { contentViews } = require("./content_views");
 const { chatRooms, roomTypeEnum, chatRoomsRelations } = require("./chat_rooms");
 const { chatMessages, chatMessagesRelations } = require("./chat_messages");
 const { chatPins, chatPinsRelations } = require("./chat_pins");
+const { chatParticipants, chatParticipantsRelations } = require("./chat_participants");
 
 module.exports = {
   // Tables
@@ -69,11 +70,13 @@ module.exports = {
   chatRooms,
   chatMessages,
   chatPins,
+  chatParticipants,
 
   // Relations
   chatRoomsRelations,
   chatMessagesRelations,
   chatPinsRelations,
+  chatParticipantsRelations,
 
   // Enums
   userRoleEnum,
