@@ -8,6 +8,7 @@ import {
   Briefcase,
   BookMarked,
   Layers,
+  BookOpen,
 } from "lucide-react";
 import { generateSlug } from "../utils/slugify";
 import { getAvatarFallback } from "../utils/fallbacks";
@@ -71,10 +72,14 @@ export default function PostCard({ post, variant = "default" }) {
             {cat.label}
           </span>
 
-          {post.seriesOrder && (
-            <span className="font-mono text-[10px] text-ink-3">
-              Part {post.seriesOrder}
-            </span>
+          {post.seriesId && (
+            <div 
+              className="inline-flex items-center gap-1.5 rounded-md border border-inl bg-paper-2 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.05em] font-medium text-ink transition-colors hover:bg-accent/10 hover:border-accent/50 ml-auto"
+            >
+              <BookOpen className="h-3 w-3" />
+              <span className="truncate max-w-[90px] sm:max-w-[100px]">{post.seriesTitle}</span>
+              <span>· P{post.seriesOrder}</span>
+            </div>
           )}
         </div>
 

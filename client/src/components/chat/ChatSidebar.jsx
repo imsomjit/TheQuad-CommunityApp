@@ -565,7 +565,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
           // --- ROOM LIST VIEW ---
           <>
             <div className="flex flex-col border-b border-rule bg-paper-2/50 backdrop-blur-sm">
-              <div className="flex items-center justify-between p-4 pb-1">
+              <div className="flex items-center justify-between p-4 pb-2 sm:pb-1">
                 <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Chats</h2>
                 <div className="flex items-center gap-1">
                   <button 

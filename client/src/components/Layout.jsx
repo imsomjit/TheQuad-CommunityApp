@@ -109,7 +109,7 @@ export default function Layout() {
     }, []);
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-paper text-ink font-body">
+        <div className="relative min-h-screen bg-paper text-ink font-body">
             {/* Backdrop textures (theme-aware) */}
             <div className="dot-bg pointer-events-none fixed inset-0 opacity-40" />
             <div className="paper-grain pointer-events-none fixed inset-0" />

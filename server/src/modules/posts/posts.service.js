@@ -518,9 +518,14 @@ const listPosts = async (query) => {
         authorName: users.name,
         authorUsername: users.username,
         authorAvatarUrl: users.avatarUrl,
+        seriesId: posts.seriesId,
+        seriesOrder: posts.seriesOrder,
+        seriesTitle: series.title,
+        seriesSlug: series.slug,
       })
       .from(posts)
       .leftJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(series, eq(posts.seriesId, series.id))
       .where(tagCondition)
       .orderBy(orderBy)
       .limit(limit)
@@ -692,6 +697,8 @@ const formatPost = (row, tags = []) => ({
   bookmarksCount: row.bookmarksCount,
   seriesId: row.seriesId,
   seriesOrder: row.seriesOrder,
+  seriesTitle: row.seriesTitle,
+  seriesSlug: row.seriesSlug,
   publishedAt: row.publishedAt,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,

@@ -486,6 +486,8 @@ const mapPost = (p) => ({
   bookmarksCount: p.bookmarksCount || 0,
   seriesId: p.seriesId || null,
   seriesOrder: p.seriesOrder || null,
+  seriesTitle: p.seriesTitle || null,
+  seriesSlug: p.seriesSlug || null,
   seriesNav: p.seriesNav || null,
   publishedAt: p.publishedAt || null,
   createdAt: p.createdAt || p.created_at,
