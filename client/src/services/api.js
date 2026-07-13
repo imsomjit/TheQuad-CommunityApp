@@ -353,6 +353,10 @@ export const resourcesApi = {
     data: r.data.data.map(mapResource),
     pagination: r.data.pagination,
   })),
+  recommendations: (params) => api.get("/resources/recommendations", { params }).then((r) => ({
+    data: r.data.data.map(mapResource),
+    pagination: r.data.pagination,
+  })),
   get: (id) => api.get(`/resources/${id}`).then((r) => mapResource(r.data.data)),
   create: (formData) =>
     api.post("/resources", formData, {
@@ -361,11 +365,17 @@ export const resourcesApi = {
   update: (id, data) => api.patch(`/resources/${id}`, data).then((r) => mapResource(r.data.data)),
   delete: (id) => api.delete(`/resources/${id}`),
   download: (id) => api.post(`/resources/${id}/download`).then((r) => r.data.data.fileUrl),
+  parseMetadata: (formData) => api.post(`/resources/parse-metadata`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  chat: (id, message, history) => api.post(`/resources/${id}/chat`, { message, history }),
 };
 
 // Questions
 export const questionsApi = {
   list: (params) => api.get("/questions", { params }).then((r) => ({
+    data: r.data.data.map(mapQuestion),
+    pagination: r.data.pagination,
+  })),
+  recommendations: (params) => api.get("/questions/recommendations", { params }).then((r) => ({
     data: r.data.data.map(mapQuestion),
     pagination: r.data.pagination,
   })),
@@ -516,6 +526,15 @@ export const postsApi = {
       data: r.data.data,
       pagination: r.data.pagination,
     })),
+  recommendations: (params) =>
+    api.get("/posts/recommendations", { params }).then((r) => ({
+      data: r.data.data.map(mapPost),
+      pagination: r.data.pagination,
+    })),
+  generateAI: (title, body) =>
+    api.post("/posts/generate-ai", { title, body }).then((r) => r.data.data),
+  generateTldr: (id) =>
+    api.post(`/posts/${id}/generate-tldr`).then((r) => r.data.data),
   getBySlug: (slug) =>
     api.get(`/posts/${slug}`).then((r) => mapPost(r.data.data)),
   getById: (id) =>

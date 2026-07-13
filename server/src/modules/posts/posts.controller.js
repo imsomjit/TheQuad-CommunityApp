@@ -22,6 +22,24 @@ const drafts = asyncHandler(async (req, res) => {
   res.json({ success: true, ...result });
 });
 
+// GET /api/posts/recommendations
+const recommendations = asyncHandler(async (req, res) => {
+  const result = await postsService.getRecommendations(req.user.id, req.query);
+  res.json({ success: true, ...result });
+});
+
+// POST /api/posts/generate-ai
+const generateAI = asyncHandler(async (req, res) => {
+  const result = await postsService.generateAI(req.body.title, req.body.body);
+  res.json({ success: true, data: result });
+});
+
+// POST /api/posts/:id/generate-tldr
+const generateTldr = asyncHandler(async (req, res) => {
+  const result = await postsService.generateTldr(parseInt(req.params.id));
+  res.json({ success: true, data: result });
+});
+
 // GET /api/posts/:slug
 const getBySlug = asyncHandler(async (req, res) => {
   const publicId = extractIdFromSlug(req.params.slug);
@@ -101,4 +119,19 @@ const uploadCover = asyncHandler(async (req, res) => {
   res.json({ success: true, data: post });
 });
 
-module.exports = { create, list, drafts, getBySlug, getById, update, autosave, publish, unpublish, remove, uploadCover };
+module.exports = { 
+  create, 
+  list, 
+  drafts, 
+  recommendations,
+  generateAI,
+  generateTldr,
+  getBySlug, 
+  getById,  
+  update,
+  autosave,
+  publish,
+  unpublish,
+  remove,
+  uploadCover
+};

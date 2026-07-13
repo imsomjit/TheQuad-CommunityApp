@@ -8,7 +8,7 @@ import { useCurrentTheme } from "../components/MarkdownEditor";
 import {
   Bold, Italic, Heading2, Heading3, Code, Link2, List, ListOrdered,
   Quote, Table, ImageIcon, Eye, Edit3, Save, Send, ChevronDown,
-  X, Plus, Check, Loader2, Upload, ExternalLink,
+  X, Plus, Check, Loader2, Upload, ExternalLink, Sparkles
 } from "lucide-react";
 import {
   Select,
@@ -274,6 +274,7 @@ export default function PostEditor() {
   const [status, setStatus] = useState("draft");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(!!id);
@@ -382,6 +383,34 @@ export default function PostEditor() {
     if (t && !tags.includes(t) && tags.length < 10) {
       setTags((prev) => [...prev, t]);
       setTagInput("");
+    }
+  };
+
+  // ── AI Generation ─────────────────────────────────────────────────────────
+  const handleAIGenerate = async () => {
+    if (!title.trim() || !body.trim()) {
+      setError("Please write a title and some content first to generate tags and summary.");
+      return;
+    }
+    setIsGeneratingAI(true);
+    setError(null);
+    try {
+      const data = await postsApi.generateAI(title.trim(), body.trim());
+      if (data.tags && data.tags.length > 0) {
+        // Only add up to 10 unique tags total
+        setTags(prev => {
+          const combined = Array.from(new Set([...prev, ...data.tags]));
+          return combined.slice(0, 10);
+        });
+      }
+      if (data.tldr) {
+        setExcerpt(data.tldr);
+      }
+      toast.success("AI generated tags and summary!");
+    } catch (err) {
+      setError(err.response?.data?.message || "AI generation failed");
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -765,9 +794,20 @@ export default function PostEditor() {
 
           {/* Tags */}
           <div className="rounded-sm border border-rule bg-paper p-4">
-            <label className="block font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3 mb-2">
-              Tags <span className="normal-case">(up to 10)</span>
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+                Tags <span className="normal-case">(up to 10)</span>
+              </label>
+              <button
+                type="button"
+                onClick={handleAIGenerate}
+                disabled={isGeneratingAI || !title.trim() || !body.trim()}
+                title="Auto-generate tags & summary"
+                className="flex items-center justify-center rounded-sm text-accent hover:bg-accent/10 p-1 transition-colors disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                {isGeneratingAI ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+              </button>
+            </div>
             <div className="flex gap-2">
               <AutocompleteTagInput
                 value={tagInput}

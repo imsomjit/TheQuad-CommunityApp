@@ -49,6 +49,7 @@ router.param("id", async (req, res, next, val) => {
 
 // Questions
 router.get("/", questionReadLimiter, optionalAuth, controller.list);
+router.get("/recommendations", auth, questionReadLimiter, controller.recommendations);
 router.post("/", auth, questionWriteLimiter, validate(createQuestionSchema), controller.create);
 router.get("/:id", questionReadLimiter, optionalAuth, controller.getOne);
 router.patch("/:id", auth, questionWriteLimiter, validate(updateQuestionSchema), controller.update);

@@ -10,6 +10,7 @@ const {
 } = require("../../db/schema/index");
 const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
+const ai = require("../../utils/ai");
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -138,6 +139,19 @@ const createPost = async (authorId, body) => {
   const renderedHtml = renderMarkdown(meta.body);
   const publishedAt = status === "published" ? new Date() : null;
 
+  // AI Generation
+  let finalTags = tags;
+  let tldr = null;
+  let embedding = null;
+
+  if (meta.body && meta.title) {
+    if (finalTags.length === 0 || body.autoGenerateAI) {
+      const aiData = await ai.generateTagsAndTldr(meta.title, meta.body);
+      if (finalTags.length === 0) finalTags = aiData.tags;
+    }
+    embedding = await ai.generateEmbedding(`${meta.title}\n\n${autoExcerpt(meta.body)}`);
+  }
+
   const [post] = await db
     .insert(posts)
     .values({
@@ -149,13 +163,15 @@ const createPost = async (authorId, body) => {
       status: status || "draft",
       authorId,
       publishedAt,
+      tldr,
+      embedding,
     })
     .returning();
 
   // Insert tags
-  if (tags.length > 0) {
+  if (finalTags.length > 0) {
     await db.insert(postTags).values(
-      tags.map((tag) => ({ postId: post.id, tag: tag.toLowerCase().trim() }))
+      finalTags.map((tag) => ({ postId: post.id, tag: tag.toLowerCase().trim() }))
     );
   }
 
@@ -187,6 +203,18 @@ const updatePost = async (id, userId, patch) => {
     if (!meta.excerpt) {
       meta.excerpt = autoExcerpt(meta.body);
     }
+    
+    // Update embedding
+    const searchTitle = meta.title || post.title;
+    meta.embedding = await ai.generateEmbedding(`${searchTitle}\n\n${meta.excerpt}`);
+  }
+
+  // AI Generation requested
+  let finalTags = tags;
+  if (patch.autoGenerateAI && meta.body) {
+    const searchTitle = meta.title || post.title;
+    const aiData = await ai.generateTagsAndTldr(searchTitle, meta.body);
+    if (!finalTags || finalTags.length === 0) finalTags = aiData.tags;
   }
 
   // Remove slug from patch — it's immutable
@@ -199,11 +227,11 @@ const updatePost = async (id, userId, patch) => {
       .where(eq(posts.id, id));
   }
 
-  if (tags !== undefined) {
+  if (finalTags !== undefined) {
     await db.delete(postTags).where(eq(postTags.postId, id));
-    if (tags.length > 0) {
+    if (finalTags.length > 0) {
       await db.insert(postTags).values(
-        tags.map((tag) => ({ postId: id, tag: tag.toLowerCase().trim() }))
+        finalTags.map((tag) => ({ postId: id, tag: tag.toLowerCase().trim() }))
       );
     }
   }
@@ -339,6 +367,7 @@ const getPostById = async (id) => {
       category: posts.category,
       categoryMeta: posts.categoryMeta,
       status: posts.status,
+      tldr: posts.tldr,
       authorId: posts.authorId,
       readingTimeMin: posts.readingTimeMin,
       upvotes: posts.upvotes,
@@ -395,6 +424,7 @@ const getPostByPublicId = async (publicId, incrementView = false) => {
       category: posts.category,
       categoryMeta: posts.categoryMeta,
       status: posts.status,
+      tldr: posts.tldr,
       authorId: posts.authorId,
       readingTimeMin: posts.readingTimeMin,
       upvotes: posts.upvotes,
@@ -445,6 +475,7 @@ const listPosts = async (query) => {
     sort,
     page,
     limit: lim,
+    semantic,
   } = query;
 
   const { limit, offset, meta } = paginate({ page, limit: lim });
@@ -452,15 +483,21 @@ const listPosts = async (query) => {
   // Build WHERE
   const conditions = [eq(posts.status, "published"), eq(posts.isDeleted, false)];
 
+  let searchEmbedding = null;
+
   if (q) {
-    const searchParam = `%${q}%`;
-    conditions.push(
-      or(
-        sql`to_tsvector('english', ${posts.title} || ' ' || coalesce(${posts.category}::text, '')) @@ plainto_tsquery('english', ${q})`,
-        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${posts.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
-        sql`EXISTS (SELECT 1 FROM post_tags WHERE post_tags.post_id = ${posts.id} AND post_tags.tag ILIKE ${searchParam})`
-      )
-    );
+    if (semantic === "true" || semantic === true) {
+      searchEmbedding = await ai.generateEmbedding(q);
+    } else {
+      const searchParam = `%${q}%`;
+      conditions.push(
+        or(
+          sql`to_tsvector('english', ${posts.title} || ' ' || coalesce(${posts.category}::text, '')) @@ plainto_tsquery('english', ${q})`,
+          sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${posts.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
+          sql`EXISTS (SELECT 1 FROM post_tags WHERE post_tags.post_id = ${posts.id} AND post_tags.tag ILIKE ${searchParam})`
+        )
+      );
+    }
   }
   if (category) conditions.push(eq(posts.category, category));
   if (authorUsername) {
@@ -488,12 +525,16 @@ const listPosts = async (query) => {
   }
 
   // Order
-  const orderBy =
+  let orderBy =
     sort === "top"
       ? desc(sql`${posts.upvotes} - ${posts.downvotes}`)
       : sort === "trending"
       ? desc(sql`(${posts.upvotes} - ${posts.downvotes}) + (${posts.views} * 0.1)`)
       : desc(posts.publishedAt);
+
+  if (searchEmbedding) {
+    orderBy = asc(sql`${posts.embedding} <=> ${JSON.stringify(searchEmbedding)}::vector`);
+  }
 
   const [rows, [{ count }]] = await Promise.all([
     db
@@ -689,6 +730,7 @@ const formatPost = (row, tags = []) => ({
   category: row.category,
   categoryMeta: row.categoryMeta || {},
   status: row.status,
+  tldr: row.tldr,
   authorId: row.authorId,
   readingTimeMin: row.readingTimeMin,
   upvotes: row.upvotes,
@@ -713,6 +755,43 @@ const formatPost = (row, tags = []) => ({
     : undefined,
   tags,
 });
+const getRecommendations = async (userId, query) => {
+  // Simple heuristic: fetch user's recent posts to build a context
+  const recentPosts = await db
+    .select({ title: posts.title })
+    .from(posts)
+    .where(eq(posts.authorId, userId))
+    .orderBy(desc(posts.createdAt))
+    .limit(5);
+
+  let contextString = "developer software engineering coding programming community"; // fallback
+  if (recentPosts.length > 0) {
+    contextString = recentPosts.map((p) => p.title).join(" ");
+  }
+
+  // We can just rely on the vector similarity with the context string
+  return listPosts({ ...query, q: contextString.slice(0, 500), semantic: true });
+};
+
+const generateAI = async (title, body) => {
+  if (!title || !body) throw new AppError("Title and body are required", 400);
+  return await ai.generateTagsAndTldr(title, body);
+};
+
+const generateTldr = async (id) => {
+  const post = await getPostById(id);
+  if (post.tldr) return { tldr: post.tldr }; // already generated
+
+  const aiData = await ai.generateTagsAndTldr(post.title, post.body);
+  if (!aiData.tldr) throw new AppError("Failed to generate TL;DR", 500);
+
+  await db
+    .update(posts)
+    .set({ tldr: aiData.tldr })
+    .where(eq(posts.id, id));
+
+  return { tldr: aiData.tldr };
+};
 
 module.exports = {
   createPost,
@@ -727,4 +806,7 @@ module.exports = {
   listPosts,
   listDrafts,
   getSeriesNav,
+  getRecommendations,
+  generateAI,
+  generateTldr,
 };

@@ -11,6 +11,9 @@ const {
 const cloudinary = require("../../config/cloudinary");
 const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
+const ai = require("../../utils/ai");
+const pdfParse = require("pdf-parse");
+const axios = require("axios");
 
 /**
  * Create a new resource with file + metadata.
@@ -19,11 +22,14 @@ const paginate = require("../../utils/paginate");
 const createResource = async (uploaderId, body, uploadedFile) => {
   const { tags = [], ...meta } = body;
 
+  const embedding = await ai.generateEmbedding(`${meta.title}\n\n${meta.description || ""}\n\n${meta.college || ""} ${meta.branch || ""} ${meta.subject || ""}`);
+
   const [resource] = await db
     .insert(resources)
     .values({
       ...meta,
       uploaderId,
+      embedding,
       ...uploadedFile, // fileUrl, filePublicId, fileName, fileSize
     })
     .returning();
@@ -43,7 +49,7 @@ const createResource = async (uploaderId, body, uploadedFile) => {
  * Uses raw SQL for the full-text search (tsvector) and count query.
  */
 const listResources = async (query) => {
-  const { q, type, college, branch, semester, subject, sort, page, limit: lim, uploaderId } =
+  const { q, type, college, branch, semester, subject, sort, page, limit: lim, uploaderId, semantic } =
     query;
 
   const { limit, offset, meta } = paginate({ page, limit: lim });
@@ -51,15 +57,21 @@ const listResources = async (query) => {
   // ── Build WHERE conditions ─────────────────────────────────────────────────
   const conditions = [];
 
+  let searchEmbedding = null;
+
   if (q) {
-    const searchParam = `%${q}%`;
-    conditions.push(
-      or(
-        sql`to_tsvector('english', ${resources.title} || ' ' || coalesce(${resources.description}, '') || ' ' || coalesce(${resources.college}, '') || ' ' || coalesce(${resources.branch}, '') || ' ' || coalesce(${resources.subject}, '') || ' ' || coalesce(${resources.fileName}, '')) @@ plainto_tsquery('english', ${q})`,
-        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${resources.uploaderId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
-        sql`EXISTS (SELECT 1 FROM resource_tags WHERE resource_tags.resource_id = ${resources.id} AND resource_tags.tag ILIKE ${searchParam})`
-      )
-    );
+    if (semantic === "true" || semantic === true) {
+      searchEmbedding = await ai.generateEmbedding(q);
+    } else {
+      const searchParam = `%${q}%`;
+      conditions.push(
+        or(
+          sql`to_tsvector('english', ${resources.title} || ' ' || coalesce(${resources.description}, '') || ' ' || coalesce(${resources.college}, '') || ' ' || coalesce(${resources.branch}, '') || ' ' || coalesce(${resources.subject}, '') || ' ' || coalesce(${resources.fileName}, '')) @@ plainto_tsquery('english', ${q})`,
+          sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${resources.uploaderId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
+          sql`EXISTS (SELECT 1 FROM resource_tags WHERE resource_tags.resource_id = ${resources.id} AND resource_tags.tag ILIKE ${searchParam})`
+        )
+      );
+    }
   }
   
   // Filter out deleted resources
@@ -75,12 +87,16 @@ const listResources = async (query) => {
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
   // ── Order by ──────────────────────────────────────────────────────────────
-  const orderBy =
+  let orderBy =
     sort === "top"
       ? desc(sql`${resources.upvotes} - ${resources.downvotes}`)
       : sort === "most_downloaded"
       ? desc(resources.downloads)
       : desc(resources.createdAt);
+
+  if (searchEmbedding) {
+    orderBy = asc(sql`${resources.embedding} <=> ${JSON.stringify(searchEmbedding)}::vector`);
+  }
 
   // ── Query ─────────────────────────────────────────────────────────────────
   const [rows, [{ count }]] = await Promise.all([
@@ -229,6 +245,14 @@ const updateResource = async (id, userId, patch) => {
   const { tags, ...meta } = patch;
 
   if (Object.keys(meta).length > 0) {
+    const searchTitle = meta.title || resource.title;
+    const searchDesc = meta.description !== undefined ? meta.description : resource.description;
+    const searchCollege = meta.college !== undefined ? meta.college : resource.college;
+    const searchBranch = meta.branch !== undefined ? meta.branch : resource.branch;
+    const searchSubject = meta.subject !== undefined ? meta.subject : resource.subject;
+    
+    meta.embedding = await ai.generateEmbedding(`${searchTitle}\n\n${searchDesc || ""}\n\n${searchCollege || ""} ${searchBranch || ""} ${searchSubject || ""}`);
+
     await db
       .update(resources)
       .set({ ...meta, isEdited: true, updatedAt: new Date() })
@@ -286,6 +310,72 @@ const incrementDownloads = async (id) => {
     .where(eq(resources.id, id));
 };
 
+/**
+ * Helper: get parsed text from PDF, download and parse if not cached.
+ */
+const getParsedPdfText = async (id, fileUrl) => {
+  const [row] = await db.select({ parsedText: resources.parsedText }).from(resources).where(eq(resources.id, id)).limit(1);
+  if (row && row.parsedText) {
+    return row.parsedText;
+  }
+  
+  // Download and parse
+  const response = await fetch(fileUrl);
+  if (!response.ok) throw new AppError("Failed to download PDF for extraction", 500);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const pdfData = await pdfParse(buffer);
+  const text = pdfData.text;
+
+  // Cache it
+  await db.update(resources).set({ parsedText: text }).where(eq(resources.id, id));
+  return text;
+};
+
+/**
+ * Extract Metadata using Gemini from memory buffer (Pre-upload)
+ */
+const parsePdfMetadata = async (buffer) => {
+  try {
+    const pdfData = await pdfParse(buffer);
+    const text = pdfData.text;
+    const metadata = await ai.extractPDFMetadata(text);
+    return metadata;
+  } catch (err) {
+    throw new AppError("Failed to parse PDF file", 400);
+  }
+};
+
+/**
+ * Chat with a PDF
+ */
+const chatWithResource = async (id, userId, message, history) => {
+  const resource = await getResourceById(id);
+  const text = await getParsedPdfText(id, resource.fileUrl);
+  
+  const reply = await ai.chatWithPDF(text, history, message);
+  return reply;
+};
+
+/**
+ * Get recommended resources for a user
+ */
+const getRecommendations = async (userId, query) => {
+  const recentResources = await db
+    .select({ title: resources.title, subject: resources.subject })
+    .from(resources)
+    .where(eq(resources.uploaderId, userId))
+    .orderBy(desc(resources.createdAt))
+    .limit(5);
+
+  let contextString = "engineering computer science notes study materials algorithms"; // fallback
+  if (recentResources.length > 0) {
+    contextString = recentResources.map((r) => `${r.title} ${r.subject || ""}`).join(" ");
+  }
+
+  return listResources({ ...query, q: contextString.slice(0, 500), semantic: true });
+};
+
 module.exports = {
   createResource,
   listResources,
@@ -293,4 +383,7 @@ module.exports = {
   updateResource,
   deleteResource,
   incrementDownloads,
+  parsePdfMetadata,
+  chatWithResource,
+  getRecommendations,
 };

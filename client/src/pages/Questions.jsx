@@ -24,6 +24,7 @@ import {
 } from "../components/ui/select";
 
 const SORTS = [
+    { key: "recommended", label: "Recommended ✨" },
     { key: "newest", label: "Newest" },
     { key: "votes", label: "Most votes" },
     { key: "unanswered", label: "Unanswered" },
@@ -44,7 +45,23 @@ export default function Questions({ inExplore = false }) {
 
     const [q, setQ] = useState("");
     const [tag, setTag] = useState("");
-    const [sort, setSort] = useState("newest");
+    const [sort, setSort] = useState(currentUser ? "recommended" : "newest");
+    const [serverList, setServerList] = useState(null);
+    const [isLoadingRecommended, setIsLoadingRecommended] = useState(false);
+
+    React.useEffect(() => {
+        if (sort === "recommended") {
+            if (!currentUser) return;
+            setIsLoadingRecommended(true);
+            import("../services/api").then(({ questionsApi }) => {
+                questionsApi.recommendations({ limit: 50 })
+                    .then(res => setServerList(res.data))
+                    .finally(() => setIsLoadingRecommended(false));
+            });
+        } else {
+            setServerList(null);
+        }
+    }, [sort, currentUser]);
 
     const allTags = useMemo(() => {
         const counts = {};
@@ -58,8 +75,10 @@ export default function Questions({ inExplore = false }) {
         return Object.entries(counts).sort((a, b) => b[1] - a[1]);
     }, [questions]);
 
+    const baseList = serverList || questions;
+
     const filtered = useMemo(() => {
-        let list = questions.filter((question) => {
+        let list = baseList.filter((question) => {
             if (
                 q &&
                 !`${question.title} ${question.body} ${question.tags.join(" ")}`
@@ -87,7 +106,7 @@ export default function Questions({ inExplore = false }) {
         }
 
         return list;
-    }, [questions, q, tag, sort]);
+    }, [baseList, q, tag, sort]);
 
     if (!isDesktop && !inExplore) return null;
 
@@ -143,9 +162,9 @@ export default function Questions({ inExplore = false }) {
                                 data-testid="questions-sort"
                                 className="h-10 w-full rounded-sm border-rule bg-paper-2/60 sm:w-[200px]"
                             >
-                                <div className="flex items-center gap-2">
-                                    <ArrowDownUp className="h-3.5 w-3.5 text-ink-3" />
-                                    <SelectValue />
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <ArrowDownUp className="h-3.5 w-3.5 text-ink-3 shrink-0" />
+                                    <div className="truncate"><SelectValue /></div>
                                 </div>
                             </SelectTrigger>
 
@@ -180,7 +199,7 @@ export default function Questions({ inExplore = false }) {
                     </p>
 
                     <div className="space-y-3">
-                        {!apiLoaded ? (
+                        {!apiLoaded || isLoadingRecommended ? (
                             [1, 2, 3, 4, 5].map((i) => <QuestionCardSkeleton key={i} />)
                         ) : filtered.length === 0 ? (
                             <EmptyPlaceholder 

@@ -29,6 +29,7 @@ const RESOURCE_TYPES = [
 const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 const SORTS = [
+    { key: "recommended", label: "Recommended ✨" },
     { key: "newest", label: "Newest" },
     { key: "top", label: "Top voted" },
     { key: "most_downloaded", label: "Most downloaded" },
@@ -42,6 +43,8 @@ export default function Resources({ inExplore = false }) {
     const [params, setParams] = useSearchParams();
     const navigate = useNavigate();
     const isDesktop = useMediaQuery("(min-width: 768px)");
+    const [serverList, setServerList] = useState(null);
+    const [isLoadingRecommended, setIsLoadingRecommended] = useState(false);
 
     React.useEffect(() => {
         if (!isDesktop && !inExplore) {
@@ -82,12 +85,28 @@ export default function Resources({ inExplore = false }) {
     const [branch, setBranch] = useState(ALL);
     const [semester, setSemester] = useState(ALL);
     const [subject, setSubject] = useState(ALL);
-    const [sort, setSort] = useState("newest");
+    const [sort, setSort] = useState(currentUser ? "recommended" : "newest");
+
+    React.useEffect(() => {
+        if (sort === "recommended") {
+            if (!currentUser) return;
+            setIsLoadingRecommended(true);
+            import("../services/api").then(({ resourcesApi }) => {
+                resourcesApi.recommendations({ limit: 50 })
+                    .then(res => setServerList(res.data))
+                    .finally(() => setIsLoadingRecommended(false));
+            });
+        } else {
+            setServerList(null);
+        }
+    }, [sort, currentUser]);
 
     const activeTag = params.get("tag");
 
+    const baseList = serverList || resources;
+
     const filtered = useMemo(() => {
-        let list = resources.filter((r) => {
+        let list = baseList.filter((r) => {
             const searchableText =
                 `${r.title} ${r.description} ${(r.tags || []).join(" ")}`.toLowerCase();
 
@@ -115,7 +134,7 @@ export default function Resources({ inExplore = false }) {
         }
 
         return list;
-    }, [resources, q, type, college, branch, semester, subject, sort, activeTag]);
+    }, [baseList, q, type, college, branch, semester, subject, sort, activeTag]);
 
     const clearAll = () => {
         setQ("");
@@ -301,7 +320,7 @@ export default function Resources({ inExplore = false }) {
 
                     {/* Resource list */}
                     <div className="space-y-3">
-                        {!apiLoaded ? (
+                        {!apiLoaded || isLoadingRecommended ? (
                             [1, 2, 3, 4, 5].map((i) => <ResourceCardSkeleton key={i} />)
                         ) : filtered.length === 0 ? (
                             <EmptyPlaceholder 
@@ -384,9 +403,9 @@ function FilterSelect({ value, setValue, options, placeholder, testId, icon: Ico
                 data-testid={testId}
                 className="h-10 rounded-md border-rule bg-paper text-sm text-ink hover:border-ink-3"
             >
-                <div className="flex items-center gap-2">
-                    {Icon && <Icon className="h-3.5 w-3.5 text-ink-3" />}
-                    <SelectValue placeholder={placeholder} />
+                <div className="flex items-center gap-2 min-w-0">
+                    {Icon && <Icon className="h-3.5 w-3.5 text-ink-3 shrink-0" />}
+                    <div className="truncate"><SelectValue placeholder={placeholder} /></div>
                 </div>
             </SelectTrigger>
 

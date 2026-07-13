@@ -2,12 +2,20 @@
 
 const resourceService = require("./resources.service");
 const asyncHandler = require("../../utils/asyncHandler");
+const AppError = require("../../utils/AppError");
 const { resourceQuerySchema } = require("./resources.schemas");
 
 // GET /api/resources
 const list = asyncHandler(async (req, res) => {
   const query = resourceQuerySchema.parse(req.query);
   const result = await resourceService.listResources(query);
+  res.json({ success: true, ...result });
+});
+
+// GET /api/resources/recommendations
+const recommendations = asyncHandler(async (req, res) => {
+  const query = resourceQuerySchema.parse(req.query);
+  const result = await resourceService.getRecommendations(req.user.id, query);
   res.json({ success: true, ...result });
 });
 
@@ -57,4 +65,21 @@ const download = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { fileUrl: resource.fileUrl } });
 });
 
-module.exports = { list, create, getOne, update, remove, download };
+// POST /api/resources/parse-metadata
+const parseMetadata = asyncHandler(async (req, res) => {
+  if (!req.uploadedFile) throw new AppError("PDF file is required", 400, "BAD_REQUEST");
+  const metadata = await resourceService.parsePdfMetadata(req.uploadedFile.buffer);
+  res.json({ success: true, data: metadata });
+});
+
+// POST /api/resources/:id/chat
+const chat = asyncHandler(async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { message, history } = req.body;
+  if (!message) throw new AppError("Message is required", 400, "BAD_REQUEST");
+  
+  const reply = await resourceService.chatWithResource(id, req.user.id, message, history || []);
+  res.json({ success: true, data: { reply } });
+});
+
+module.exports = { list, recommendations, create, getOne, update, remove, download, parseMetadata, chat };

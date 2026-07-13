@@ -3,7 +3,8 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronUp, ChevronDown, Bookmark, Share2, Flag, Clock, Eye,
   Edit2, ChevronLeft, ChevronRight, List, Copy, Check,
-  Code2, Layers, ExternalLink, Trash2, Plus, MessageSquare, BookOpen
+  Code2, Layers, ExternalLink, Trash2, Plus, MessageSquare, BookOpen,
+  Sparkles
 } from "lucide-react";
 import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi, usersApi } from "../services/api";
 import { useApp } from "../context/AppContext";
@@ -133,53 +134,59 @@ function SeriesNav({ seriesNav }) {
   if (!seriesNav) return null;
   const { series, currentPart, totalParts, prev, next } = seriesNav;
   return (
-    <div className="mb-8 rounded-lg border border-rule bg-transparent">
-      <div className="p-5 sm:p-6">
-        <div className="mb-3 flex items-center gap-2">
-          <BookOpen className="h-4 w-4 text-ink-3" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.1em] font-semibold text-ink-3">
-            Series Collection · Part {currentPart} of {totalParts}
-          </span>
-        </div>
+    <div className="rounded-lg border border-rule bg-paper-2/40 p-5 shadow-sm mt-12 mb-4">
+      <div className="flex items-center gap-2 mb-2">
+        <BookOpen className="h-4 w-4 text-accent" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.1em] font-semibold text-ink-3">
+          Series Collection
+        </span>
+      </div>
+      
+      <Link
+        to={`/series/${series.slug}`}
+        className="block font-display text-xl sm:text-2xl font-bold text-ink transition-colors hover:text-accent mb-2"
+      >
+        {series.title}
+      </Link>
+      
+      <p className="text-sm text-ink-2 mb-6 font-mono tracking-tight">
+        Part {currentPart} of {totalParts}
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-3 border-t border-rule pt-4">
+        {prev ? (
+          <Link
+            to={`/posts/${prev.slug}`}
+            className="group flex flex-1 items-center justify-between rounded-md border border-rule bg-paper px-4 py-3 transition-all hover:border-accent hover:shadow-sm"
+          >
+            <div className="flex flex-col gap-1">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-3">Previous Part</span>
+              <span className="text-sm font-medium text-ink group-hover:text-accent line-clamp-2">{prev.title}</span>
+            </div>
+            <ChevronLeft className="h-4 w-4 text-ink-3 transition-transform group-hover:-translate-x-1" />
+          </Link>
+        ) : (
+          <div className="flex-1 rounded-md border border-dashed border-rule bg-transparent px-4 py-3 opacity-50 flex items-center justify-center">
+            <span className="text-xs text-ink-3 font-mono">First Part</span>
+          </div>
+        )}
         
-        <Link
-          to={`/series/${series.slug}`}
-          className="block font-display text-lg sm:text-xl font-semibold text-ink transition-colors hover:text-accent mb-6"
-        >
-          {series.title}
-        </Link>
-        
-        <div className="flex flex-col sm:flex-row gap-4 border-t border-rule/50 pt-5 mt-5">
-          {prev ? (
-            <Link
-              to={`/posts/${prev.slug}`}
-              className="group flex flex-1 flex-col gap-1 transition-colors"
-            >
-              <div className="flex items-center gap-1 font-mono text-[10px] uppercase text-ink-3">
-                <ChevronLeft className="h-3 w-3 transition-transform group-hover:-translate-x-1" />
-                Previous Part
-              </div>
-              <span className="text-sm font-medium text-ink group-hover:text-accent pl-4">{prev.title}</span>
-            </Link>
-          ) : (
-             <div className="flex-1" />
-          )}
-          
-          {next ? (
-            <Link
-              to={`/posts/${next.slug}`}
-              className="group flex flex-1 flex-col items-end gap-1 text-right transition-colors"
-            >
-              <div className="flex items-center gap-1 font-mono text-[10px] uppercase text-ink-3">
-                Next Part
-                <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
-              </div>
-              <span className="text-sm font-medium text-ink group-hover:text-accent pr-4">{next.title}</span>
-            </Link>
-          ) : (
-             <div className="flex-1" />
-          )}
-        </div>
+        {next ? (
+          <Link
+            to={`/posts/${next.slug}`}
+            className="group flex flex-1 items-center justify-between rounded-md border border-rule bg-paper px-4 py-3 transition-all hover:border-accent hover:shadow-sm"
+          >
+            <ChevronRight className="h-4 w-4 text-ink-3 transition-transform group-hover:translate-x-1" />
+            <div className="flex flex-col items-end gap-1 text-right">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-3">Next Part</span>
+              <span className="text-sm font-medium text-ink group-hover:text-accent line-clamp-2">{next.title}</span>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex-1 rounded-md border border-dashed border-rule bg-transparent px-4 py-3 opacity-50 flex items-center justify-center">
+            <span className="text-xs text-ink-3 font-mono">Final Part</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -240,6 +247,8 @@ export default function PostDetail() {
   const [toc, setToc] = useState([]);
   const [activeHeadingId, setActiveHeadingId] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showTldr, setShowTldr] = useState(false);
+  const [generatingTldr, setGeneratingTldr] = useState(false);
   const commentsRef = useRef(null);
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
 
@@ -388,6 +397,25 @@ export default function PostDetail() {
       } catch (err) {
         toast.error("Failed to delete post");
       }
+    }
+  };
+
+  const handleGenerateTldr = async () => {
+    if (post.tldr) {
+      setShowTldr(!showTldr);
+      return;
+    }
+    
+    setGeneratingTldr(true);
+    try {
+      const data = await postsApi.generateTldr(post.id);
+      setPost(prev => ({ ...prev, tldr: data.tldr }));
+      setShowTldr(true);
+      toast.success("AI Summary generated!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to generate AI Summary");
+    } finally {
+      setGeneratingTldr(false);
     }
   };
 
@@ -553,6 +581,15 @@ export default function PostDetail() {
             {/* Social Share / Bookmark (Desktop Inline) */}
             <div className="hidden md:flex items-center gap-3">
               <button
+                onClick={handleGenerateTldr}
+                disabled={generatingTldr}
+                title="Toggle AI Summary"
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${showTldr ? "bg-accent text-white border-accent" : "border-rule text-ink hover:bg-paper-2 hover:text-accent"} ${generatingTldr ? "opacity-70 cursor-not-allowed" : ""}`}
+              >
+                <Sparkles className={`h-3 w-3 ${generatingTldr ? "animate-pulse" : ""}`} />
+                {generatingTldr ? "Generating..." : "TL;DR"}
+              </button>
+              <button
                 onClick={handleShare}
                 title="Copy link"
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-rule text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
@@ -588,6 +625,19 @@ export default function PostDetail() {
                 className="w-full h-auto object-cover max-h-[500px]"
               />
             </figure>
+          )}
+
+          {/* AI Summary / TLDR */}
+          {post.tldr && showTldr && (
+            <div className="mb-10 rounded-xl border border-rule bg-paper p-5 sm:p-6 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.1em] font-semibold text-accent">
+                <Sparkles className="h-4 w-4" />
+                AI Summary
+              </div>
+              <p className="text-sm leading-relaxed text-ink-2">
+                {post.tldr}
+              </p>
+            </div>
           )}
 
           {/* Markdown body — uses shared MarkdownRenderer (theme-adaptive syntax) */}

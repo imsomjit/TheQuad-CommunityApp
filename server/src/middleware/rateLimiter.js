@@ -315,6 +315,16 @@ const chatWriteLimiter = rateLimit({
   handler: rateLimitResponse,
 });
 
+// ── AI ─────────────────────────────────────────────────────────────────────────
+// Hard limit for AI routes to prevent quota exhaustion
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
 module.exports = {
   authLimiter,
   registerLimiter,
@@ -347,4 +357,5 @@ module.exports = {
   voteReadLimiter,
   chatReadLimiter,
   chatWriteLimiter,
+  aiLimiter,
 };

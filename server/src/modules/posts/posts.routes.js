@@ -13,6 +13,7 @@ const {
   postReadLimiter,
   postWriteLimiter,
   autosaveLimiter,
+  aiLimiter,
 } = require("../../middleware/rateLimiter");
 const { db } = require("../../db/index");
 const { posts } = require("../../db/schema/index");
@@ -52,6 +53,9 @@ router.get("/", postReadLimiter, controller.list);
 // GET /api/posts/drafts — user's own drafts (must come before :slug)
 router.get("/drafts", auth, postReadLimiter, controller.drafts);
 
+// GET /api/posts/recommendations — get personalized post recommendations
+router.get("/recommendations", auth, postReadLimiter, controller.recommendations);
+
 // GET /api/posts/id/:id — get by ID (for editor, drafts visible to author)
 router.get("/id/:id", auth, postReadLimiter, controller.getById);
 
@@ -59,6 +63,12 @@ router.get("/id/:id", auth, postReadLimiter, controller.getById);
 router.get("/:slug", postReadLimiter, controller.getBySlug);
 
 // ── Protected writes ─────────────────────────────────────────────────────────
+
+// POST /api/posts/generate-ai
+router.post("/generate-ai", auth, aiLimiter, controller.generateAI);
+
+// POST /api/posts/:id/generate-tldr
+router.post("/:id/generate-tldr", aiLimiter, controller.generateTldr);
 
 // POST /api/posts — create new post
 router.post(

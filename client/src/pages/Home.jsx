@@ -622,17 +622,17 @@ export default function Home() {
 
                     {/* Profile card — index-card style */}
                     {isAuthenticated && currentUser && (
-                        <div className="hidden sm:inline relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
-                            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                        <div className="hidden sm:block relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
+                                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // profile card
-                            </p>
+                                </p>
 
                             <div className="mt-3 flex items-center gap-3">
-                                <img
-                                    src={currentUser.avatar || getAvatarFallback(currentUser.name, currentUser.username)}
-                                    alt=""
+                                    <img
+                                        src={currentUser.avatar || getAvatarFallback(currentUser.name, currentUser.username)}
+                                        alt=""
                                     className="h-14 w-14 rounded-md border border-rule object-cover bg-paper-2"
-                                />
+                                    />
 
                                 <div>
                                     <div className="font-display text-xl font-semibold text-ink">
@@ -645,8 +645,8 @@ export default function Home() {
                             </div>
 
                             <p className="mt-4 text-sm leading-relaxed text-ink-2">
-                                {currentUser.bio}
-                            </p>
+                                    {currentUser.bio}
+                                </p>
 
                             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                                 <MiniStat value={currentUser.stats?.resources || 0} label="uploads" colorVar="--syntax-mint" />

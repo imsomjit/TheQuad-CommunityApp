@@ -17,6 +17,7 @@ import {
 } from "../components/ui/select";
 
 const SORT_OPTIONS = [
+  { value: "recommended", label: "Recommended ✨" },
   { value: "latest", label: "Latest" },
   { value: "top", label: "Top Voted" },
   { value: "trending", label: "Trending" },
@@ -51,7 +52,7 @@ export default function PostsFeed({ inExplore = false }) {
 
   // Controlled filter state from URL
   const category = searchParams.get("category") || "";
-  const sort = searchParams.get("sort") || "latest";
+  const sort = searchParams.get("sort") || (currentUser ? "recommended" : "latest");
   const tag = searchParams.get("tag") || "";
   const q = searchParams.get("q") || "";
   const page = parseInt(searchParams.get("page") || "1");
@@ -74,19 +75,43 @@ export default function PostsFeed({ inExplore = false }) {
     setError(null);
     try {
       const params = { sort, page, limit: 12 };
-      if (category) params.category = category;
       if (tag) params.tag = tag;
       if (q) params.q = q;
 
-      const result = await postsApi.list(params);
+      let result;
+      if (sort === "recommended") {
+        if (!currentUser) {
+           setError("Please log in to view recommended posts.");
+           setLoading(false);
+           return;
+        }
+        if (category) params.category = category;
+        result = await postsApi.recommendations(params);
+      } else {
+        if (category) params.category = category;
+        result = await postsApi.list(params);
+      }
+      
       setPosts(result.data);
       setPagination(result.pagination);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to load posts");
+      if (sort === "recommended") {
+        try {
+          const fallbackParams = { ...params, sort: "latest" };
+          const result = await postsApi.list(fallbackParams);
+          setPosts(result.data);
+          setPagination(result.pagination);
+          return;
+        } catch (fallbackErr) {
+          setError(fallbackErr.response?.data?.message || "Failed to load posts");
+        }
+      } else {
+        setError(err.response?.data?.message || "Failed to load posts");
+      }
     } finally {
       setLoading(false);
     }
-  }, [category, sort, tag, q, page]);
+  }, [category, sort, tag, q, page, currentUser]);
 
   useEffect(() => {
     fetchPosts();
@@ -312,9 +337,9 @@ function FilterSelect({ value, setValue, options, placeholder, testId, icon: Ico
         data-testid={testId}
         className="h-10 rounded-md border-rule bg-paper text-sm text-ink hover:border-ink-3"
       >
-        <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-3.5 w-3.5 text-ink-3" />}
-          <SelectValue placeholder={placeholder} />
+        <div className="flex items-center gap-2 min-w-0">
+          {Icon && <Icon className="h-3.5 w-3.5 text-ink-3 shrink-0" />}
+          <div className="truncate"><SelectValue placeholder={placeholder} /></div>
         </div>
       </SelectTrigger>
 
