@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff } from "lucide-react";
+import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff, Bot } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { chatApi } from "../../services/api";
 import CreateRoomModal from "./CreateRoomModal";
 import JoinRoomModal from "./JoinRoomModal";
+import AIGuideChat from "./AIGuideChat";
 
 export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const { user, isAuthenticated } = useAuth();
@@ -539,16 +540,6 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
   return (
     <>
-      {/* Floating Toggle Button */}
-      {!isOpen && (
-        <button
-          onClick={onToggle}
-          className="fixed bottom-6 right-6 z-50 hidden h-12 w-12 items-center justify-center rounded-full bg-accent text-rule shadow-lg shadow-accent/20 transition-transform hover:scale-110 active:scale-95 md:flex"
-        >
-          <MessageSquare size={22} />
-        </button>
-      )}
-
       <div
         ref={sidebarRef}
         style={{ touchAction: 'none' }} // Prevents browser from panning the whole page when dragging the sidebar
@@ -556,17 +547,31 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* Vertical Toggle Handle (Desktop only) */}
+        {!isOpen && (
+          <button
+            onClick={onToggle}
+            className="absolute top-48 -left-[42px] hidden md:flex h-32 w-[42px] -translate-y-1/2 flex-col items-center justify-center rounded-l-xl border-y border-l border-rule bg-accent/10 backdrop-blur-xl text-accent shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.2)] hover:w-[48px] hover:-left-[48px] transition-all duration-300 z-50 group cursor-pointer"
+            title="Toggle Chats"
+          >
+            <div className="flex -rotate-90 flex-row items-center gap-2 uppercase tracking-[0.3em] font-mono text-[10px] font-bold whitespace-nowrap">
+              <MessageSquare size={14} className="group-hover:text-accent transition-colors opacity-70 group-hover:opacity-100" />
+              <span>Chats...</span>
+            </div>
+          </button>
+        )}
+
         {isInitializing ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />
             <p className="text-xs font-mono tracking-wide text-ink-3 uppercase">Restoring Session...</p>
           </div>
-        ) : !activeRoom ? (
+        ) : !activeRoom && activeTab !== 'bot' ? (
           // --- ROOM LIST VIEW ---
           <>
             <div className="flex flex-col border-b border-rule bg-paper-2/50 backdrop-blur-sm">
               <div className="flex items-center justify-between p-4 pb-2 sm:pb-1">
-                <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Chats</h2>
+                <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Chats...</h2>
                 <div className="flex items-center gap-1">
                   <button 
                     onClick={() => {
@@ -603,7 +608,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   onClick={() => setActiveTab("lounges")}
                   className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'lounges' ? 'border-accent text-accent' : 'border-transparent text-ink-3 hover:text-ink'}`}
                 >
-                  Lounges
+                  <Users size={14} /> Lounges
                   {loungesUnreadCount > 0 && (
                     <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent">
                       {loungesUnreadCount > 99 ? '99+' : loungesUnreadCount}
@@ -615,7 +620,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                     onClick={() => setActiveTab("messages")}
                     className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'messages' ? 'border-accent text-accent' : 'border-transparent text-ink-3 hover:text-ink'}`}
                   >
-                    Messages
+                    <MessageSquare size={14} /> Messages
                     {dmsUnreadCount > 0 && (
                       <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-rule shadow-sm">
                         {dmsUnreadCount > 99 ? '99+' : dmsUnreadCount}
@@ -623,6 +628,12 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                     )}
                   </button>
                 )}
+                <button 
+                  onClick={() => setActiveTab("bot")}
+                  className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'bot' ? 'border-syntax-cyan text-syntax-cyan' : 'border-transparent text-ink-3 hover:text-ink'}`}
+                >
+                  <Bot size={14} /> AI Guide
+                </button>
               </div>
             </div>
             
@@ -651,6 +662,8 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               )}
             </div>
           </>
+        ) : activeTab === 'bot' ? (
+          <AIGuideChat onClose={() => setActiveTab('lounges')} />
         ) : (
           // --- CHAT WINDOW VIEW ---
           <>

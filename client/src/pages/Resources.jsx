@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useMemo, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -39,6 +40,7 @@ const SORTS = [
 const ALL = "__all__";
 
 export default function Resources({ inExplore = false }) {
+  useDocumentTitle("Notes, PYQs, Assignments");
     const { resources, apiLoaded, currentUser } = useApp();
     const [params, setParams] = useSearchParams();
     const navigate = useNavigate();

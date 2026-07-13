@@ -25,7 +25,7 @@ export default function Sidebar({ isCollapsed, onToggle, scrolled }) {
                 <div className={`flex items-center pb-1 ${isCollapsed ? 'justify-center' : 'justify-between px-3'}`}>
                     {!isCollapsed && <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3">Contents</p>}
                     <button onClick={onToggle} className="text-ink-3 hover:text-ink transition-colors" title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-                        <PanelLeftClose className={`h-4 w-4 transition-transform duration-700 ${isCollapsed ? 'rotate-180' : ''}`} />
+                        <PanelLeftClose className={`h-4 w-4 transition-transform duration-700 text-accent ${isCollapsed ? 'rotate-180' : ''}`} />
                     </button>
                 </div>
                 <NavLink to="/" className={linkClass} end title="Feed">

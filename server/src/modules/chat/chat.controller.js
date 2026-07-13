@@ -4,6 +4,7 @@ const chatService = require("./chat.service");
 const asyncHandler = require("../../utils/asyncHandler");
 const AppError = require("../../utils/AppError");
 const { getIo } = require("./chat.socket");
+const ai = require("../../utils/ai");
 
 exports.getRooms = asyncHandler(async (req, res) => {
   const rooms = await chatService.getRooms(req.user?.id);
@@ -149,5 +150,19 @@ exports.getOnlineUsers = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: onlineUserIds,
+  });
+});
+
+exports.generateGuideChat = asyncHandler(async (req, res) => {
+  const { message, history } = req.body;
+  if (!message) {
+    throw new AppError("Message is required", 400);
+  }
+  
+  const reply = await ai.chatWithPlatformGuide(history || [], message);
+  
+  res.status(200).json({
+    success: true,
+    data: reply,
   });
 });

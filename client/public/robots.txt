@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /settings/
 
 Sitemap: https://thequad.web.app/sitemap.xml

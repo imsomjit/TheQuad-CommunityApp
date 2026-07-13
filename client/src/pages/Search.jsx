@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import {
@@ -26,6 +27,7 @@ import OpportunityCard from "../components/OpportunityCard";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 
 export default function Search() {
+  useDocumentTitle("Search");
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const [searchInput, setSearchInput] = useState(query);

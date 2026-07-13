@@ -1,8 +1,10 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React from "react";
 import { Link } from "react-router-dom";
 import { MoveLeft } from "lucide-react";
 
 const NotFound = () => {
+  useDocumentTitle("Page Not Found");
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
       <h1 className="text-6xl sm:text-7xl font-bold font-mono text-ink-3 mb-4">404</h1>

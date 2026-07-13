@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
@@ -234,6 +235,7 @@ function TableOfContents({ body, setIsExpanded }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function PostDetail() {
+  useDocumentTitle("Post Details");
   const { slug } = useParams();
   const navigate = useNavigate();
   const { currentUser, openReportModal, bookmarks, toggleBookmark } = useApp();

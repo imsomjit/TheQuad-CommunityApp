@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -13,6 +14,7 @@ import NetworkBanner from "../components/NetworkBanner";
 import { toast } from "sonner";
 
 export default function EditProfile() {
+  useDocumentTitle("Edit Profile");
     const navigate = useNavigate();
     const { currentUser } = useApp();
     const { isAuthenticated, updateUser } = useAuth();

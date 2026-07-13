@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import {
@@ -18,6 +19,7 @@ import BookCard from "../components/BookCard";
 import OpportunityCard from "../components/OpportunityCard";
 
 export default function Bookmarks() {
+  useDocumentTitle("My Bookmarks");
   const { username } = useParams();
   const { isAuthenticated } = useAuth();
   const { currentUser, resources, bookmarks } = useApp();

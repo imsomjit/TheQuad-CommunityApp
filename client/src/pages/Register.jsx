@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -26,6 +27,7 @@ import { toast } from "sonner";
 import { usersApi, API_BASE } from "../services/api";
 
 export default function Register() {
+  useDocumentTitle("Create an Account");
   const { register } = useAuth();
   const { siteSettings } = useApp();
   const navigate = useNavigate();
@@ -107,6 +109,14 @@ export default function Register() {
     return { level: 3, label: "strong", color: "bg-accent-2" };
   })();
 
+  const displayContributors = [
+    ...(topContributors || []),
+    { id: 'mock1', username: 'alex', name: 'Alex' },
+    { id: 'mock2', username: 'jordan', name: 'Jordan' },
+    { id: 'mock3', username: 'taylor', name: 'Taylor' },
+    { id: 'mock4', username: 'casey', name: 'Casey' }
+  ].slice(0, 4);
+
   return (
     <div className="min-h-[100vw] sm:min-h-screen bg-paper flex">
       {/* Backdrop textures */}
@@ -163,34 +173,21 @@ export default function Register() {
 
           {/* Bottom — Social proof */}
           <div className="flex items-center gap-3 mt-16">
-            {/* Stacked avatars */}
             <div className="flex -space-x-2">
-              {topContributors && topContributors.length > 0 ? (
-                topContributors.slice(0, 4).map((user, i) => (
+                {displayContributors.map((user, i) => (
                   <div
                     key={user.id || i}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 font-mono text-[10px] font-bold text-ink-2 overflow-hidden"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 overflow-hidden"
                     style={{ zIndex: 4 - i }}
                     title={user.name}
                   >
-                    {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                    ) : (
-                      user.name.slice(0, 2).toUpperCase()
-                    )}
+                    <img 
+                      src={user.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.username || user.name}`} 
+                      alt={user.name} 
+                      className="h-full w-full object-cover" 
+                    />
                   </div>
-                ))
-              ) : (
-                ["SK", "DP", "PI", "MC"].map((initials, i) => (
-                  <div
-                    key={initials}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 font-mono text-[10px] font-bold text-ink-2"
-                    style={{ zIndex: 4 - i }}
-                  >
-                    {initials}
-                  </div>
-                ))
-              )}
+                ))}
             </div>
             <p className="text-sm text-ink-2">
               <span className="font-semibold text-ink">

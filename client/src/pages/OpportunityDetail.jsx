@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ExternalLink, Target, Bookmark, BookmarkCheck, Calendar, Clock, Trophy, ArrowLeft, GraduationCap, CodeXml, Flag } from "lucide-react";
@@ -11,6 +12,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 export default function OpportunityDetail() {
+  useDocumentTitle("Opportunity Details");
     const { id } = useParams();
     const { isAuthenticated } = useAuth();
     const { openReportModal } = useApp();

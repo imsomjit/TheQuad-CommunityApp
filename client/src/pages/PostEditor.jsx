@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -246,6 +247,7 @@ function ProjectMetaForm({ meta, onChange }) {
 
 // ── Main editor component ─────────────────────────────────────────────────────
 export default function PostEditor() {
+  useDocumentTitle("Write a Post");
   const { id } = useParams(); // present when editing existing post
   const navigate = useNavigate();
   const { currentUser } = useApp();

@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -34,6 +35,7 @@ const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 import { toast } from "sonner";
 
 export default function UploadResource() {
+  useDocumentTitle("Upload Resource");
     const { addResource } = useApp();
     const navigate = useNavigate();
 

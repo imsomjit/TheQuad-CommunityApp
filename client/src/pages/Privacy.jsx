@@ -1,7 +1,9 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useEffect, useState } from "react";
 import { Shield, Eye, Database, Share2, Lock, Mail } from "lucide-react";
 
 export default function Privacy() {
+  useDocumentTitle("Privacy Policy");
     const [activeSection, setActiveSection] = useState("collect");
 
     const sections = [

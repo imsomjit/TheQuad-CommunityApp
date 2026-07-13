@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -27,6 +28,7 @@ const SORTS = [
 ];
 
 export default function Library({ inExplore = false }) {
+  useDocumentTitle("Library of Books");
     const { user } = useAuth();
     const navigate = useNavigate();
     const isDesktop = useMediaQuery("(min-width: 768px)");

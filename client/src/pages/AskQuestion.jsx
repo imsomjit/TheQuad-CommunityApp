@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, X } from "lucide-react";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 import { generateSlug } from "../utils/slugify";
 
 export default function AskQuestion() {
+  useDocumentTitle("Ask a Question");
     const { addQuestion, currentUser } = useApp();
     const navigate = useNavigate();
 

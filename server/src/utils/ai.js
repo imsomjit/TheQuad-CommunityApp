@@ -1,5 +1,6 @@
 const { GoogleGenAI } = require("@google/genai");
 const AppError = require("./AppError");
+const { PLATFORM_CONTEXT } = require("./platform_context");
 
 // Initialize the Google GenAI SDK
 const ai = new GoogleGenAI({
@@ -14,16 +15,16 @@ const ai = new GoogleGenAI({
 const routeModel = (taskType) => {
   switch (taskType) {
     case 'simple':
-      // Extremely fast, highly generous rate limits (1500 RPM / day limit high). Good for tags/JSON.
-      return "gemini-2.0-flash-lite-001";
+      // Extremely fast, highly generous rate limits. Good for tags/JSON.
+      return "gemini-3.1-flash-lite";
     case 'complex':
       // High reasoning, used for PDF metadata extraction. Rate limit is 15 RPM.
       return "gemini-3.5-flash";
     case 'chat':
       // Conversational Q&A. Good balance of context window and reasoning.
-      return "gemini-2.0-flash-lite-001"; 
+      return "gemini-3.5-flash"; 
     default:
-      return "gemini-3.5-flash";
+      return "gemini-3.5-flash-lite";
   }
 }
 
@@ -213,10 +214,61 @@ ${pdfText.substring(0, 150000)} // Truncate if insanely large to avoid limits
     throw new AppError(isQuota ? "AI services are currently out of quota. Please try again later." : "Failed to chat with PDF", isQuota ? 429 : 500);
   }
 };
+/**
+ * Chat with the Platform Guide AI
+ * @param {Array<{role: string, content: string}>} history 
+ * @param {string} message 
+ * @returns {Promise<string>}
+ */
+const chatWithPlatformGuide = async (history, message) => {
+  if (!process.env.GEMINI_API_KEY) {
+    return "AI Platform Guide is currently disabled (No API Key).";
+  }
+
+  const contents = history.map(msg => ({
+    role: msg.role === 'ai' ? 'model' : 'user',
+    parts: [{ text: msg.content }]
+  }));
+  contents.push({ role: 'user', parts: [{ text: message }] });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: routeModel('chat'),
+      contents: contents,
+      config: {
+        systemInstruction: PLATFORM_CONTEXT,
+      }
+    });
+
+    return response.text;
+  } catch (error) {
+    if (error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand")) {
+      console.warn("gemini-3.5-flash is experiencing high demand (503). Falling back to gemini-3.1-flash-lite.");
+      try {
+        const fallbackResponse = await ai.models.generateContent({
+          model: "gemini-3.1-flash-lite",
+          contents: contents,
+          config: {
+            systemInstruction: PLATFORM_CONTEXT,
+          }
+        });
+        return fallbackResponse.text;
+      } catch (fallbackError) {
+        console.error("Fallback to gemini-3.1-flash-lite also failed:", fallbackError);
+        throw new AppError("AI services are currently experiencing high demand. Please try again later.", 503);
+      }
+    }
+    
+    console.error("Error chatting with Platform Guide:", error);
+    const isQuota = error.status === 429 || error.message?.includes("429") || error.message?.includes("Quota");
+    throw new AppError(isQuota ? "AI services are currently out of quota. Please try again later." : "Failed to chat with Platform Guide", isQuota ? 429 : 500);
+  }
+};
 
 module.exports = {
   generateTagsAndTldr,
   generateEmbedding,
   extractPDFMetadata,
   chatWithPDF,
+  chatWithPlatformGuide,
 };

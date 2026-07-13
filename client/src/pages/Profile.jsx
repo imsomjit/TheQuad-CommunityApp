@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -73,6 +74,7 @@ export const LANG_COLORS = {
 };
 
 export default function Profile() {
+  useDocumentTitle("Profile Page");
     const { username } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useApp();

@@ -1,7 +1,9 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useEffect, useState } from "react";
 import { Scale, UserCheck, ShieldAlert, FileText, AlertTriangle, Copyright, HelpCircle } from "lucide-react";
 
 export default function Terms() {
+  useDocumentTitle("Terms of Service");
     const [activeSection, setActiveSection] = useState("acceptance");
 
     const sections = [

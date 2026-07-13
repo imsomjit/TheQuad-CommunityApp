@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
@@ -80,6 +81,7 @@ function timeAgo(ts) {
 }
 
 export default function ResourceDetail() {
+  useDocumentTitle("Resource Details");
     const { id } = useParams();
     const navigate = useNavigate();
 

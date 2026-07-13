@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
@@ -10,6 +11,7 @@ import LibraryPage from "./Library";
 import { BookOpen, MessageSquare, FileText, Target, Library, Compass } from "lucide-react";
 
 export default function Explore() {
+  useDocumentTitle("Explore");
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const isDesktop = useMediaQuery("(min-width: 768px)");

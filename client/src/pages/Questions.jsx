@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -32,6 +33,7 @@ const SORTS = [
 ];
 
 export default function Questions({ inExplore = false }) {
+  useDocumentTitle("Questions Asked by Peers");
     const { questions, apiLoaded, currentUser } = useApp();
     const navigate = useNavigate();
     const isDesktop = useMediaQuery("(min-width: 768px)");

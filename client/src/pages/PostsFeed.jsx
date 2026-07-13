@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -32,6 +33,7 @@ const CATEGORY_TABS = [
 ];
 
 export default function PostsFeed({ inExplore = false }) {
+  useDocumentTitle("Posts, Journals, Editorials");
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useApp();
   const navigate = useNavigate();

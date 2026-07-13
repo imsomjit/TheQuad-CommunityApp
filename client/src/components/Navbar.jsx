@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     Search,
     Bell,
@@ -87,7 +87,7 @@ export default function Navbar({ scrolled }) {
                         </span>
 
                         <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">
-                            /vol.01
+                            /vol.02
                         </span>
                     </span>
                 </Link>

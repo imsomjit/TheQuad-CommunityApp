@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { HelpCircle, User, Star, PenTool, ShieldAlert, Code } from "lucide-react";
 import {
@@ -8,6 +9,7 @@ import {
 } from "../components/ui/accordion";
 
 export default function FAQ() {
+  useDocumentTitle("Help & FAQ");
     const [activeSection, setActiveSection] = useState("general");
 
     const categories = [

@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
@@ -19,6 +20,7 @@ import PageLoadingSkeleton from "../components/PageLoadingSkeleton";
  *  4. Redirects to the home page
  */
 export default function AuthCallback() {
+  useDocumentTitle("Authenticating");
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();

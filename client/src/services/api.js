@@ -638,6 +638,7 @@ export const chatApi = {
   createAdminRoom: (data) => api.post("/chat/admin/rooms", data).then((res) => res.data),
   deleteAdminRoom: (roomId) => api.delete(`/chat/admin/rooms/${roomId}`).then((res) => res.data),
   getOnlineUsers: () => api.get("/chat/online").then((res) => res.data),
+  generateGuideChat: (message, history) => api.post("/chat/bot", { message, history }).then((res) => res.data),
 };
 
 export const settingsApi = {
