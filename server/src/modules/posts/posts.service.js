@@ -174,7 +174,8 @@ const updatePost = async (id, userId, patch) => {
   }
 
   if (post.status === "published") {
-    throw new AppError("Published posts cannot be edited. Unpublish to edit.", 403, "FORBIDDEN");
+    // If published, we ignore title changes because slug is immutable and we don't want title/slug mismatch
+    delete patch.title;
   }
 
   const { tags, ...meta } = patch;
@@ -452,9 +453,13 @@ const listPosts = async (query) => {
   const conditions = [eq(posts.status, "published"), eq(posts.isDeleted, false)];
 
   if (q) {
+    const searchParam = `%${q}%`;
     conditions.push(
-      sql`to_tsvector('english', ${posts.title} || ' ' || coalesce(${posts.body}, ''))
-          @@ plainto_tsquery('english', ${q})`
+      or(
+        sql`to_tsvector('english', ${posts.title} || ' ' || coalesce(${posts.category}::text, '')) @@ plainto_tsquery('english', ${q})`,
+        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${posts.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
+        sql`EXISTS (SELECT 1 FROM post_tags WHERE post_tags.post_id = ${posts.id} AND post_tags.tag ILIKE ${searchParam})`
+      )
     );
   }
   if (category) conditions.push(eq(posts.category, category));
@@ -513,9 +518,14 @@ const listPosts = async (query) => {
         authorName: users.name,
         authorUsername: users.username,
         authorAvatarUrl: users.avatarUrl,
+        seriesId: posts.seriesId,
+        seriesOrder: posts.seriesOrder,
+        seriesTitle: series.title,
+        seriesSlug: series.slug,
       })
       .from(posts)
       .leftJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(series, eq(posts.seriesId, series.id))
       .where(tagCondition)
       .orderBy(orderBy)
       .limit(limit)
@@ -687,6 +697,8 @@ const formatPost = (row, tags = []) => ({
   bookmarksCount: row.bookmarksCount,
   seriesId: row.seriesId,
   seriesOrder: row.seriesOrder,
+  seriesTitle: row.seriesTitle,
+  seriesSlug: row.seriesSlug,
   publishedAt: row.publishedAt,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,

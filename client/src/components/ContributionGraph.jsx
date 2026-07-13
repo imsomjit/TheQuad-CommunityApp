@@ -1,11 +1,11 @@
 import React from "react";
 // 5 contribution levels
 const LEVEL_BG = [
-    "var(--paper-2)",
-    "color-mix(in srgb, var(--accent-2) 30%, var(--paper-2))",
-    "color-mix(in srgb, var(--accent-2) 55%, var(--paper-2))",
-    "color-mix(in srgb, var(--accent-2) 80%, var(--paper-2))",
-    "var(--accent-2)",
+    "rgb(var(--paper-2))",
+    "color-mix(in srgb, rgb(var(--accent-2)) 30%, rgb(var(--paper-2)))",
+    "color-mix(in srgb, rgb(var(--accent-2)) 55%, rgb(var(--paper-2)))",
+    "color-mix(in srgb, rgb(var(--accent-2)) 80%, rgb(var(--paper-2)))",
+    "rgb(var(--accent-2))",
 ];
 
 export default function ContributionGraph({

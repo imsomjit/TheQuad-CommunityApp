@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { PenLine, Search, SlidersHorizontal, X, ArrowDownUp } from "lucide-react";
 import { postsApi } from "../services/api";
 import PostCard, { CATEGORY_META } from "../components/PostCard";
@@ -29,9 +30,18 @@ const CATEGORY_TABS = [
   { value: "project_breakdown", label: "Projects" },
 ];
 
-export default function PostsFeed() {
+export default function PostsFeed({ inExplore = false }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useApp();
+  const navigate = useNavigate();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  useEffect(() => {
+      if (!isDesktop && !inExplore) {
+          navigate("/explore?tab=posts", { replace: true });
+      }
+  }, [isDesktop, inExplore, navigate]);
+
 
   const [posts, setPosts] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -97,6 +107,8 @@ export default function PostsFeed() {
 
   const hasActiveFilters = category || tag || q;
 
+  if (!isDesktop && !inExplore) return null;
+
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Editorial header */}
@@ -107,11 +119,11 @@ export default function PostsFeed() {
               &sect;04 &middot; the Post
             </p>
 
-            <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+            <h1 className="hidden md:inline mt-2 font-display text-5xl md:text-6xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
               Write. <span className="font-display-italic text-accent">Read. </span>&amp; <span className="italic marker">Inspire. </span>
             </h1>
 
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+            <p className="mt-4 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
               A constellation of &mdash; DSA editorials, interview experiences, learning journals, and project breakdowns written by learners based on their learnings, experiences and late night sessions.
             </p>
           </div>

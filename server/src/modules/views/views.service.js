@@ -12,10 +12,10 @@ const {
 const crypto = require("crypto");
 
 /**
- * Record a view for a content type if not viewed by this user/visitor in the last 24h.
+ * Record a view for a content type if not viewed by this user/visitor in the last 12h.
  */
 const recordView = async ({ contentType, contentId, userId, visitorId }) => {
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
+  const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000); // 12 hours ago
 
   // 1. Check if view exists recently
   const conditions = [

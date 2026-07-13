@@ -24,6 +24,7 @@ import { MarkdownRenderer, CollapsibleContent } from "../components/MarkdownEdit
 import CommentSection from "../components/CommentSection";
 import { toast } from "sonner";
 import { adminApi } from "../services/api";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 function timeAgo(ts) {
     const diff = (Date.now() - new Date(ts).getTime()) / 1000;
@@ -217,12 +218,12 @@ export default function QuestionDetail() {
 
                         <Link
                             to={`/u/${question.author.username}`}
-                            className="flex items-right gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
+                            className="flex items-right gap-2 rounded-md border border-rule bg-paper-2 p-2 pr-3"
                         >
                             <img
-                                src={question.author.avatar}
-                                alt=""
-                                className="h-8 w-8 rounded-sm object-cover"
+                                src={question.author.avatar || getAvatarFallback(question.author.name, question.author.username)}
+                                alt={question.author.name}
+                                className="h-8 w-8 rounded-md object-cover bg-paper-2"
                             />
 
                             <div className="text-xs">
@@ -246,7 +247,7 @@ export default function QuestionDetail() {
                     {question.answers.length}{" "}
                     {question.answers.length === 1 ? "answer" : "answers"}
                     {question.answers.some((a) => a.accepted) && (
-                        <span className="inline-flex items-center gap-1 rounded-sm border border-accent-2 bg-accent-2-soft px-2 py-0.5 font-mono text-xs uppercase tracking-[0.15em] text-accent-2">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-accent-2 bg-accent-2-soft px-2 py-0.5 font-mono text-xs uppercase tracking-[0.15em] text-accent-2">
                             <CheckCircle2 className="h-3 w-3" />
                             solved
                         </span>
@@ -257,7 +258,7 @@ export default function QuestionDetail() {
                     <article
                         key={answer.id}
                         data-testid={`answer-${answer.id}`}
-                        className={`flex gap-5 rounded-sm border p-5 ${answer.accepted
+                        className={`flex gap-5 rounded-md border p-5 ${answer.accepted
                                 ? "border-accent-2 bg-accent-2-soft"
                                 : "border-rule bg-paper-2/40"
                             }`}
@@ -274,7 +275,7 @@ export default function QuestionDetail() {
                             {answer.accepted && (
                                 <div
                                     title="Accepted answer"
-                                    className="mt-3 flex h-9 w-9 items-center justify-center rounded-sm border border-accent-2 bg-accent-2-soft"
+                                    className="mt-3 flex h-9 w-9 items-center justify-center rounded-md border border-accent-2 bg-accent-2-soft"
                                 >
                                     <CheckCircle2 className="h-5 w-5 text-accent-2" />
                                 </div>
@@ -350,12 +351,12 @@ export default function QuestionDetail() {
 
                                 <Link
                                     to={`/u/${answer.author.username}`}
-                                    className="flex items-center gap-2 rounded-sm border border-rule bg-paper-2 p-2 pr-3"
+                                    className="flex items-center gap-2 rounded-md border border-rule bg-paper-2 p-2 pr-3"
                                 >
                                     <img
-                                        src={answer.author.avatar}
-                                        alt=""
-                                        className="h-8 w-8 rounded-sm object-cover"
+                                        src={answer.author.avatar || getAvatarFallback(answer.author.name, answer.author.username)}
+                                        alt={answer.author.name}
+                                        className="h-8 w-8 rounded-md object-cover bg-paper-2"
                                     />
 
                                     <div className="text-xs">
@@ -381,7 +382,7 @@ export default function QuestionDetail() {
                 ))}
 
                 {question.answers.length === 0 && (
-                    <div className="rounded-sm border border-dashed border-rule py-12 text-center">
+                    <div className="rounded-md border border-dashed border-rule py-12 text-center">
                         <p className="font-display text-lg text-ink">No answers yet.</p>
                         <p className="mt-1 text-sm text-ink-3">Be the helpful one.</p>
                     </div>
@@ -411,7 +412,7 @@ export default function QuestionDetail() {
                                 type="submit"
                                 data-testid="submit-answer-btn"
                                 disabled={!answerBody.trim()}
-                                className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
+                                className="inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95 disabled:opacity-40"
                             >
                                 <Send className="h-3.5 w-3.5" />
                                 Post answer
@@ -419,7 +420,7 @@ export default function QuestionDetail() {
                         </div>
                     </form>
                 ) : (
-                    <div className="rounded-sm border border-dashed border-rule py-8 text-center">
+                    <div className="rounded-md border border-dashed border-rule py-8 text-center">
                         <p className="text-sm text-ink-2">
                             <Link to="/login" className="text-accent hover:underline">Log in</Link> to post an answer
                         </p>

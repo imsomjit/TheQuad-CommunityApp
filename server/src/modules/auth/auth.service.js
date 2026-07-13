@@ -94,7 +94,7 @@ const register = async ({ name, username, email, password, gender, dateOfBirth }
   // Send OTP email
   await sendEmail({
     to: email,
-    subject: "Verify your email for PeerVerse",
+    subject: "Verify your email for The Quad",
     html: getOtpEmailTemplate(otp),
   });
 
@@ -130,7 +130,7 @@ const verifyOtp = async ({ email, otp }) => {
   // Send Welcome email
   await sendEmail({
     to: email,
-    subject: "Welcome to PeerVerse!",
+    subject: "Welcome to The Quad!",
     html: getWelcomeEmailTemplate(updated.name),
   });
 
@@ -318,8 +318,8 @@ const googleAuth = async ({ googleId, email, name, picture }) => {
   // Send Welcome Email for new Google user
   await sendEmail({
     to: email,
-    subject: "Welcome to PeerVerse!",
-    html: `<h2>Welcome to PeerVerse, ${newUser.name}!</h2><p>We're thrilled to have you join our community.</p>`,
+    subject: "Welcome to The Quad!",
+    html: `<h2>Welcome to The Quad, ${newUser.name}!</h2><p>We're thrilled to have you join our community.</p>`,
   });
 
   // Create welcome notification
@@ -442,7 +442,7 @@ const forgotPassword = async ({ email }) => {
 
   await sendEmail({
     to: email,
-    subject: "Reset your PeerVerse password",
+    subject: "Reset your The Quad password",
     html: getResetPasswordEmailTemplate(resetUrl, user.name),
   });
 

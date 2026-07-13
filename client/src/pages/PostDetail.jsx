@@ -3,17 +3,17 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronUp, ChevronDown, Bookmark, Share2, Flag, Clock, Eye,
   Edit2, ChevronLeft, ChevronRight, List, Copy, Check,
-  Code2, Briefcase, BookMarked, Layers, ExternalLink, Trash2,
+  Code2, Layers, ExternalLink, Trash2, Plus, MessageSquare, BookOpen
 } from "lucide-react";
-import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi } from "../services/api";
+import { postsApi, votesApi, bookmarksApi, reportsApi, adminApi, usersApi } from "../services/api";
 import { useApp } from "../context/AppContext";
 import { toast } from "sonner";
 import { CATEGORY_META } from "../components/PostCard";
 import { MarkdownRenderer } from "../components/MarkdownEditor";
 import { DetailSkeleton } from "../components/Skeletons";
-import { DetailSkeleton } from "../components/Skeletons";
 import CommentSection from "../components/CommentSection";
 import { useViewTracker } from "../hooks/useViewTracker";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 
 // ── Category metadata card ────────────────────────────────────────────────────
@@ -84,24 +84,30 @@ function CategoryMetaCard({ category, meta, variant }) {
   const cat = CATEGORY_META[category];
   const Icon = cat?.icon || Code2;
 
-  if (variant === "sidebar") {
-    return (
-      <div className="space-y-4">
-        <div className={`flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] font-semibold ${cat?.color || "text-ink-3"}`}>
-          <Icon className="h-4 w-4" />
-          {cat?.label || category}
-        </div>
-        <dl className="space-y-3">
-          {fields.map(({ label, value }) => (
-            <div key={label}>
-              <dt className="font-mono text-[10px] uppercase text-ink-3 mb-1">{label}</dt>
-              <dd className="text-sm font-medium text-ink leading-tight">{value}</dd>
-            </div>
-          ))}
-        </dl>
+ if (variant === "sidebar") {
+  return (
+    <div className="space-y-5">
+      <div
+        className={`flex items-center gap-2 text-xs font-medium ${cat?.color || "text-ink-3"}`}
+      >
+        <Icon className="h-4 w-4" />
+        <span>{cat?.label || category}</span>
       </div>
-    );
-  }
+
+      <div className="space-y-3">
+        {fields.map(({ label, value }) => (
+          <div
+            key={label}
+            className="flex items-start font-mono justify-between gap-4 text-sm"
+          >
+            <span className="text-ink-3">{label}</span>
+            <span className="text-right font-medium text-ink">{value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl border border-rule bg-paper-2/30 px-5 py-4">
@@ -126,44 +132,61 @@ function CategoryMetaCard({ category, meta, variant }) {
 function SeriesNav({ seriesNav }) {
   if (!seriesNav) return null;
   const { series, currentPart, totalParts, prev, next } = seriesNav;
-
   return (
-    <div className="mb-6 rounded-sm border border-rule bg-paper-2/40 p-4">
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
-        Series · Part {currentPart} of {totalParts}
-      </div>
-      <Link
-        to={`/series/${series.slug}`}
-        className="block font-display text-base text-ink transition-colors hover:text-accent"
-      >
-        {series.title}
-      </Link>
-      <div className="mt-3 flex gap-3">
-        {prev && (
-          <Link
-            to={`/posts/${prev.slug}`}
-            className="flex items-center gap-1.5 rounded-sm border border-rule bg-paper px-3 py-2 text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            <span className="max-w-[120px] truncate">{prev.title}</span>
-          </Link>
-        )}
-        {next && (
-          <Link
-            to={`/posts/${next.slug}`}
-            className="ml-auto flex items-center gap-1.5 rounded-sm border border-rule bg-paper px-3 py-2 text-xs text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-          >
-            <span className="max-w-[120px] truncate">{next.title}</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        )}
+    <div className="mb-8 rounded-lg border border-rule bg-transparent">
+      <div className="p-5 sm:p-6">
+        <div className="mb-3 flex items-center gap-2">
+          <BookOpen className="h-4 w-4 text-ink-3" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.1em] font-semibold text-ink-3">
+            Series Collection · Part {currentPart} of {totalParts}
+          </span>
+        </div>
+        
+        <Link
+          to={`/series/${series.slug}`}
+          className="block font-display text-lg sm:text-xl font-semibold text-ink transition-colors hover:text-accent mb-6"
+        >
+          {series.title}
+        </Link>
+        
+        <div className="flex flex-col sm:flex-row gap-4 border-t border-rule/50 pt-5 mt-5">
+          {prev ? (
+            <Link
+              to={`/posts/${prev.slug}`}
+              className="group flex flex-1 flex-col gap-1 transition-colors"
+            >
+              <div className="flex items-center gap-1 font-mono text-[10px] uppercase text-ink-3">
+                <ChevronLeft className="h-3 w-3 transition-transform group-hover:-translate-x-1" />
+                Previous Part
+              </div>
+              <span className="text-sm font-medium text-ink group-hover:text-accent pl-4">{prev.title}</span>
+            </Link>
+          ) : (
+             <div className="flex-1" />
+          )}
+          
+          {next ? (
+            <Link
+              to={`/posts/${next.slug}`}
+              className="group flex flex-1 flex-col items-end gap-1 text-right transition-colors"
+            >
+              <div className="flex items-center gap-1 font-mono text-[10px] uppercase text-ink-3">
+                Next Part
+                <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+              </div>
+              <span className="text-sm font-medium text-ink group-hover:text-accent pr-4">{next.title}</span>
+            </Link>
+          ) : (
+             <div className="flex-1" />
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 // ── Table of contents ─────────────────────────────────────────────────────────
-function TableOfContents({ body }) {
+function TableOfContents({ body, setIsExpanded }) {
   const headings = [];
   const lines = (body || "").split("\n");
   for (const line of lines) {
@@ -183,11 +206,14 @@ function TableOfContents({ body }) {
         <List className="h-4 w-4" />
         Contents
       </div>
-      <nav className="flex flex-col gap-2.5">
+      <nav className="space-y-2.5 max-h-[35vh] overflow-y-auto pr-2 custom-scrollbar">
         {headings.map((h) => (
           <a
             key={h.id}
             href={`#${h.id}`}
+            onClick={() => {
+              if (setIsExpanded) setIsExpanded(true);
+            }}
             className={`block truncate text-[13px] leading-relaxed text-ink-2 transition-colors hover:text-accent
               ${h.level === 3 ? "pl-4 text-ink-3" : "font-medium"}`}
           >
@@ -213,8 +239,23 @@ export default function PostDetail() {
 
   const [toc, setToc] = useState([]);
   const [activeHeadingId, setActiveHeadingId] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const commentsRef = useRef(null);
+  const [isCommentsVisible, setIsCommentsVisible] = useState(false);
+
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useViewTracker("post", post?.id);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsCommentsVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    if (commentsRef.current) observer.observe(commentsRef.current);
+    return () => observer.disconnect();
+  }, [post, isExpanded]);
 
   const isBookmarked = post ? bookmarks.has(`blog:${post.id}`) : false;
 
@@ -238,6 +279,35 @@ export default function PostDetail() {
     load();
   }, [slug, currentUser]);
 
+  useEffect(() => {
+    if (post?.author && currentUser && post.author.username !== currentUser.username) {
+      usersApi.getProfile(post.author.username)
+        .then((p) => setIsFollowing(p.viewerFollows))
+        .catch(() => { });
+    }
+  }, [post, currentUser]);
+
+  const handleFollowToggle = async () => {
+    if (!currentUser) { navigate("/login"); return; }
+    if (followLoading || !post?.author) return;
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await usersApi.unfollow(post.author.username);
+        setIsFollowing(false);
+        toast.success(`Unfollowed @${post.author.username}`);
+      } else {
+        await usersApi.follow(post.author.username);
+        setIsFollowing(true);
+        toast.success(`Following @${post.author.username}`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Action failed");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   const handleVote = async (direction) => {
     if (!currentUser) { navigate("/login"); return; }
     if (!post) return;
@@ -245,7 +315,7 @@ export default function PostDetail() {
       const data = await votesApi.cast({ targetType: "blog", targetId: post.id, direction });
       setPost((p) => ({ ...p, upvotes: data.upvotes, downvotes: data.downvotes }));
       setUserVote(data.userVote);
-    } catch {}
+    } catch { }
   };
 
   const handleBookmarkClick = async () => {
@@ -253,12 +323,12 @@ export default function PostDetail() {
     if (!post) return;
     try {
       await toggleBookmark(post.id, "blog");
-    } catch {}
+    } catch { }
   };
 
   const handleShare = async () => {
     const url = window.location.href;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -355,7 +425,7 @@ export default function PostDetail() {
           <div className="sticky top-24 flex flex-col items-center gap-2">
             <button
               onClick={() => handleVote("up")}
-              className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
+              className={`flex h-9 w-9 items-center justify-center rounded-md border transition-colors
                 ${userVote === "up" ? "border-accent bg-accent/10 text-accent" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
             >
               <ChevronUp className="h-4 w-4" />
@@ -365,7 +435,7 @@ export default function PostDetail() {
             </span>
             <button
               onClick={() => handleVote("down")}
-              className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
+              className={`flex h-9 w-9 items-center justify-center rounded-md border transition-colors
                 ${userVote === "down" ? "border-red-400 bg-red-50 text-red-500" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
             >
               <ChevronDown className="h-4 w-4" />
@@ -373,28 +443,23 @@ export default function PostDetail() {
 
             <div className="my-1 h-px w-full bg-rule" />
 
-            <button
-              onClick={handleBookmarkClick}
-              title="Bookmark"
-              className={`flex h-9 w-9 items-center justify-center rounded-sm border transition-colors
-                ${isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:border-ink-3 hover:text-ink"}`}
-            >
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-            </button>
-            <button
-              onClick={handleShare}
-              title="Copy link"
-              className="relative flex h-9 w-9 items-center justify-center rounded-sm border border-rule text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
-            >
-              {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
-            </button>
             {!isOwner && (
               <button
                 onClick={handleReport}
                 title="Report"
-                className="flex h-9 w-9 items-center justify-center rounded-sm border border-rule text-ink-3 transition-colors hover:border-red-300 hover:text-red-400"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule text-ink-3 transition-colors hover:border-red-300 hover:text-red-400"
               >
                 <Flag className="h-4 w-4" />
+              </button>
+            )}
+
+            {isExpanded && !isCommentsVisible && (
+              <button
+                onClick={() => commentsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                title="Jump to Comments"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-rule text-ink-3 transition-colors hover:border-accent hover:text-ink animate-in fade-in zoom-in duration-300"
+              >
+                <MessageSquare className="h-4 w-4 text-accent" fill="currentColor"/>
               </button>
             )}
           </div>
@@ -402,11 +467,23 @@ export default function PostDetail() {
 
         {/* ── Article content ────────────────────────────────────────────── */}
         <article className="min-w-0 flex-1 max-w-3xl mx-auto">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3 mb-6">
-            <Link to="/posts" className="hover:text-ink">Posts</Link>
-            <span>/</span>
-            {cat && <span className={cat.color}>{cat.label}</span>}
+          {/* Breadcrumb and Series Badge */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+              <Link to="/posts" className="hover:text-ink">Posts</Link>
+              <span>/</span>
+              {cat && <span className={cat.color}>{cat.label}</span>}
+            </div>
+            
+            {post.seriesNav && (
+              <Link 
+                to={`/series/${post.seriesNav.series.slug}`}
+                className="flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.05em] font-medium text-accent transition-colors hover:bg-accent/10 hover:border-accent/50"
+              >
+                <BookOpen className="h-3 w-3" />
+                Series: Part {post.seriesNav.currentPart} of {post.seriesNav.totalParts}
+              </Link>
+            )}
           </div>
 
           {/* Title */}
@@ -418,13 +495,28 @@ export default function PostDetail() {
           <div className="flex items-center justify-between mb-8 pb-8 border-b border-rule">
             <div className="flex items-center gap-4">
               {post.author && (
-                <Link to={`/u/${post.author.username}`}>
-                  <img
-                    src={post.author.avatar}
-                    alt={post.author.name}
-                    className="h-12 w-12 rounded-full object-cover shadow-sm border border-rule"
-                  />
-                </Link>
+                <div className="relative">
+                  <Link to={`/u/${post.author.username}`}>
+                    <img
+                      src={post.author.avatar || getAvatarFallback(post.author.name, post.author.username)}
+                      alt={post.author.name}
+                      className="h-12 w-12 rounded-full object-cover shadow-sm border border-rule bg-paper-2"
+                    />
+                  </Link>
+                  {(!currentUser || currentUser.username !== post.author.username) && (
+                    <button
+                      onClick={handleFollowToggle}
+                      disabled={followLoading}
+                      title={isFollowing ? `Unfollow ${post.author.name}` : `Follow ${post.author.name}`}
+                      className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-paper-2 border border-rule shadow-sm transition-colors ${isFollowing
+                          ? "text-accent hover:text-error hover:border-error/30"
+                          : "text-ink hover:text-accent"
+                        }`}
+                    >
+                      {isFollowing ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                    </button>
+                  )}
+                </div>
               )}
               <div className="flex flex-col justify-center">
                 {post.author && (
@@ -457,34 +549,33 @@ export default function PostDetail() {
                 </div>
               </div>
             </div>
-            
+
             {/* Social Share / Bookmark (Desktop Inline) */}
             <div className="hidden md:flex items-center gap-3">
-               <button
-                 onClick={handleShare}
-                 title="Copy link"
-                 className="flex h-9 w-9 items-center justify-center rounded-full border border-rule text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
-               >
-                 {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
-               </button>
-               <button
-                 onClick={handleBookmarkClick}
-                 title="Bookmark"
-                 className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                   isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:bg-paper-2 hover:text-ink"
-                 }`}
-               >
-                 <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-               </button>
-               {(isOwner || isModerator) && (
-                 <button
-                   onClick={handleDelete}
-                   title="Delete Post"
-                   className="flex h-9 w-9 items-center justify-center rounded-full border border-error/20 text-error transition-colors hover:bg-error/10"
-                 >
-                   <Trash2 className="h-4 w-4" />
-                 </button>
-               )}
+              <button
+                onClick={handleShare}
+                title="Copy link"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-rule text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink"
+              >
+                {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
+              </button>
+              <button
+                onClick={handleBookmarkClick}
+                title="Bookmark"
+                className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${isBookmarked ? "border-amber-400 bg-amber-50 text-amber-500" : "border-rule text-ink-2 hover:bg-paper-2 hover:text-ink"
+                  }`}
+              >
+                <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
+              </button>
+              {(isOwner || isModerator) && (
+                <button
+                  onClick={handleDelete}
+                  title="Delete Post"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-error/20 text-error transition-colors hover:bg-error/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -499,17 +590,28 @@ export default function PostDetail() {
             </figure>
           )}
 
-          {/* Series navigation */}
-          {post.seriesNav && (
-            <div className="mb-10">
-              <SeriesNav seriesNav={post.seriesNav} />
+          {/* Markdown body — uses shared MarkdownRenderer (theme-adaptive syntax) */}
+          <div className={`mt-4 relative ${!isExpanded ? "max-h-[600px] overflow-hidden" : ""}`}>
+            <MarkdownRenderer>{post.body}</MarkdownRenderer>
+            {!isExpanded && (
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-paper to-transparent flex items-end justify-center pb-4">
+                <button onClick={() => setIsExpanded(true)} className="rounded-full bg-paper border border-rule px-6 py-2 text-sm font-medium text-ink shadow-sm hover:bg-paper-2 hover:text-accent transition-colors">
+                  Show more
+                </button>
+              </div>
+            )}
+          </div>
+
+          {isExpanded && (
+            <div className="mt-8 flex justify-center border-t border-rule pt-8">
+              <button onClick={() => {
+                setIsExpanded(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} className="rounded-full bg-paper border border-rule px-6 py-2 text-sm font-medium text-ink shadow-sm hover:bg-paper-2 hover:text-accent transition-colors">
+                Show less
+              </button>
             </div>
           )}
-
-          {/* Markdown body — uses shared MarkdownRenderer (theme-adaptive syntax) */}
-          <div className="mt-4">
-            <MarkdownRenderer>{post.body}</MarkdownRenderer>
-          </div>
 
           {/* Series navigation bottom */}
           {post.seriesNav && (
@@ -520,15 +622,15 @@ export default function PostDetail() {
 
           {/* Mobile action bar */}
           <div className="mt-8 flex items-center gap-3 border-t border-rule pt-5 md:hidden">
-            <button onClick={() => handleVote("up")} className={`flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm transition-colors ${userVote === "up" ? "border-accent bg-accent/10 text-accent" : "border-rule text-ink-2"}`}>
+            <button onClick={() => handleVote("up")} className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors ${userVote === "up" ? "border-accent bg-accent/10 text-accent" : "border-rule text-ink-2"}`}>
               <ChevronUp className="h-4 w-4" />
               {(post.upvotes || 0) - (post.downvotes || 0)}
             </button>
-            <button onClick={handleBookmarkClick} className={`flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm transition-colors ${isBookmarked ? "border-amber-400 text-amber-500" : "border-rule text-ink-2"}`}>
+            <button onClick={handleBookmarkClick} className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm transition-colors ${isBookmarked ? "border-amber-400 text-amber-500" : "border-rule text-ink-2"}`}>
               <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
               Save
             </button>
-            <button onClick={handleShare} className="flex items-center gap-1.5 rounded-sm border border-rule px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink">
+            <button onClick={handleShare} className="flex items-center gap-1.5 rounded-md border border-rule px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink">
               <Share2 className="h-4 w-4" />
               Share
             </button>
@@ -536,14 +638,14 @@ export default function PostDetail() {
 
           {/* Author card */}
           {post.author && (
-            <div className="mt-10 rounded-sm border border-rule bg-paper-2/40 p-5">
+            <div className="mt-10 rounded-md border border-rule bg-paper-2/40 p-5">
               <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">Written by</p>
               <div className="flex items-start gap-4">
                 <Link to={`/u/${post.author.username}`}>
                   <img
-                    src={post.author.avatar}
+                    src={post.author.avatar || getAvatarFallback(post.author.name, post.author.username)}
                     alt={post.author.name}
-                    className="h-12 w-12 rounded-sm object-cover"
+                    className="h-12 w-12 rounded-md object-cover bg-paper-2"
                   />
                 </Link>
                 <div className="min-w-0 flex-1">
@@ -553,12 +655,24 @@ export default function PostDetail() {
                   <p className="font-mono text-xs text-ink-3">@{post.author.username}</p>
                   {post.author.bio && <p className="mt-1.5 text-sm text-ink-2">{post.author.bio}</p>}
                 </div>
+                {(!currentUser || currentUser.username !== post.author.username) && (
+                  <button
+                    onClick={handleFollowToggle}
+                    disabled={followLoading}
+                    className={`shrink-0 rounded-md border border-rule px-4 py-1.5 text-xs font-medium transition-all ${isFollowing
+                        ? "bg-paper-2 text-ink-2 hover:border-error/30 hover:bg-error/10 hover:text-error"
+                        : "bg-paper text-ink shadow-sm hover:bg-paper-2 hover:text-accent"
+                      }`}
+                  >
+                    {isFollowing ? "Following" : "Follow"}
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {/* Comments — threaded */}
-          <div className="mt-10">
+          <div className="mt-10" ref={commentsRef}>
             <CommentSection
               targetType="blog"
               targetId={post.id}
@@ -569,8 +683,8 @@ export default function PostDetail() {
         {/* ── Right sidebar: TOC & Meta ────────────────────────────────── */}
         <aside className="hidden w-64 shrink-0 xl:block">
           <div className="sticky top-24 space-y-6">
-            <TableOfContents body={post.body} />
-            
+            <TableOfContents body={post.body} setIsExpanded={setIsExpanded} />
+
             {/* Sidebar Tags & Meta Card */}
             {(post.tags?.length > 0 || (post.categoryMeta && Object.keys(post.categoryMeta).length > 0)) && (
               <div className="rounded-xl border border-rule bg-paper-2/30 p-5 shadow-sm">
@@ -583,7 +697,7 @@ export default function PostDetail() {
                     <CategoryMetaCard category={post.category} meta={post.categoryMeta} variant="sidebar" />
                   </div>
                 )}
-                
+
                 {post.tags?.length > 0 && (
                   <div>
                     <div className="mb-4 flex items-center gap-2 font-mono text-xs uppercase tracking-widest font-semibold text-ink">
@@ -610,4 +724,3 @@ export default function PostDetail() {
     </div>
   );
 }
-

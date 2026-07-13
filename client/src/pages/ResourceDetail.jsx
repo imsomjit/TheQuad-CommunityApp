@@ -15,7 +15,19 @@ import {
     Calendar,
     Lock,
     Eye,
+    Maximize,
+    Minimize,
+    Building2,
+    GraduationCap,
+    Share2,
+    Check,
 } from "lucide-react";
+
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { useTheme } from "../context/ThemeContext";
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -24,7 +36,7 @@ import TagBadge from "../components/TagBadge";
 import { DetailSkeleton } from "../components/Skeletons";
 import { useViewTracker } from "../hooks/useViewTracker";
 import { extractIdFromSlug } from "../utils/slugify";
-import { adminApi, resourcesApi } from "../services/api";
+import { adminApi, resourcesApi, usersApi } from "../services/api";
 const RESOURCE_TYPES = [
   { key: "notes", label: "Notes", icon: "BookOpen" },
   { key: "pyq", label: "PYQ", icon: "FileText" },
@@ -34,6 +46,7 @@ const RESOURCE_TYPES = [
 ];
 import CommentSection from "../components/CommentSection";
 import { toast } from "sonner";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 const ICONS = { BookOpen, FileText, ClipboardList, Sparkles, Folder };
 
@@ -78,11 +91,152 @@ export default function ResourceDetail() {
         apiLoaded,
     } = useApp();
     const { isAuthenticated } = useAuth();
+    const { theme } = useTheme();
+
+    const [showPreview, setShowPreview] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const viewerContainerRef = React.useRef(null);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followLoading, setFollowLoading] = useState(false);
+    const [shareToast, setShareToast] = useState(false);
+
+    const handleShare = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: resource?.title || "Check out this resource",
+                    url: url
+                });
+                return;
+            } catch (err) {
+                if (err.name !== "AbortError") console.error(err);
+            }
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => {
+                setShareToast(true);
+                setTimeout(() => setShareToast(false), 2000);
+            });
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = url;
+            textArea.style.position = "absolute";
+            textArea.style.left = "-999999px";
+            document.body.prepend(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                setShareToast(true);
+                setTimeout(() => setShareToast(false), 2000);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                textArea.remove();
+            }
+        }
+    };
 
     const extractedId = extractIdFromSlug(id);
     const resource = resources.find(
         (r) => r.publicId === extractedId || r.id === parseInt(extractedId, 10)
     );
+
+    useEffect(() => {
+        if (currentUser && resource?.uploader) {
+            usersApi.getProfile(resource.uploader.username)
+                .then(p => setIsFollowing(p.viewerFollows))
+                .catch(() => {});
+        }
+    }, [resource, currentUser]);
+
+    const handleFollowToggle = async () => {
+        if (!currentUser) { navigate("/login"); return; }
+        if (followLoading || !resource?.uploader) return;
+        setFollowLoading(true);
+        try {
+            if (isFollowing) {
+                await usersApi.unfollowUser(resource.uploader.id);
+                setIsFollowing(false);
+                toast.success(`Unfollowed ${resource.uploader.name}`);
+            } else {
+                await usersApi.followUser(resource.uploader.id);
+                setIsFollowing(true);
+                toast.success(`Following ${resource.uploader.name}`);
+            }
+        } catch (error) {
+            toast.error("Failed to toggle follow status");
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+            viewerContainerRef.current?.requestFullscreen().catch(err => {
+                console.error("Error attempting to enable full-screen mode:", err.message);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    };
+
+    const defaultLayoutPluginInstance = defaultLayoutPlugin({
+        sidebarTabs: () => [], 
+        renderToolbar: (Toolbar) => (
+            <Toolbar>
+                {(slots) => {
+                    const {
+                        CurrentPageInput,
+                        GoToNextPage,
+                        GoToPreviousPage,
+                        NumberOfPages,
+                        Zoom,
+                        ZoomIn,
+                        ZoomOut,
+                    } = slots;
+                    return (
+                        <div className="flex w-full items-center justify-between px-4 py-2 bg-paper border-b border-rule shrink-0">
+                            <div className="flex items-center gap-2">
+                                <ZoomOut />
+                                <Zoom />
+                                <ZoomIn />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <GoToPreviousPage />
+                                <div className="flex items-center gap-1 font-mono text-sm text-ink-2">
+                                    <CurrentPageInput />
+                                    <span>/</span>
+                                    <NumberOfPages />
+                                </div>
+                                <GoToNextPage />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={toggleFullscreen}
+                                    className="p-1.5 rounded-md hover:bg-paper-2 transition-colors text-ink-2 hover:text-ink"
+                                    title={isFullscreen ? "Exit Full Screen" : "Full Screen"}
+                                >
+                                    {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }}
+            </Toolbar>
+        ),
+    });
 
     useViewTracker("resource", resource?.id);
 
@@ -104,7 +258,7 @@ export default function ResourceDetail() {
     const type =
         RESOURCE_TYPES.find((t) => t.key === resource.type) || RESOURCE_TYPES[4];
     const Icon = ICONS[type.icon] || Folder;
-    const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
+    const colorVar = `rgb(var(${TYPE_VAR[resource.type] || "--ink-2"}))`;
 
     const isMine = currentUser?.id === resource.uploader.id;
     const isModerator = currentUser?.role === 'admin' || currentUser?.role === 'moderator';
@@ -150,7 +304,7 @@ export default function ResourceDetail() {
     };
 
     return (
-        <div className="mx-auto max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mx-auto max-w-6xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Link
                 to="/resources"
                 data-testid="back-to-resources"
@@ -172,18 +326,33 @@ export default function ResourceDetail() {
 
                     <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-3">
                         <span
-                            className="inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1"
+                            className="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1"
                             style={{ color: colorVar, borderColor: colorVar }}
                         >
                             <Icon className="h-3 w-3" />
                             {type.label}
                         </span>
 
-                        <span>{resource.subject}</span>
-                        <span className="text-ink-3/60">·</span>
-                        <span>{resource.college}</span>
-                        <span className="text-ink-3/60">·</span>
-                        <span>{resource.branch} · Sem {resource.semester}</span>
+                        {resource.subject && (
+                            <div className="flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1 bg-paper-2/50 text-ink-2">
+                                <BookOpen className="h-3 w-3 text-accent" />
+                                <span>{resource.subject}</span>
+                            </div>
+                        )}
+                        
+                        {resource.college && (
+                            <div className="flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1 bg-paper-2/50 text-ink-2">
+                                <Building2 className="h-3 w-3 text-accent" />
+                                <span>{resource.college}</span>
+                            </div>
+                        )}
+                        
+                        {resource.branch && (
+                            <div className="flex items-center gap-1.5 rounded-md border border-rule px-2.5 py-1 bg-paper-2/50 text-ink-2">
+                                <GraduationCap className="h-3 w-3 text-accent" />
+                                <span>{resource.branch} · Sem {resource.semester}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-3 flex items-center gap-4 font-mono text-xs text-ink-3">
@@ -208,77 +377,113 @@ export default function ResourceDetail() {
                 </header>
 
                 {/* Action bar */}
-                <div className="flex flex-wrap items-center gap-3 rounded-sm border border-rule bg-paper-2/50 p-4">
-                    <VoteButtons
-                        kind="resource"
-                        id={resource.id}
-                        upvotes={resource.upvotes}
-                        downvotes={resource.downvotes}
-                        layout="horizontal"
-                        size="md"
-                    />
-
-                    <div className="h-8 w-px bg-rule" />
-
-                    <button
-                        onClick={handleDownload}
-                        data-testid="download-resource-btn"
-                        className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-3 py-2 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
-                    >
-                        {isAuthenticated ? (
-                            <Download className="h-4 w-4" />
-                        ) : (
-                            <Lock className="h-4 w-4" />
-                        )}
-                        {isAuthenticated ? "Download" : "Login to Download"}
-                    </button>
-
-                    <button
-                        onClick={handleBookmark}
-                        data-testid="bookmark-detail-btn"
-                        className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-2 text-sm font-medium transition-colors ${isBookmarked
-                                ? "border-accent bg-accent-soft text-accent"
-                                : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
-                            }`}
-                    >
-                        <Bookmark
-                            className="h-4 w-4"
-                            fill={isBookmarked ? "currentColor" : "none"}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 rounded-xl border border-accent-soft bg-paper shadow-sm p-3">
+                    {/* Primary Group */}
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
+                        <VoteButtons
+                            kind="resource"
+                            id={resource.id}
+                            upvotes={resource.upvotes}
+                            downvotes={resource.downvotes}
+                            layout="horizontal"
+                            size="md"
                         />
-                        {isBookmarked ? "Saved" : "Save"}
-                    </button>
-                            
-                    {!isMine && (
-                        <button
-                            data-testid="report-resource-btn"
-                            onClick={() => {
-                                if (!isAuthenticated) {
-                                    toast.error("Please log in to report resources");
-                                    navigate("/login");
-                                    return;
-                                }
-                                openReportModal("resource", resource.id, resource.title);
-                            }}
-                            className="ml-auto inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
-                        >
-                            <Flag className="h-3.5 w-3.5" />
-                            Report
-                        </button>
-                    )}
 
-                    {(isMine || isModerator) && (
+                        <div className="hidden sm:block h-8 w-px bg-rule mx-1" />
+
                         <button
-                            data-testid="delete-resource-btn"
-                            onClick={handleDelete}
-                            className="inline-flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                            onClick={handleDownload}
+                            data-testid="download-resource-btn"
+                            className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-paper transition-all hover:brightness-110 active:scale-95"
                         >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Delete
+                            {isAuthenticated ? (
+                                <Download className="h-4 w-4" />
+                            ) : (
+                                <Lock className="h-4 w-4" />
+                            )}
+                            Download
                         </button>
-                    )}
+
+                        {isAuthenticated ? (
+                            <button
+                                onClick={() => setShowPreview(!showPreview)}
+                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                            >
+                                <Eye className="h-4 w-4" />
+                                {showPreview ? "Hide Preview" : "Preview"}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => navigate("/login")}
+                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3"
+                            >
+                                <Lock className="h-4 w-4" />
+                                Preview
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="hidden sm:block flex-1" />
+
+                    {/* Secondary Group */}
+                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-rule sm:border-0">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleBookmark}
+                                data-testid="bookmark-detail-btn"
+                                className={`flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${isBookmarked
+                                        ? "border-accent bg-accent-soft text-accent"
+                                        : "border-rule bg-paper-2 text-ink-2 hover:border-ink-3 hover:text-ink"
+                                    }`}
+                            >
+                                <Bookmark
+                                    className="h-4 w-4"
+                                    fill={isBookmarked ? "currentColor" : "none"}
+                                />
+                                {isBookmarked ? "Saved" : "Save"}
+                            </button>
+                            
+                            <button
+                                onClick={handleShare}
+                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
+                            >
+                                {shareToast ? <Check className="h-4 w-4 text-emerald-500" /> : <Share2 className="h-4 w-4" />}
+                                {shareToast ? "Copied!" : "Share"}
+                            </button>
+                        </div>
+                                
+                        {!isMine && (
+                            <button
+                                data-testid="report-resource-btn"
+                                onClick={() => {
+                                    if (!isAuthenticated) {
+                                        toast.error("Please log in to report resources");
+                                        navigate("/login");
+                                        return;
+                                    }
+                                    openReportModal("resource", resource.id, resource.title);
+                                }}
+                                className="inline-flex items-center gap-1.5 rounded-md px-2 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                            >
+                                <Flag className="h-4 w-4" />
+                                <span className="hidden sm:inline">Report</span>
+                            </button>
+                        )}
+
+                        {(isMine || isModerator) && (
+                            <button
+                                data-testid="delete-resource-btn"
+                                onClick={handleDelete}
+                                className="inline-flex items-center gap-1.5 rounded-md px-2 py-2 text-sm text-ink-2 transition-colors hover:text-syntax-rose"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="hidden sm:inline">Delete</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="hidden md:grid md:grid-cols-3 gap-4">
                     <Stat label="views" value={resource.views.toLocaleString()} />
                     <Stat label="downloads" value={resource.downloads.toLocaleString()} />
                     <Stat
@@ -288,9 +493,9 @@ export default function ResourceDetail() {
                 </div>
 
                 {/* File preview */}
-                <div className="flex items-center gap-4 rounded-sm border border-rule bg-paper-2/40 p-5">
+                <div className="flex items-center gap-4 rounded-md border border-rule bg-paper-2/40 p-5">
                     <div
-                        className="flex h-14 w-14 items-center justify-center rounded-sm border"
+                        className="flex h-14 w-14 items-center justify-center rounded-md border shrink-0"
                         style={{ borderColor: colorVar, color: colorVar }}
                     >
                         <FileText className="h-7 w-7" strokeWidth={1.5} />
@@ -306,6 +511,34 @@ export default function ResourceDetail() {
                         </p>
                     </div>
                 </div>
+
+                {showPreview && isAuthenticated && (
+                    <div className="mt-6">
+                        {resource.fileUrl?.toLowerCase().endsWith('.pdf') ? (
+                            <div
+                                ref={viewerContainerRef}
+                                className="overflow-hidden rounded-2xl border border-rule bg-paper shadow-lg w-full h-[70vh] sm:h-[85vh] min-h-[500px] sm:min-h-[800px] flex flex-col relative"
+                            >
+                                <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js`}>
+                                    <Viewer
+                                        fileUrl={resource.fileUrl}
+                                        plugins={[defaultLayoutPluginInstance]}
+                                        theme={theme === 'dark' ? 'dark' : 'light'}
+                                    />
+                                </Worker>
+                            </div>
+                        ) : resource.fileUrl?.match(/\.(jpeg|jpg|gif|png)$/i) ? (
+                            <div className="overflow-hidden rounded-2xl border border-rule shadow-lg bg-paper flex justify-center items-center p-4">
+                                <img src={resource.fileUrl} alt="Resource Preview" className="max-w-full max-h-[85vh] object-contain rounded-md" />
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center border border-rule rounded-md bg-paper-2/40">
+                                <p className="text-ink-2 text-sm font-mono uppercase tracking-widest">Preview not available for this file type.</p>
+                                <button onClick={handleDownload} className="mt-4 text-accent hover:underline text-sm font-medium">Download to view</button>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <section className="space-y-3">
                     <h2 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
@@ -323,25 +556,41 @@ export default function ResourceDetail() {
                     ))}
                 </div>
 
-                <div className="flex items-center gap-3 rounded-sm border border-rule bg-paper-2/40 p-4">
-                    <Link to={`/u/${resource.uploader.username}`}>
-                        <img
-                            src={resource.uploader.avatar}
-                            alt=""
-                            className="h-12 w-12 rounded-sm border border-rule object-cover"
-                        />
-                    </Link>
-
-                    <div className="flex-1">
-                        <Link
-                            to={`/u/${resource.uploader.username}`}
-                            className="font-semibold text-ink transition-colors hover:text-accent"
-                        >
-                            {resource.uploader.name}
+                <div className="mt-10 rounded-md border border-rule bg-paper-2/40 p-5">
+                    <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">Shared by</p>
+                    <div className="flex items-center gap-4">
+                        <Link to={`/u/${resource.uploader.username}`}>
+                            <img
+                                src={resource.uploader.avatar || getAvatarFallback(resource.uploader.name, resource.uploader.username)}
+                                alt={resource.uploader.name}
+                                className="h-12 w-12 rounded-md border border-rule object-cover bg-paper-2"
+                            />
                         </Link>
-                        <p className="font-mono text-xs text-ink-3">
-                            @{resource.uploader.username}
-                        </p>
+
+                        <div className="min-w-0 flex-1">
+                            <Link
+                                to={`/u/${resource.uploader.username}`}
+                                className="font-display text-lg text-ink hover:text-accent transition-colors"
+                            >
+                                {resource.uploader.name}
+                            </Link>
+                            <p className="font-mono text-xs text-ink-3">
+                                @{resource.uploader.username}
+                            </p>
+                        </div>
+                        {(!currentUser || currentUser.username !== resource.uploader.username) && (
+                            <button
+                                onClick={handleFollowToggle}
+                                disabled={followLoading}
+                                className={`shrink-0 rounded-md border border-rule px-4 py-1.5 text-xs font-medium transition-all ${
+                                    isFollowing
+                                        ? "bg-paper-2 text-ink-2 hover:border-error/30 hover:bg-error/10 hover:text-error"
+                                        : "bg-paper text-ink shadow-sm hover:bg-paper-2 hover:text-accent"
+                                }`}
+                            >
+                                {isFollowing ? "Following" : "Follow"}
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -356,7 +605,7 @@ export default function ResourceDetail() {
 
 function Stat({ label, value }) {
     return (
-        <div className="rounded-sm border border-rule bg-paper-2/40 p-4">
+        <div className="rounded-md border border-rule bg-paper-2/40 p-4">
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-3">
                 {label}
             </div>

@@ -56,7 +56,12 @@ const createPostSchema = z
       .min(3, "Title must be at least 3 characters")
       .max(300, "Title must be at most 300 characters")
       .trim(),
-    body: z.string().default(""),
+    body: z.string()
+      .max(100000, "Body cannot exceed 100,000 characters")
+      .default("")
+      .refine((val) => !val || val.trim().split(/\s+/).length <= 5000, {
+        message: "Body cannot exceed 5000 words",
+      }),
     excerpt: z.string().max(500).optional(),
     category: z.enum(CATEGORIES),
     categoryMeta: z.any().optional().default({}),
@@ -96,7 +101,12 @@ const createPostSchema = z
 const updatePostSchema = z
   .object({
     title: z.string().min(3).max(300).trim().optional(),
-    body: z.string().optional(),
+    body: z.string()
+      .max(100000, "Body cannot exceed 100,000 characters")
+      .optional()
+      .refine((val) => !val || val.trim().split(/\s+/).length <= 5000, {
+        message: "Body cannot exceed 5000 words",
+      }),
     excerpt: z.string().max(500).optional().or(z.null()),
     category: z.enum(CATEGORIES).optional(),
     categoryMeta: z.any().optional(),
@@ -112,7 +122,12 @@ const updatePostSchema = z
 
 const autosaveSchema = z.object({
   title: z.string().max(300).optional(),
-  body: z.string().optional(),
+  body: z.string()
+    .max(100000, "Body cannot exceed 100,000 characters")
+    .optional()
+    .refine((val) => !val || val.trim().split(/\s+/).length <= 5000, {
+      message: "Body cannot exceed 5000 words",
+    }),
   excerpt: z.string().max(500).optional(),
   categoryMeta: z.any().optional(),
 });

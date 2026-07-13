@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
-  Braces,
   ArrowRight,
   ArrowLeft,
   Eye,
   EyeOff,
   Loader2,
   BookOpen,
-  MessageSquare,
+  Target,
   Users,
   Terminal,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
-import { resourcesApi, questionsApi, usersApi } from "../services/api";
+import { resourcesApi, booksApi, opportunitiesApi, usersApi, API_BASE } from "../services/api";
 
 export default function Login() {
   const { login } = useAuth();
@@ -30,29 +29,34 @@ export default function Login() {
   const [googleAuthRequired, setGoogleAuthRequired] = useState(false);
 
   const [stats, setStats] = useState({
-    resources: "2.4k",
-    questions: "860",
+    contents: "2.4k",
+    opportunities: "860",
     students: "1.2k"
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [resRes, qRes, usersCount] = await Promise.all([
+        const [resRes, booksRes, oppsRes, upcomingOpps, usersCount] = await Promise.all([
           resourcesApi.list({ limit: 1 }).catch(() => null),
-          questionsApi.list({ limit: 1 }).catch(() => null),
+          booksApi.list({ limit: 1 }).catch(() => null),
+          opportunitiesApi.list({ status: "ONGOING", limit: 1 }).catch(() => null),
+          opportunitiesApi.list({ status: "UPCOMING", limit: 1 }).catch(() => null),
           usersApi.getTotalUsers().catch(() => 0)
         ]);
 
         const getCount = (res) => {
-          if (!res) return null;
+          if (!res) return 0;
           if (res.pagination?.total) return Number(res.pagination.total);
           if (res.data?.pagination?.total) return Number(res.data.pagination.total);
-          return null;
+          return 0;
         };
 
         const resCount = getCount(resRes);
-        const qCount = getCount(qRes);
+        const booksCount = getCount(booksRes);
+        const contentsCount = resCount + booksCount;
+
+        const oppsCount = getCount(oppsRes) + getCount(upcomingOpps);
 
         const formatNumber = (num) => {
           if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
@@ -60,8 +64,8 @@ export default function Login() {
         };
 
         setStats(prev => ({
-          resources: resCount !== null ? formatNumber(resCount) : prev.resources,
-          questions: qCount !== null ? formatNumber(qCount) : prev.questions,
+          contents: contentsCount > 0 ? formatNumber(contentsCount) : prev.contents,
+          opportunities: oppsCount > 0 ? formatNumber(oppsCount) : prev.opportunities,
           students: usersCount > 0 ? formatNumber(usersCount) : prev.students
         }));
       } catch (error) {
@@ -127,7 +131,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect to server-side Google OAuth flow
-    window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/google`;
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   return (
@@ -166,14 +170,14 @@ export default function Login() {
 
             {/* Stats strip */}
             <div className="mt-10 flex gap-8">
-              <StatPill icon={BookOpen} value={stats.resources} label="resources" />
-              <StatPill icon={MessageSquare} value={stats.questions} label="questions" />
-              <StatPill icon={Users} value={stats.students} label="students" />
+              <StatPill icon={BookOpen} value={stats.contents} label="contents" />
+              <StatPill icon={Target} value={stats.opportunities} label="opportunities" />
+              <StatPill icon={Users} value={stats.students} label="learners" />
             </div>
           </div>
 
           {/* Bottom — Quote */}
-          <div className="rounded-sm mt-16 border border-rule bg-paper p-5 backdrop-blur-sm">
+          <div className="rounded-md mt-16 border border-rule bg-paper/80 p-5 backdrop-blur-sm">
             <p className="text-sm leading-relaxed text-ink italic">
               <span className="text-accent">❝</span> Live as if you were to die tomorrow. Learn as if you were to live forever. <span className="text-accent">❞</span>
             </p>
@@ -218,7 +222,7 @@ export default function Login() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="flex w-full items-center justify-center gap-3 rounded-sm border border-rule bg-paper-2/60 py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:bg-paper-2 hover:shadow-lg"
+            className="flex w-full items-center justify-center gap-3 rounded-md border border-rule bg-paper-2/60 py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:bg-paper-2 hover:shadow-lg"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -240,12 +244,12 @@ export default function Login() {
 
           {/* Email Form */}
           {googleAuthRequired ? (
-            <div className="rounded-sm border border-accent/30 bg-accent-soft/30 p-6 text-center shadow-sm">
+            <div className="rounded-md border border-accent/30 bg-accent-soft/30 p-6 text-center shadow-sm">
               <p className="text-ink font-medium mb-6">This account uses Google Sign-In.</p>
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="flex w-full items-center justify-center gap-3 rounded-sm border border-rule bg-paper py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:shadow-md"
+                className="flex w-full items-center justify-center gap-3 rounded-md border border-rule bg-paper py-3 text-sm font-medium text-ink transition-all hover:border-ink-3 hover:shadow-md"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -340,13 +344,13 @@ export default function Login() {
           {/* Legal */}
           <p className="text-center font-mono text-[10px] text-ink-3 leading-relaxed">
             By signing in, you agree to our{" "}
-            <span className="text-ink-2 hover:text-accent cursor-pointer">
+            <Link to="/terms" className="text-ink-2 hover:text-accent cursor-pointer">
               Terms of Service
-            </span>{" "}
-            and{" "}
-            <span className="text-ink-2 hover:text-accent cursor-pointer">
+            </Link>
+            {" "}and{" "}
+            <Link to="/privacy" className="text-ink-2 hover:text-accent cursor-pointer">
               Privacy Policy
-            </span>
+            </Link>
           </p>
         </div>
       </div>
@@ -357,7 +361,7 @@ export default function Login() {
 function StatPill({ icon: Icon, value, label }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex h-8 w-8 items-center justify-center rounded-sm border border-rule bg-paper-2/60">
+      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-rule bg-paper-2/60">
         <Icon className="h-3.5 w-3.5 text-accent" />
       </div>
       <div>

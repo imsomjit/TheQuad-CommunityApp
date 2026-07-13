@@ -262,7 +262,7 @@ export default function AdminUsers() {
         {/* Action Panel */}
         <div className="lg:col-span-1">
           {selectedUser ? (
-            <div className="border border-rule rounded-xl bg-paper p-5 sticky top-24">
+            <div className="border border-rule rounded-xl bg-paper/80 backdrop-blur-xl p-5 sticky top-24">
               <h3 className="font-bold text-lg mb-1">{selectedUser.name}</h3>
               <p className="text-sm text-ink-2 mb-6">@{selectedUser.username}</p>
 
@@ -287,7 +287,7 @@ export default function AdminUsers() {
                       type="url"
                       value={contentUrl}
                       onChange={(e) => setContentUrl(e.target.value)}
-                      placeholder="e.g. https://peerverse.com/resources/..."
+                      placeholder="e.g. https://thequad.web.app/resources/..."
                       className="w-full rounded-md border border-rule bg-paper-2 p-2 text-sm text-ink focus:border-accent focus:outline-none"
                     />
                   </div>

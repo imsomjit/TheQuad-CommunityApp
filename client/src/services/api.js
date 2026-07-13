@@ -1,5 +1,5 @@
 /**
- * PeerVerse API Service
+ * The Quad API Service
  *
  * Centralized Axios wrapper with:
  * - Access token injection via interceptor
@@ -12,7 +12,7 @@ import { getAvatarFallback, getBannerFallback } from "../utils/fallbacks";
 
 // ── Base instance ────────────────────────────────────────────────────────────
 
-export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-peerverse.onrender.com/api");
+export const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "/api" : "https://api-thequad.onrender.com/api");
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -38,6 +38,13 @@ export const clearAccessToken = () => {
   accessToken = null;
 };
 
+// ── Fallback for 3rd-party cookie blocking ───────────────────────────────────
+export const setRefreshToken = (token) => {
+  if (token) localStorage.setItem("pv_refresh", token);
+};
+export const getRefreshToken = () => localStorage.getItem("pv_refresh");
+export const clearRefreshToken = () => localStorage.removeItem("pv_refresh");
+
 /**
  * Register a callback to invoke when silent refresh fails.
  * AuthContext sets this on mount so we can clear React state
@@ -57,7 +64,12 @@ api.interceptors.request.use((config) => {
 
 // ── Response interceptor: handle 401 → silent refresh ────────────────────────
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (res.data?.data?.refreshToken) {
+      setRefreshToken(res.data.data.refreshToken);
+    }
+    return res;
+  },
   async (error) => {
     const original = error.config;
 
@@ -73,12 +85,14 @@ api.interceptors.response.use(
       try {
         // Deduplicate concurrent refresh attempts
         if (!refreshPromise) {
-          refreshPromise = api.post("/auth/refresh").finally(() => {
+          const rToken = getRefreshToken();
+          refreshPromise = api.post("/auth/refresh", { refreshToken: rToken }).finally(() => {
             refreshPromise = null;
           });
         }
         const { data } = await refreshPromise;
         setAccessToken(data.data.accessToken);
+        if (data.data.refreshToken) setRefreshToken(data.data.refreshToken);
         original.headers.Authorization = `Bearer ${data.data.accessToken}`;
         return api(original);
       } catch {
@@ -265,7 +279,7 @@ const notifText = (type) => {
     content_removed: "your content was removed",
     like_blog: "liked your post",
     comment_on_blog: "commented on your post",
-    system_welcome: "Welcome to PeerVerse! Please take a moment to set up your profile.",
+    system_welcome: "Welcome to The Quad! Please take a moment to set up your profile.",
     system_broadcast: "sent a notification",
   };
   return map[type] || "interacted with your content";
@@ -287,7 +301,7 @@ const mapNotification = (n) => {
       target = n.targetTitle || "";
     }
   } else if (n.type === "system_welcome") {
-    titleOverride = "PeerVerse Team";
+    titleOverride = "The Quad Team";
   }
 
   return {
@@ -313,14 +327,23 @@ const mapNotification = (n) => {
 
 // ── API Functions ────────────────────────────────────────────────────────────
 
+
+// ─── TAGS API ──────────────────────────────────────────────────────────────
+export const tagsApi = {
+  getAll: () => api.get("/tags").then((res) => res.data),
+};
+
 // Auth
 export const authApi = {
   register: (data) => api.post("/auth/register", data),
   verifyOtp: (data) => api.post("/auth/verify-otp", data),
   resendOtp: (data) => api.post("/auth/resend-otp", data),
   login: (data) => api.post("/auth/login", data),
-  refresh: () => api.post("/auth/refresh"),
-  logout: () => api.post("/auth/logout"),
+  refresh: (refreshToken) => api.post("/auth/refresh", { refreshToken: refreshToken || getRefreshToken() }),
+  logout: () => {
+    clearRefreshToken();
+    return api.post("/auth/logout");
+  },
   me: () => api.get("/auth/me"),
 };
 
@@ -356,6 +379,8 @@ export const questionsApi = {
   deleteAnswer: (qId, aId) => api.delete(`/questions/${qId}/answers/${aId}`),
   acceptAnswer: (qId, aId) => api.post(`/questions/${qId}/answers/${aId}/accept`),
 };
+
+
 
 // Comments
 export const commentsApi = {
@@ -461,6 +486,8 @@ const mapPost = (p) => ({
   bookmarksCount: p.bookmarksCount || 0,
   seriesId: p.seriesId || null,
   seriesOrder: p.seriesOrder || null,
+  seriesTitle: p.seriesTitle || null,
+  seriesSlug: p.seriesSlug || null,
   seriesNav: p.seriesNav || null,
   publishedAt: p.publishedAt || null,
   createdAt: p.createdAt || p.created_at,
@@ -572,9 +599,28 @@ export const adminApi = {
   getDeletedContent: () => api.get("/moderation/deleted-content").then((r) => r.data.data),
   restoreContent: (type, id) => api.patch(`/moderation/content/${type}/${id}/restore`).then((r) => r.data.data),
   removeContent: (type, id, reason) => api.delete(`/moderation/content/${type}/${id}`, { data: { reason } }).then((r) => r.data),
+  
+  // Admin Chat Rooms
+  getGlobalRooms: () => api.get("/chat/rooms").then((r) => r.data.data.filter(room => room.type === 'global')),
+  createGlobalRoom: (data) => api.post("/chat/admin/rooms", data).then((r) => r.data.data),
+  deleteGlobalRoom: (roomId) => api.delete(`/chat/admin/rooms/${roomId}`).then((r) => r.data),
 };
 
 // Settings
+export const chatApi = {
+  getRooms: () => api.get("/chat/rooms").then((res) => res.data),
+  createRoom: (data) => api.post("/chat/rooms", data).then((res) => res.data),
+  createDirectRoom: (targetUserId) => api.post(`/chat/direct/${targetUserId}`).then((res) => res.data),
+  joinRoom: (code) => api.post("/chat/rooms/join", { code }).then((res) => res.data),
+  getMessages: (roomId) =>
+    api.get(`/chat/rooms/${roomId}/messages`).then((res) => res.data),
+  pinRoom: (roomId) => api.post(`/chat/rooms/${roomId}/pin`).then((res) => res.data),
+  unpinRoom: (roomId) => api.delete(`/chat/rooms/${roomId}/pin`).then((res) => res.data),
+  createAdminRoom: (data) => api.post("/chat/admin/rooms", data).then((res) => res.data),
+  deleteAdminRoom: (roomId) => api.delete(`/chat/admin/rooms/${roomId}`).then((res) => res.data),
+  getOnlineUsers: () => api.get("/chat/online").then((res) => res.data),
+};
+
 export const settingsApi = {
   get: () => api.get("/settings").then((r) => r.data),
   update: (data) => api.put("/settings", data).then((r) => r.data),

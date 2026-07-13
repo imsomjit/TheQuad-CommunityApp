@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://thepeerverse.vercel.app/</loc>
+    <loc>https://thethe quad.vercel.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/resources</loc>
+    <loc>https://thethe quad.vercel.app/resources</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/questions</loc>
+    <loc>https://thethe quad.vercel.app/questions</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/posts</loc>
+    <loc>https://thethe quad.vercel.app/posts</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/opportunities</loc>
+    <loc>https://thethe quad.vercel.app/opportunities</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/library</loc>
+    <loc>https://thethe quad.vercel.app/library</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/login</loc>
+    <loc>https://thethe quad.vercel.app/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://thepeerverse.vercel.app/register</loc>
+    <loc>https://thethe quad.vercel.app/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

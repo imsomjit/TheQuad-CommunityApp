@@ -11,7 +11,10 @@ const validate = require("../../middleware/validate");
 const addCommentSchema = z.object({
   targetType: z.enum(["resource", "question", "answer", "blog", "book"]),
   targetId: z.coerce.number().int().positive(),
-  body: z.string().min(1, "Comment cannot be empty").max(2000).trim(),
+  body: z.string().min(1, "Comment cannot be empty").max(2000).trim()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 500, {
+      message: "Comment cannot exceed 500 words",
+    }),
   parentId: z.coerce.number().int().positive().optional().or(z.null()),
 });
 

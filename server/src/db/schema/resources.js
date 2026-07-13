@@ -10,7 +10,8 @@ const {
   pgEnum,
   boolean,
 } = require("drizzle-orm/pg-core");
-const { nanoid } = require("nanoid");
+const { customAlphabet } = require("nanoid");
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 12);
 const { users } = require("./users");
 
 // ─── Enums ────────────────────────────────────────────────────────────────────

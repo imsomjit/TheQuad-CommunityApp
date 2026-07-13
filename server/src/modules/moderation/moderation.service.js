@@ -211,23 +211,23 @@ const getDeletedContent = async () => {
   const [res, ques, ans, psts, comms] = await Promise.all([
     db.select({
       id: resources.id, publicId: resources.publicId, title: resources.title,
-      deletedAt: resources.deletedAt, deletedBy: users.username, type: sql`'resource'`
+      deletedAt: resources.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'resource'`
     }).from(resources).where(eq(resources.isDeleted, true)).leftJoin(users, eq(resources.deletedById, users.id)),
     db.select({
       id: questions.id, publicId: questions.publicId, title: questions.title,
-      deletedAt: questions.deletedAt, deletedBy: users.username, type: sql`'question'`
+      deletedAt: questions.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'question'`
     }).from(questions).where(eq(questions.isDeleted, true)).leftJoin(users, eq(questions.deletedById, users.id)),
     db.select({
       id: answers.id, publicId: answers.publicId, title: answers.body,
-      deletedAt: answers.deletedAt, deletedBy: users.username, type: sql`'answer'`
+      deletedAt: answers.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'answer'`
     }).from(answers).where(eq(answers.isDeleted, true)).leftJoin(users, eq(answers.deletedById, users.id)),
     db.select({
       id: posts.id, publicId: posts.publicId, title: posts.title,
-      deletedAt: posts.deletedAt, deletedBy: users.username, type: sql`'blog'`
+      deletedAt: posts.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'blog'`
     }).from(posts).where(eq(posts.isDeleted, true)).leftJoin(users, eq(posts.deletedById, users.id)),
     db.select({
       id: comments.id, publicId: comments.publicId, title: comments.body,
-      deletedAt: comments.deletedAt, deletedBy: users.username, type: sql`'comment'`
+      deletedAt: comments.deletedAt, deletedBy: users.username, deletedByRole: users.role, type: sql`'comment'`
     }).from(comments).where(eq(comments.isDeleted, true)).leftJoin(users, eq(comments.deletedById, users.id)),
   ]);
 
@@ -280,7 +280,7 @@ const warnUser = async (userId, moderatorId, reason, contentUrl = null) => {
   try {
     await sendEmail({
       to: user.email,
-      subject: "Warning from PeerVerse Moderation",
+      subject: "Warning from The Quad Moderation",
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #fcfcfc; color: #0f172a; padding: 40px 20px; text-align: center;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
@@ -290,7 +290,7 @@ const warnUser = async (userId, moderatorId, reason, contentUrl = null) => {
             <div style="padding: 40px 30px;">
               <h2 style="margin-top: 0; font-size: 20px; color: #f59e0b; font-weight: 700;">Account Warning</h2>
               <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
-              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account has received a warning from the PeerVerse moderation team.</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account has received a warning from the quad moderation team.</p>
               <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
                 <p style="margin: 0; font-size: 15px; color: #92400e;"><strong>Reason for Warning:</strong><br>${reason}</p>
                 ${contentUrl ? `<p style="margin-top: 8px; font-size: 14px; color: #92400e;"><strong>Source Content:</strong> <a href="${contentUrl}" style="color: #6366f1;">${contentUrl}</a></p>` : ''}
@@ -298,7 +298,7 @@ const warnUser = async (userId, moderatorId, reason, contentUrl = null) => {
               <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 0;">Please review our community guidelines. Further violations may result in account suspension.</p>
             </div>
             <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} The Quad. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ const suspendUser = async (userId, moderatorId, reason, durationDays) => {
             <div style="padding: 40px 30px;">
               <h2 style="margin-top: 0; font-size: 20px; color: #ef4444; font-weight: 700;">Account Suspended</h2>
               <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
-              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on PeerVerse has been suspended for <strong>${durationDays} days</strong>.</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on The Quad has been suspended for <strong>${durationDays} days</strong>.</p>
               <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
                 <p style="margin: 0; font-size: 15px; color: #991b1b;"><strong>Reason for Suspension:</strong><br>${reason}</p>
               </div>
@@ -353,7 +353,7 @@ const suspendUser = async (userId, moderatorId, reason, durationDays) => {
               <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 0;">If you believe this was a mistake, please reply directly to this email to contact our moderation team.</p>
             </div>
             <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} The Quad. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -396,14 +396,14 @@ const banUser = async (userId, moderatorId, reason) => {
             <div style="padding: 40px 30px;">
               <h2 style="margin-top: 0; font-size: 20px; color: #ef4444; font-weight: 700;">Account Permanently Banned</h2>
               <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Hello <strong>${user.name}</strong>,</p>
-              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on PeerVerse has been permanently banned.</p>
+              <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">Your account on The Quad has been permanently banned.</p>
               <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
                 <p style="margin: 0; font-size: 15px; color: #991b1b;"><strong>Reason for Ban:</strong><br>${reason}</p>
               </div>
               <p style="font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 24px;">This action is permanent and cannot be undone due to severe or repeated violations of our community guidelines.</p>
             </div>
             <div style="padding: 24px 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">&copy; ${new Date().getFullYear()} The Quad. All rights reserved.</p>
             </div>
           </div>
         </div>

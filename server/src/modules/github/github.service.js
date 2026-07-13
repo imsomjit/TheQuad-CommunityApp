@@ -42,7 +42,7 @@ async function githubFetch(path) {
 
   const headers = {
     Accept: "application/vnd.github.v3+json",
-    "User-Agent": "PeerVerse/1.0",
+    "User-Agent": "thequad/1.0",
   };
 
   // Optional: add PAT for higher rate limit (60 → 5000 req/hr)
@@ -63,6 +63,9 @@ async function githubFetch(path) {
       "GITHUB_RATE_LIMITED"
     );
   }
+  if (res.status === 401) {
+    throw new AppError("Invalid GitHub Token. Please check your credentials.", 401, "GITHUB_UNAUTHORIZED");
+  }
   if (!res.ok) {
     throw new AppError("Failed to fetch from GitHub", 502, "GITHUB_API_ERROR");
   }
@@ -80,12 +83,13 @@ async function githubGraphQL(query, variables) {
 
   const headers = {
     "Content-Type": "application/json",
-    "User-Agent": "PeerVerse/1.0",
+    "User-Agent": "thequad/1.0",
     "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
   };
 
   const res = await fetch(url, { method: "POST", headers, body: JSON.stringify({ query, variables }) });
   
+  if (res.status === 401) throw new AppError("Invalid GitHub Token. Please check your credentials.", 401, "GITHUB_UNAUTHORIZED");
   if (res.status === 403) throw new AppError("GitHub API rate limit exceeded.", 429, "GITHUB_RATE_LIMITED");
   if (!res.ok) throw new AppError("Failed to fetch from GitHub GraphQL", 502, "GITHUB_API_ERROR");
 

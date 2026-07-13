@@ -7,12 +7,18 @@ const createQuestionSchema = z.object({
     .string()
     .min(10, "Title must be at least 10 characters")
     .max(400)
-    .trim(),
+    .trim()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 50, {
+      message: "Title cannot exceed 50 words",
+    }),
   body: z
     .string()
     .min(20, "Question body must be at least 20 characters")
     .max(20000)
-    .trim(),
+    .trim()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 500, {
+      message: "Question body cannot exceed 500 words",
+    }),
   tags: z
     .union([
       z.string().transform((s) =>
@@ -25,8 +31,14 @@ const createQuestionSchema = z.object({
 });
 
 const updateQuestionSchema = z.object({
-  title: z.string().min(10).max(400).trim().optional(),
-  body: z.string().min(20).max(20000).trim().optional(),
+  title: z.string().min(10).max(400).trim().optional()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 50, {
+      message: "Title cannot exceed 50 words",
+    }),
+  body: z.string().min(20).max(20000).trim().optional()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 5000, {
+      message: "Question body cannot exceed 5000 words",
+    }),
   tags: z
     .union([
       z.string().transform((s) =>
@@ -42,7 +54,10 @@ const createAnswerSchema = z.object({
     .string()
     .min(10, "Answer must be at least 10 characters")
     .max(20000)
-    .trim(),
+    .trim()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 5000, {
+      message: "Answer cannot exceed 5000 words",
+    }),
 });
 
 const updateAnswerSchema = z.object({
@@ -51,7 +66,10 @@ const updateAnswerSchema = z.object({
     .min(10, "Answer must be at least 10 characters")
     .max(20000)
     .trim()
-    .optional(),
+    .optional()
+    .refine((val) => !val || val.split(/\s+/).filter(Boolean).length <= 5000, {
+      message: "Answer cannot exceed 5000 words",
+    }),
 });
 
 const questionQuerySchema = z.object({

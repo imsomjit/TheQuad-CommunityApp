@@ -15,7 +15,7 @@ const uploadBook = async (adminId, data, file, coverFile) => {
 
   // Upload PDF to Cloudinary
   const uploadResult = await uploadToCloudinary(file.buffer, {
-    folder: "peerverse/books",
+    folder: "thequad/books",
     resource_type: "raw", // PDF
   });
 
@@ -23,7 +23,7 @@ const uploadBook = async (adminId, data, file, coverFile) => {
   let coverResult = null;
   if (coverFile) {
     coverResult = await uploadToCloudinary(coverFile.buffer, {
-      folder: "peerverse/books/covers",
+      folder: "thequad/books/covers",
       resource_type: "image",
     });
   }
@@ -56,10 +56,12 @@ const getBooks = async ({ page, limit, search, author, subject, sort }) => {
   const filters = [eq(books.isDeleted, false)];
 
   if (search) {
+    const q = `%${search}%`;
     filters.push(
       or(
-        ilike(books.title, `%${search}%`),
-        ilike(books.author, `%${search}%`)
+        sql`to_tsvector('english', coalesce(${books.title}, '') || ' ' || coalesce(${books.description}, '') || ' ' || coalesce(${books.author}, '') || ' ' || coalesce(${books.subject}, '') || ' ' || coalesce(${books.isbn}, '')) @@ plainto_tsquery('english', ${search})`,
+        sql`${books.tags}::text ILIKE ${q}`,
+        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${books.uploaderId} AND (users.name ILIKE ${q} OR users.username ILIKE ${q}))`
       )
     );
   }
@@ -144,6 +146,7 @@ const getBookById = async (publicId) => {
         username: users.username,
         name: users.name,
         avatarUrl: users.avatarUrl,
+        role: users.role,
       },
     })
     .from(books)
@@ -195,7 +198,7 @@ const updateBook = async (id, data, coverFile) => {
 
   if (coverFile) {
     const coverResult = await uploadToCloudinary(coverFile.buffer, {
-      folder: "peerverse/books/covers",
+      folder: "thequad/books/covers",
       resource_type: "image",
     });
     updateData.coverUrl = coverResult.secure_url;

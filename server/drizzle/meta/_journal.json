@@ -106,6 +106,41 @@
       "when": 1781454477946,
       "tag": "0014_bitter_william_stryker",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1783352255517,
+      "tag": "0015_noisy_blue_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1783359241563,
+      "tag": "0016_daily_kylun",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1783396700193,
+      "tag": "0017_plain_satana",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783743227430,
+      "tag": "0018_ordinary_speed_demon",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783745556147,
+      "tag": "0019_tough_risque",
+      "breakpoints": true
     }
   ]
 }

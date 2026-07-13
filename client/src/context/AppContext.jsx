@@ -125,7 +125,10 @@ export function AppProvider({ children }) {
     let reconnectTimeout;
 
     const connectSSE = () => {
-      eventSource = new EventSource(`${API_BASE}/notifications/stream`, {
+      const token = getAccessToken();
+      const url = token ? `${API_BASE}/notifications/stream?token=${token}` : `${API_BASE}/notifications/stream`;
+      
+      eventSource = new EventSource(url, {
         withCredentials: true,
       });
 

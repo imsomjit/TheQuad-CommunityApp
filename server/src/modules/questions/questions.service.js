@@ -1,6 +1,6 @@
 "use strict";
 
-const { eq, and, sql, desc, exists, inArray, ilike } = require("drizzle-orm");
+const { eq, and, or, sql, desc, exists, inArray, ilike } = require("drizzle-orm");
 const { db } = require("../../db/index");
 const {
   questions,
@@ -36,8 +36,13 @@ const listQuestions = async (query) => {
   const conditions = [];
 
   if (q) {
+    const searchParam = `%${q}%`;
     conditions.push(
-      sql`to_tsvector('english', ${questions.title} || ' ' || ${questions.body}) @@ plainto_tsquery('english', ${q})`
+      or(
+        sql`to_tsvector('english', ${questions.title} || ' ' || coalesce(${questions.body}, '')) @@ plainto_tsquery('english', ${q})`,
+        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${questions.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
+        sql`EXISTS (SELECT 1 FROM question_tags WHERE question_tags.question_id = ${questions.id} AND question_tags.tag ILIKE ${searchParam})`
+      )
     );
   }
 

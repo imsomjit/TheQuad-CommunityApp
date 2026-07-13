@@ -3,7 +3,7 @@
 const rateLimit = require("express-rate-limit");
 
 /**
- * Per-module rate limiters for PeerVerse API.
+ * Per-module rate limiters for The Quad API.
  *
  * Design rationale:
  * - Auth routes: very strict (brute-force protection)
@@ -298,6 +298,23 @@ const voteReadLimiter = rateLimit({
   handler: rateLimitResponse,
 });
 
+// ── Chat ───────────────────────────────────────────────────────────────────────
+const chatReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
+const chatWriteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: rateLimitResponse,
+});
+
 module.exports = {
   authLimiter,
   registerLimiter,
@@ -328,4 +345,6 @@ module.exports = {
   bookReadLimiter,
   commentReadLimiter,
   voteReadLimiter,
+  chatReadLimiter,
+  chatWriteLimiter,
 };

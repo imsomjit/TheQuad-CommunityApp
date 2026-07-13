@@ -12,7 +12,16 @@ const { Readable } = require("stream");
  * - PDFs: 10 MB (Cloudinary limit)
  * - Images: 5 MB (avatars, blog covers)
  */
-const ALLOWED_PDF_TYPES = ["application/pdf"];
+const ALLOWED_RESOURCE_TYPES = [
+  "application/pdf",
+  "image/jpeg", 
+  "image/png", 
+  "image/webp", 
+  "image/gif",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // docx
+  "text/markdown", // md
+  "application/msword" // doc
+];
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_PDF_SIZE = 10 * 1024 * 1024; // 10 MB (Cloudinary free tier limit)
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -39,7 +48,7 @@ const createUploader = (allowedTypes, maxSize) =>
   });
 
 /** Multer instances */
-const pdfUpload = createUploader(ALLOWED_PDF_TYPES, MAX_PDF_SIZE);
+const resourceUpload = createUploader(ALLOWED_RESOURCE_TYPES, MAX_PDF_SIZE);
 const imageUpload = createUploader(ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE);
 
 /**
@@ -66,18 +75,20 @@ const uploadToCloudinary = (buffer, options = {}) =>
  * Attaches { fileUrl, filePublicId, fileName, fileSize } to req.uploadedFile.
  */
 const uploadResourceFile = [
-  pdfUpload.single("file"),
+  resourceUpload.single("file"),
   asyncHandler(async (req, _res, next) => {
     if (!req.file) {
       throw new AppError("A file is required", 400, "FILE_REQUIRED");
     }
 
-    const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/resources",
-      resource_type: "raw",             // PDFs are "raw" in Cloudinary
+    const isImage = req.file.mimetype.startsWith("image/");
+    const options = {
+      folder: "thequad/resources",
       public_id: `${Date.now()}-${req.file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`,
-      format: "pdf",
-    });
+      resource_type: isImage ? "image" : "raw",
+    };
+
+    const result = await uploadToCloudinary(req.file.buffer, options);
 
     req.uploadedFile = {
       fileUrl: result.secure_url,
@@ -102,7 +113,7 @@ const uploadAvatar = [
     }
 
     const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/avatars",
+      folder: "thequad/avatars",
       resource_type: "image",
       transformation: [
         { width: 400, height: 400, crop: "fill", gravity: "face" },
@@ -131,7 +142,7 @@ const uploadBanner = [
     }
 
     const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/banners",
+      folder: "thequad/banners",
       resource_type: "image",
       transformation: [
         { width: 1500, height: 500, crop: "fill", gravity: "center" },
@@ -160,7 +171,7 @@ const uploadPostCover = [
     }
 
     const result = await uploadToCloudinary(req.file.buffer, {
-      folder: "peerverse/posts/covers",
+      folder: "thequad/posts/covers",
       resource_type: "image",
       transformation: [
         { width: 1200, height: 630, crop: "fill", gravity: "center" },

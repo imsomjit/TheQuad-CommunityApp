@@ -23,7 +23,7 @@ export default function AuthCallback() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState(null);
-  const { fetchMe } = useAuth();
+  const { fetchMe, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     // Check for error query params (from failed OAuth)
@@ -41,11 +41,35 @@ export default function AuthCallback() {
       return;
     }
 
-    // We just arrived from the server redirect. The server has set the pv_refresh cookie.
-    // We call refresh() to exchange the cookie for an access token.
+    // If AuthContext already succeeded in refreshing the token (e.g. via cookies),
+    // we do NOT need to refresh again. Doing so will use the same token and fail 
+    // due to refresh token rotation (which revokes used tokens immediately).
+    if (isAuthenticated) {
+      // Clear the URL hash for security
+      window.history.replaceState(null, "", "/auth/callback");
+      toast.success("Signed in with Google!");
+      
+      const from = location.state?.from?.pathname;
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (user?.role === "admin" || user?.role === "moderator") {
+        navigate("/admin/reports", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+      return;
+    }
+
+    // Check for fallback token in the hash (useful when 3rd-party cookies are blocked)
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const fallbackToken = hashParams.get("refreshToken");
+
+    // We just arrived from the server redirect.
+    // Clear the URL hash for security
     window.history.replaceState(null, "", "/auth/callback");
 
-    authApi.refresh()
+    // If cookies are blocked, we can use the fallback token directly
+    authApi.refresh(fallbackToken)
       .then(({ data }) => {
         setAccessToken(data.data.accessToken);
         return fetchMe();
@@ -64,7 +88,7 @@ export default function AuthCallback() {
       .catch(() => {
         setError("Failed to obtain access token. Please try signing in again.");
       });
-  }, [navigate, searchParams, fetchMe]);
+  }, [navigate, searchParams, fetchMe, isAuthenticated, user, location.state]);
 
   if (error) {
     return (

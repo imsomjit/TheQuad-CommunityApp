@@ -48,10 +48,9 @@ export default function VoteButtons({
         lg: { btn: "h-11 w-11", icon: "h-5 w-5", text: "text-base" },
     }[size];
 
-    const wrapperClass =
-        layout === "vertical"
-            ? "flex flex-col items-center gap-1"
-            : "flex items-center gap-1";
+    let wrapperClass = "flex items-center gap-1";
+    if (layout === "vertical") wrapperClass = "flex flex-col items-center gap-1";
+    if (layout === "responsive") wrapperClass = "flex flex-row md:flex-col items-center gap-1";
 
     const handleVote = (direction) => (e) => {
         e.preventDefault();

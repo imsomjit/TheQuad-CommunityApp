@@ -50,7 +50,7 @@ export default function VerifyEmail() {
     setLoading(true);
     try {
       await verifyOtp({ email, otp });
-      toast.success("Email verified! Welcome to PeerVerse.");
+      toast.success("Email verified! Welcome to The Quad.");
       navigate("/");
     } catch (err) {
       const msg = err.response?.data?.message || "Verification failed";

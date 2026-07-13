@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { Input } from "../components/ui/input";
+import AutocompleteTagInput from "../components/ui/AutocompleteTagInput";
 import MarkdownEditor from "../components/MarkdownEditor";
 import { toast } from "sonner";
 import { generateSlug } from "../utils/slugify";
@@ -140,15 +141,25 @@ export default function AskQuestion() {
                 {/* Tags */}
                 <Field label="Tags (up to 5)">
                     <div className="flex gap-2">
-                        <Input
+                        <AutocompleteTagInput
                             data-testid="ask-tag-input"
                             value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
+                            existingTags={tags}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val.endsWith(" ") || val.endsWith(",")) {
+                                    const t = val.trim().replace(/^#/, "").toLowerCase();
+                                    if (t && !tags.includes(t) && tags.length < 5) setTags([...tags, t]);
+                                    setTagInput("");
+                                } else {
+                                    setTagInput(val);
+                                }
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") addTag(e);
                             }}
                             placeholder="add a tag and press Enter (e.g. react, dsa, mongodb)"
-                            className="bg-paper border-rule h-11 flex-1 focus-visible:border-accent/40 focus-visible:ring-accent/30"
+                            className="bg-paper border-rule h-11 w-full rounded-md px-3 text-sm focus-visible:border-accent/40 focus-visible:ring-accent/30 outline-none border"
                         />
 
                         <button

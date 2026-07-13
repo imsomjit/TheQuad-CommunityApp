@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Search, Target, Bookmark, Calendar, Clock, Trophy, ServerCrash, OctagonAlert, CodeXml, Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { Search, Target, ServerCrash, OctagonAlert, CodeXml, Plus } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -16,8 +17,17 @@ import { OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
 
-export default function Opportunities() {
+export default function Opportunities({ inExplore = false }) {
     const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=opportunities", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
+
     
     const [opportunities, setOpportunities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -112,6 +122,8 @@ export default function Opportunities() {
         return <CodeXml className="w-4 h-4" />;
     };
 
+    if (!isDesktop && !inExplore) return null;
+
     return (
         <div className="max-w-7xl mx-auto pb-24 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
@@ -122,12 +134,12 @@ export default function Opportunities() {
                             &sect;06 &middot; the board
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="hidden md:inline mt-2 font-display text-5xl md:text-6xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Code. <span className="font-display-italic text-accent">Compete.</span> & <span className="italic marker">Conquer.</span>
                             
                         </h1>
 
-                        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+                        <p className="mt-4 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
                             Discover coding contests, hackathons, and data science competitions from various of popular platforms like &mdash; LeetCode, CodeForces, Kaggle, Naukri etc.
                         </p>
                     </div>

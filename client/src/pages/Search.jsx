@@ -21,6 +21,7 @@ import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
 import BookCard from "../components/BookCard";
+import OpportunityCard from "../components/OpportunityCard";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 
 export default function Search() {
@@ -71,9 +72,9 @@ export default function Search() {
         const [resRes, qRes, pRes, bRes, oRes] = await Promise.all([
           resourcesApi.list({ q: query, limit: 10 }).catch(() => ({ data: [] })),
           questionsApi.list({ q: query, limit: 8 }).catch(() => ({ data: [] })),
-          postsApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
-          booksApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
-          opportunitiesApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
+          postsApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
+          booksApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
+          opportunitiesApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
         ]);
 
         setResults({
@@ -104,7 +105,7 @@ export default function Search() {
     results.opportunities.length;
 
   return (
-    <div className="w-full min-h-screen pb-24 px-4 sm:px-8 xl:px-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full min-h-screen pb-24 px-2 sm:px-8 xl:px-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="mb-10 pt-2 sm:pt-12 relative z-10">
         <div className="max-w-3xl">
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl mb-4 flex items-center gap-3">
@@ -121,7 +122,7 @@ export default function Search() {
             {/* Animated Glow Behind Search Bar */}
             <div className="absolute -inset-1 bg-gradient-to-r from-accent via-syntax-purple to-syntax-cyan rounded-3xl blur-md opacity-20 group-hover:opacity-40 group-focus-within:opacity-60 transition duration-500"></div>
             
-            <div className="relative bg-paper backdrop-blur-xl border-2 border-rule hover:border-rule-2 focus-within:border-accent rounded-2xl shadow-sm hover:shadow-lg focus-within:shadow-lg transition-all duration-300 flex items-center">
+            <div className="relative bg-paper/80 backdrop-blur-xl border-2 border-rule hover:border-rule-2 focus-within:border-accent rounded-2xl shadow-sm hover:shadow-lg focus-within:shadow-lg transition-all duration-300 flex items-center">
               <div className="pl-5 flex items-center pointer-events-none">
                 <SearchIcon className="h-5 w-5 text-ink-3 group-focus-within:text-accent transition-colors duration-300" />
               </div>
@@ -349,10 +350,7 @@ export default function Search() {
                     {/* Placeholder for opportunities, or we can just render simple cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {results.opportunities.slice(0, 4).map(opp => (
-                        <div key={opp.id} className="p-4 border border-rule rounded-md bg-paper">
-                          <h3 className="font-bold text-lg">{opp.title}</h3>
-                          <p className="text-sm text-ink-2">{opp.organizer}</p>
-                        </div>
+                        <OpportunityCard key={opp.id} opportunity={opp} />
                       ))}
                     </div>
                   </section>
@@ -395,10 +393,7 @@ export default function Search() {
               <TabsContent value="opportunities" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {results.opportunities.length > 0 ? (
                   results.opportunities.map(opp => (
-                    <div key={opp.id} className="p-4 border border-rule rounded-md bg-paper">
-                      <h3 className="font-bold text-lg">{opp.title}</h3>
-                      <p className="text-sm text-ink-2">{opp.organizer}</p>
-                    </div>
+                    <OpportunityCard key={opp.id} opportunity={opp} />
                   ))
                 ) : (
                   <div className="col-span-full"><EmptyPlaceholder icon={Target} title="No opportunities found" /></div>

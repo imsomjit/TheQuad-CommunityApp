@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useCurrentTheme } from "../components/MarkdownEditor";
 import {
   Bold, Italic, Heading2, Heading3, Code, Link2, List, ListOrdered,
   Quote, Table, ImageIcon, Eye, Edit3, Save, Send, ChevronDown,
@@ -16,8 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { postsApi } from "../services/api";
+import { toast } from "sonner";
+import AutocompleteTagInput from "../components/ui/AutocompleteTagInput";
+import { postsApi, seriesApi } from "../services/api";
 import { useApp } from "../context/AppContext";
+import { generateSlug } from "../utils/slugify";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -186,19 +190,8 @@ function InterviewMetaForm({ meta, onChange }) {
 }
 
 function JournalMetaForm({ meta, onChange }) {
-  return (
-    <div>
-      <label className="label-xs">Day Number</label>
-      <input
-        type="number"
-        value={meta.dayNumber || ""}
-        onChange={(e) => onChange({ ...meta, dayNumber: parseInt(e.target.value) || undefined })}
-        placeholder="e.g. 12"
-        min="1"
-        className="field-sm w-32"
-      />
-    </div>
-  );
+  // Deprecated: We now use the Journal Series feature instead of standalone day numbers
+  return null;
 }
 
 function ProjectMetaForm({ meta, onChange }) {
@@ -257,6 +250,7 @@ export default function PostEditor() {
   const navigate = useNavigate();
   const { currentUser } = useApp();
   const textareaRef = useRef(null);
+  const isLight = useCurrentTheme();
 
   const [mode, setMode] = useState("write"); // "write" | "preview"
   const [title, setTitle] = useState("");
@@ -269,6 +263,12 @@ export default function PostEditor() {
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [coverFile, setCoverFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState("");
+
+  const [userSeries, setUserSeries] = useState([]);
+  const [seriesId, setSeriesId] = useState("");
+  const [seriesOrder, setSeriesOrder] = useState("");
+  const [newSeriesTitle, setNewSeriesTitle] = useState("");
+  const [creatingSeries, setCreatingSeries] = useState(false);
 
   const [postId, setPostId] = useState(id ? parseInt(id) : null);
   const [status, setStatus] = useState("draft");
@@ -292,27 +292,40 @@ export default function PostEditor() {
       setCoverPreview(p.coverImageUrl || "");
       setStatus(p.status);
       setPostId(p.id);
+      if (p.seriesId) {
+        setSeriesId(p.seriesId.toString());
+        setSeriesOrder(p.seriesOrder?.toString() || "");
+      }
       setLoading(false);
     }).catch(() => { navigate("/posts"); });
-  }, [id]);
+  }, [id, navigate]);
+
+  // Load user series
+  useEffect(() => {
+    if (currentUser?.id) {
+      seriesApi.listByUser(currentUser.id)
+        .then(setUserSeries)
+        .catch(console.error);
+    }
+  }, [currentUser]);
 
   // Redirect if not logged in
   useEffect(() => {
     if (!currentUser) navigate("/login");
   }, [currentUser]);
 
-  // ── Autosave (debounced, 30s) ────────────────────────────────────────────
+  // ── Autosave (debounced, 5s) ────────────────────────────────────────────
   const autosaveTimerRef = useRef(null);
   const pendingAutosave = useRef(false);
 
   const triggerAutosave = useCallback(() => {
-    if (!postId) return;
+    if (!postId || !title.trim() || !body.trim()) return;
     pendingAutosave.current = true;
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     autosaveTimerRef.current = setTimeout(async () => {
       if (!pendingAutosave.current) return;
       try {
-        await postsApi.autosave(postId, { title, body, excerpt, categoryMeta });
+        await postsApi.autosave(postId, { title: title.trim(), body, excerpt, categoryMeta });
         setLastSaved(new Date());
         pendingAutosave.current = false;
       } catch {}
@@ -320,9 +333,11 @@ export default function PostEditor() {
   }, [postId, title, body, excerpt, categoryMeta]);
 
   useEffect(() => {
-    if (postId && status === "draft") triggerAutosave();
+    if (postId && status === "draft" && title.trim() && body.trim()) {
+      triggerAutosave();
+    }
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
-  }, [title, body, excerpt, categoryMeta]);
+  }, [title, body, excerpt, categoryMeta, postId, status, triggerAutosave]);
 
   // ── Toolbar actions ───────────────────────────────────────────────────────
   const insertMarkdown = (before, after = "") => {
@@ -373,6 +388,9 @@ export default function PostEditor() {
   // ── Save as draft ─────────────────────────────────────────────────────────
   const saveDraft = async () => {
     if (!title.trim()) { setError("Title is required"); return; }
+    if (body.length > 100000) { setError("Post body exceeds maximum length of 100,000 characters"); return; }
+    const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
+    if (wordCount > 5000) { setError(`Post body exceeds maximum length of 5000 words (currently ${wordCount} words)`); return; }
     setSaving(true);
     setError(null);
     try {
@@ -384,6 +402,8 @@ export default function PostEditor() {
         tags,
         excerpt: excerpt || undefined,
         status: "draft",
+        seriesId: category === "learning_journal" && seriesId ? parseInt(seriesId) : null,
+        seriesOrder: category === "learning_journal" && seriesId && seriesOrder ? parseInt(seriesOrder) : null,
       };
 
       let post;
@@ -420,19 +440,34 @@ export default function PostEditor() {
   const handlePublish = async () => {
     if (!title.trim()) { setError("Title is required to publish"); return; }
     if (body.length < 50) { setError("Post needs at least 50 characters in the body to publish"); return; }
+    if (body.length > 100000) { setError("Post body exceeds maximum length of 100,000 characters"); return; }
+    const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
+    if (wordCount > 5000) { setError(`Post body exceeds maximum length of 5000 words (currently ${wordCount} words)`); return; }
 
     setPublishing(true);
     setError(null);
     try {
+      const payload = {
+        title: title.trim(),
+        body,
+        category,
+        categoryMeta,
+        tags,
+        excerpt: excerpt || undefined,
+        seriesId: category === "learning_journal" && seriesId ? parseInt(seriesId) : null,
+        seriesOrder: category === "learning_journal" && seriesId && seriesOrder ? parseInt(seriesOrder) : null,
+      };
+
       // Save first if needed
       let pid = postId;
+      let finalPost;
       if (!pid) {
-        const post = await postsApi.create({ title: title.trim(), body, category, categoryMeta, tags, status: "draft" });
-        pid = post.id;
+        finalPost = await postsApi.create({ ...payload, status: "draft" });
+        pid = finalPost.id;
         setPostId(pid);
         window.history.replaceState({}, "", `/posts/${pid}/edit`);
       } else {
-        await postsApi.update(pid, { title: title.trim(), body, category, categoryMeta, tags, excerpt: excerpt || undefined });
+        finalPost = await postsApi.update(pid, payload);
       }
 
       // Upload cover
@@ -445,9 +480,12 @@ export default function PostEditor() {
         } catch {}
       }
 
-      const published = await postsApi.publish(pid);
-      setStatus("published");
-      navigate(`/posts/${published.slug}`);
+      if (status !== "published") {
+        finalPost = await postsApi.publish(pid);
+        setStatus("published");
+      }
+      
+      navigate(`/posts/${generateSlug(finalPost.title, finalPost.publicId || finalPost.id)}`);
     } catch (err) {
       setError(err.response?.data?.message || "Publish failed");
     } finally {
@@ -528,8 +566,12 @@ export default function PostEditor() {
               placeholder="Your post title…"
               rows={2}
               maxLength={300}
-              className="w-full resize-none border-0 border-b-2 border-rule bg-transparent pb-3 font-display text-3xl text-ink placeholder:text-ink-3/50 focus:border-accent/60 focus:outline-none"
+              disabled={status === "published"}
+              className={`w-full resize-none border-0 border-b-2 border-rule bg-transparent pb-3 font-display text-3xl text-ink placeholder:text-ink-3/50 focus:border-accent/60 focus:outline-none ${status === "published" ? "opacity-60 cursor-not-allowed" : ""}`}
             />
+            {status === "published" && (
+              <p className="mt-1 text-xs text-ink-3">Title cannot be changed after publishing to preserve links.</p>
+            )}
           </div>
 
           {/* Markdown toolbar + mode toggle */}
@@ -577,13 +619,25 @@ export default function PostEditor() {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    code({ inline, className, children }) {
-                      if (inline) return <code className="rounded-sm bg-paper-2 px-1.5 py-0.5 font-mono text-[0.8125rem] border border-rule">{children}</code>;
-                      const lang = className?.replace("language-", "") || "text";
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      const isBlock = match || String(children).includes('\n');
+                      
+                      if (!isBlock) {
+                        return <code className="rounded-sm bg-paper-2 px-1.5 py-0.5 font-mono text-[0.8125rem] border border-rule text-ink" {...props}>{children}</code>;
+                      }
+                      
+                      const lang = match ? match[1] : "text";
                       return (
                         <div className="my-4 overflow-hidden rounded-sm border border-rule">
                           <div className="border-b border-rule bg-paper-2/80 px-4 py-1.5 font-mono text-[10px] uppercase text-ink-3">{lang}</div>
-                          <SyntaxHighlighter style={oneDark} language={lang} PreTag="div" customStyle={{ margin: 0, borderRadius: 0, fontSize: "0.8125rem" }}>
+                          <SyntaxHighlighter 
+                            style={isLight ? oneLight : oneDark} 
+                            language={lang} 
+                            PreTag="div" 
+                            customStyle={{ margin: 0, borderRadius: 0, fontSize: "0.8125rem", padding: "1rem", background: "rgb(var(--code-bg) / 0.4)" }}
+                            codeTagProps={{ style: { background: "transparent" } }}
+                          >
                             {String(children).replace(/\n$/, "")}
                           </SyntaxHighlighter>
                         </div>
@@ -598,6 +652,11 @@ export default function PostEditor() {
               )}
             </div>
           )}
+          <div className="flex justify-end mt-1">
+            <span className={`text-xs font-mono ${body.trim().split(/\s+/).filter(w => w.length > 0).length > 5000 ? 'text-red-500 font-bold' : 'text-ink-3'}`}>
+              {body.trim().split(/\s+/).filter(w => w.length > 0).length} / 5000 words
+            </span>
+          </div>
         </div>
 
         {/* ── Sidebar settings ──────────────────────────────────────────── */}
@@ -623,12 +682,86 @@ export default function PostEditor() {
           </div>
 
           {/* Category metadata */}
-          <div className="rounded-sm border border-rule bg-paper p-4">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
-              Details
-            </p>
-            {categoryMetaForms[category]}
-          </div>
+          {category !== "learning_journal" && categoryMetaForms[category] && (
+            <div className="rounded-sm border border-rule bg-paper p-4">
+              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+                Details
+              </p>
+              {categoryMetaForms[category]}
+            </div>
+          )}
+
+          {/* Series Options (Learning Journal only) */}
+          {category === "learning_journal" && (
+            <div className="rounded-sm border border-rule bg-paper p-4">
+              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.08em] text-ink-3">
+                Journal Series
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="label-xs">Series</label>
+                  <Select value={seriesId || "none"} onValueChange={(v) => setSeriesId(v === "none" ? "" : v)}>
+                    <SelectTrigger className="w-full border-rule bg-paper-2/40 focus:border-accent/60">
+                      <SelectValue placeholder="Select a series..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {userSeries.map((s) => (
+                        <SelectItem key={s.id} value={s.id.toString()}>{s.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(!seriesId || seriesId === "none") && (
+                  <div>
+                    <label className="label-xs">Create New Series</label>
+                    <div className="flex gap-2">
+                      <input
+                        value={newSeriesTitle}
+                        onChange={(e) => setNewSeriesTitle(e.target.value)}
+                        placeholder="100 Days of Code..."
+                        className="field-sm flex-1"
+                        disabled={creatingSeries}
+                      />
+                      <button
+                        type="button"
+                        disabled={!newSeriesTitle.trim() || creatingSeries}
+                        onClick={async () => {
+                          setCreatingSeries(true);
+                          try {
+                            const s = await seriesApi.create({ title: newSeriesTitle.trim() });
+                            setUserSeries([...userSeries, s]);
+                            setSeriesId(s.id.toString());
+                            setNewSeriesTitle("");
+                          } catch (err) {
+                            console.error(err);
+                          } finally {
+                            setCreatingSeries(false);
+                          }
+                        }}
+                        className="flex h-8 items-center justify-center rounded-sm bg-paper-3 px-3 text-xs text-ink transition-colors hover:bg-rule disabled:opacity-50"
+                      >
+                        Create
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {seriesId !== "" && (
+                  <div>
+                    <label className="label-xs">Day / Part Number</label>
+                    <input
+                      type="number"
+                      value={seriesOrder}
+                      onChange={(e) => setSeriesOrder(e.target.value)}
+                      placeholder="e.g. 1"
+                      min="1"
+                      className="field-sm w-full"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Tags */}
           <div className="rounded-sm border border-rule bg-paper p-4">
@@ -636,12 +769,22 @@ export default function PostEditor() {
               Tags <span className="normal-case">(up to 10)</span>
             </label>
             <div className="flex gap-2">
-              <input
+              <AutocompleteTagInput
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                existingTags={tags}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val.endsWith(" ") || val.endsWith(",")) {
+                    const t = val.toLowerCase().trim().replace(/[^a-z0-9-]/g, "");
+                    if (t && !tags.includes(t) && tags.length < 10) setTags((prev) => [...prev, t]);
+                    setTagInput("");
+                  } else {
+                    setTagInput(val.toLowerCase().replace(/[^a-z0-9- ]/g, ""));
+                  }
+                }}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                 placeholder="add-a-tag"
-                className="field-sm flex-1"
+                className="w-full rounded-md border border-rule bg-paper px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-accent/40 focus:ring-1 focus:ring-accent/30"
               />
               <button type="button" onClick={addTag} className="flex h-8 w-8 items-center justify-center rounded-sm border border-rule text-ink-2 hover:text-ink">
                 <Plus className="h-3.5 w-3.5" />

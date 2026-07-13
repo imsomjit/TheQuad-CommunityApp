@@ -22,12 +22,12 @@ export default function FAQ() {
     const faqs = {
         general: [
             {
-                question: "What is PeerVerse?",
-                answer: "PeerVerse is a community platform designed for students and developers to share resources, ask technical questions, write engineering blog posts, and discover coding opportunities all in one unified ecosystem."
+                question: "What is The Quad?",
+                answer: "The Quad is a community platform designed for students and developers to share resources, ask technical questions, write engineering blog posts, and discover coding opportunities all in one unified ecosystem."
             },
             {
-                question: "Is PeerVerse completely free?",
-                answer: "Yes, PeerVerse is 100% free for all users. Our goal is to democratize access to educational resources and foster a collaborative environment without any paywalls."
+                question: "Is The Quad completely free?",
+                answer: "Yes, The Quad is 100% free for all users. Our goal is to democratize access to educational resources and foster a collaborative environment without any paywalls."
             },
             {
                 question: "Can I bookmark resources for later?",
@@ -61,7 +61,7 @@ export default function FAQ() {
         content: [
             {
                 question: "Can I use markdown in my posts and questions?",
-                answer: "Yes! PeerVerse fully supports GitHub-flavored markdown, including code blocks with syntax highlighting, tables, task lists, and inline math formatting for both questions and blog posts."
+                answer: "Yes! The Quad fully supports GitHub-flavored markdown, including code blocks with syntax highlighting, tables, task lists, and inline math formatting for both questions and blog posts."
             },
             {
                 question: "What's the difference between a 'Resource' and a 'Blog Post'?",
@@ -80,16 +80,20 @@ export default function FAQ() {
             {
                 question: "What happens if I get suspended?",
                 answer: "If you violate community guidelines, moderators may suspend your account temporarily or permanently. During a suspension, you can log in to view content but cannot post, comment, or vote."
+            },
+            {
+                question: "How can I recover my content after accidental deletion?",
+                answer: "When you or a moderator delete content, it is 'soft-deleted' and hidden from the platform for a 14-day Recovery Window. If you accidentally deleted something, you can email our support team at thequad.community@gmail.com within 14 days to request recovery. After 14 days, the content is permanently erased from our servers."
             }
         ],
         integrations: [
             {
                 question: "How do I connect my GitHub or LeetCode?",
-                answer: "In your profile settings under 'Integrations', you can add your GitHub and LeetCode usernames. PeerVerse will fetch and display your public stats automatically."
+                answer: "In your profile settings under 'Integrations', you can add your GitHub and LeetCode usernames. The Quad will fetch and display your public stats automatically."
             },
             {
                 question: "Why isn't my GitHub graph updating?",
-                answer: "Our servers cache GitHub data for a few hours to respect API rate limits. Your most recent commits might take up to 12 hours to reflect on your PeerVerse profile."
+                answer: "Our servers cache GitHub data for a few hours to respect API rate limits. Your most recent commits might take up to 12 hours to reflect on your The Quad profile."
             }
         ]
     };
@@ -122,24 +126,63 @@ export default function FAQ() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <header className="mb-12 border-b-2 border-double border-rule pb-8 max-w-4xl">
-                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent mb-2">Support &middot; Help Center</p>
-                <h1 className="font-display text-4xl sm:text-5xl font-medium leading-tight text-ink mb-4 flex items-center gap-4">
-                    <HelpCircle className="w-10 h-10 text-syntax-violet" />
-                    Frequently Asked Questions
+        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 relative animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Background decorative glow */}
+            <div className="absolute top-0 right-0 -z-10 w-[600px] h-[600px] bg-syntax-violet/10 blur-[100px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/3" />
+            <div className="absolute top-40 left-0 -z-10 w-[400px] h-[400px] bg-accent/10 blur-[80px] rounded-full pointer-events-none -translate-x-1/2" />
+
+            <header className="mb-16 pb-10 border-b border-rule max-w-3xl relative">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent font-mono text-[11px] font-semibold uppercase tracking-[0.25em] mb-6 border border-accent/20">
+                    <Star className="w-3.5 h-3.5" /> Support Center
+                </div>
+                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-ink mb-6 flex flex-col gap-2">
+                    Frequently Asked
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-syntax-violet to-accent">Questions</span>
                 </h1>
-                <p className="text-lg text-ink-2">
-                    Everything you need to know about PeerVerse, how it works, and how to get the most out of the platform.
+                <p className="text-lg sm:text-xl text-ink-2 leading-relaxed">
+                    Everything you need to know about The Quad, how it works, and how to get the most out of the platform.
                 </p>
             </header>
 
-            <div className="flex flex-col lg:flex-row gap-12">
+            <div className="flex flex-col-reverse lg:flex-row gap-12 lg:gap-16">
+                {/* Content */}
+                <div className="flex-1 max-w-3xl pb-14 space-y-20">
+                    {categories.map((category) => (
+                        <section key={category.id} id={category.id} className="scroll-mt-32">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-paper to-paper-2 border border-rule shadow-sm flex items-center justify-center">
+                                    <category.icon className="w-6 h-6 text-accent" />
+                                </div>
+                                <h2 className="text-3xl font-display font-semibold text-ink tracking-tight">
+                                    {category.title}
+                                </h2>
+                            </div>
+                            
+                            <Accordion type="multiple" className="w-full flex flex-col gap-4">
+                                {faqs[category.id].map((faq, index) => (
+                                    <AccordionItem 
+                                        value={`${category.id}-${index}`} 
+                                        key={index} 
+                                        className="border-b-0 border border-rule bg-paper hover:bg-paper-2/50 transition-all duration-300 rounded-2xl overflow-hidden shadow-sm data-[state=open]:border-accent/30 data-[state=open]:shadow-md data-[state=open]:bg-paper"
+                                    >
+                                        <AccordionTrigger className="text-left font-display text-[16px] sm:text-[17px] font-semibold text-ink hover:no-underline transition-colors px-6 py-5 group data-[state=open]:text-accent">
+                                            {faq.question}
+                                        </AccordionTrigger>
+                                        <AccordionContent className="text-ink-2 text-[15px] sm:text-base leading-relaxed px-6 pb-6 pt-0 border-t border-transparent data-[state=open]:border-rule/50 mt-1">
+                                            <div className="pt-4">{faq.answer}</div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </section>
+                    ))}
+                </div>
+
                 {/* Sticky Sidebar */}
-                <aside className="lg:w-64 shrink-0">
-                    <div className="sticky top-24 rounded-2xl border border-rule bg-paper-2/40 p-5">
-                        <h3 className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-3 mb-4">Categories</h3>
-                        <nav className="flex flex-col gap-1">
+                <aside className="lg:w-72 shrink-0 pb-12">
+                    <div className="sticky top-24 rounded-3xl border border-rule bg-paper/60 backdrop-blur-xl shadow-sm p-5">
+                        <h3 className="font-mono text-[11px] font-semibold uppercase tracking-[0.25em] text-ink-3 mb-5 px-3">Categories</h3>
+                        <nav className="flex flex-col gap-2">
                             {categories.map((c) => {
                                 const Icon = c.icon;
                                 const isActive = activeSection === c.id;
@@ -147,13 +190,13 @@ export default function FAQ() {
                                     <button
                                         key={c.id}
                                         onClick={() => scrollTo(c.id)}
-                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-colors ${
+                                        className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl text-[14px] font-medium text-left transition-all duration-300 ${
                                             isActive 
-                                                ? "bg-accent/10 text-accent font-semibold" 
-                                                : "text-ink-2 hover:bg-paper hover:text-ink"
+                                                ? "bg-ink text-paper shadow-md translate-x-1" 
+                                                : "text-ink-2 hover:bg-paper-2 hover:text-ink hover:translate-x-1 border border-transparent hover:border-rule"
                                         }`}
                                     >
-                                        <Icon className={`w-4 h-4 ${isActive ? "text-accent" : "text-ink-3"}`} />
+                                        <Icon className={`w-4.5 h-4.5 ${isActive ? "text-paper" : "text-ink-3"}`} />
                                         {c.title}
                                     </button>
                                 );
@@ -161,46 +204,30 @@ export default function FAQ() {
                         </nav>
                     </div>
                 </aside>
-
-                {/* Content */}
-                <div className="flex-1 max-w-3xl pb-24 space-y-16">
-                    {categories.map((category) => (
-                        <section key={category.id} id={category.id} className="scroll-mt-24">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-full bg-paper-2 border border-rule flex items-center justify-center text-ink">
-                                    <category.icon className="w-5 h-5" />
-                                </div>
-                                <h2 className="text-2xl font-display font-semibold text-ink">
-                                    {category.title}
-                                </h2>
+            </div>
+            <section className="mt-8 border-t border-rule pt-16">
+                        <div className="relative overflow-hidden rounded-[2.5rem] p-10 sm:p-12 text-center flex flex-col items-center border border-rule shadow-xl bg-gradient-to-br from-paper via-paper-2 to-accent/5">
+                            {/* Decorative background blobs */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-syntax-violet/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+                            
+                            <div className="w-16 h-16 bg-paper rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-rule relative z-10 -rotate-3">
+                                <HelpCircle className="w-8 h-8 text-accent" />
                             </div>
                             
-                            <Accordion type="multiple" className="w-full bg-paper border border-rule rounded-xl px-4">
-                                {faqs[category.id].map((faq, index) => (
-                                    <AccordionItem value={`${category.id}-${index}`} key={index} className="last:border-0 border-rule py-1">
-                                        <AccordionTrigger className="text-left font-display text-base text-ink hover:text-accent transition-colors">
-                                            {faq.question}
-                                        </AccordionTrigger>
-                                        <AccordionContent className="text-ink-2 text-sm leading-relaxed pt-1 pb-4">
-                                            {faq.answer}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                ))}
-                            </Accordion>
-                        </section>
-                    ))}
-
-                    <section className="border-t border-rule pt-12 mt-12">
-                        <div className="bg-paper-2 rounded-2xl p-8 text-center flex flex-col items-center">
-                            <h2 className="font-display text-2xl text-ink mb-2">Still have questions?</h2>
-                            <p className="text-ink-2 mb-6">We're here to help you get the most out of PeerVerse.</p>
-                            <a href="mailto:peerverse.community@gmail.com" className="inline-block px-8 py-3 rounded-full bg-ink text-paper font-semibold hover:bg-ink-2 transition-colors">
+                            <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink mb-4 relative z-10 tracking-tight">Still have questions?</h2>
+                            <p className="text-ink-2 text-lg mb-10 max-w-xl relative z-10">
+                                We're here to help you get the most out of The Quad. Reach out to our dedicated support team directly.
+                            </p>
+                            
+                            <a 
+                                href="mailto:thequad.community@gmail.com" 
+                                className="relative z-10 inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-ink text-paper font-semibold hover:bg-ink-2 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-ink/20"
+                            >
                                 Contact Support Team
                             </a>
                         </div>
                     </section>
-                </div>
-            </div>
         </div>
     );
 }

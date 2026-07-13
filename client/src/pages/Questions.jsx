@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import {
     Search,
     Plus,
@@ -29,8 +30,17 @@ const SORTS = [
     { key: "active", label: "Active" },
 ];
 
-export default function Questions() {
-    const { questions, apiLoaded } = useApp();
+export default function Questions({ inExplore = false }) {
+    const { questions, apiLoaded, currentUser } = useApp();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    React.useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=questions", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
+
 
     const [q, setQ] = useState("");
     const [tag, setTag] = useState("");
@@ -79,6 +89,8 @@ export default function Questions() {
         return list;
     }, [questions, q, tag, sort]);
 
+    if (!isDesktop && !inExplore) return null;
+
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <header className="border-b-2 border-double border-rule pb-8">
@@ -88,24 +100,26 @@ export default function Questions() {
                             &sect;03 &middot; the forum
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="hidden md:inline mt-2 font-display text-5xl md:text-6xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Ask. <span className="font-display-italic text-accent">Answer. </span>&amp; <span className="italic marker">Argue.</span> 
                         </h1>
 
-                        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+                        <p className="mt-4 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
                             Stack-Overflow energy, with people who know your syllabus and
                             actually care about your grade. Feel free to ask, solve questions and grow together.
                         </p>
                     </div>
 
-                    <Link
-                        to="/ask"
-                        data-testid="ask-question-button"
-                        className="hidden md:inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Ask question
-                    </Link>
+                    {currentUser && (
+                        <Link
+                            to="/ask"
+                            data-testid="ask-question-button"
+                            className="hidden md:inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Ask a Question
+                        </Link>
+                    )}
                 </div>
             </header>
 
@@ -183,7 +197,7 @@ export default function Questions() {
                 </div>
 
                 <aside className="lg:col-span-3">
-                    <div className="sticky top-24 space-y-4 rounded-sm border border-rule bg-paper-2/40 p-4">
+                    <div className="sticky top-24 space-y-4 rounded-sm border border-rule bg-paper-2/40 backdrop-blur-md p-4">
                         <h3 className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // filter by tag
                         </h3>
@@ -232,9 +246,9 @@ export default function Questions() {
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <span className="text-ink-2">total answers</span>
+                                <span className="text-ink-2">total questions</span>
                                 <span className="font-mono text-ink">
-                                    {questions.reduce((acc, qq) => acc + qq.answers.length, 0)}
+                                    {questions.length}
                                 </span>
                             </div>
                         </div>

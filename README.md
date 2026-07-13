@@ -1,4 +1,4 @@
-# 🌐 PeerVerse Community App
+# 🌐 The Quad Community App
 
 
 <p align="center">
@@ -11,14 +11,14 @@
   <img src="https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=for-the-badge&logo=drizzle&logoColor=black" alt="Drizzle" />
 </p>
 
-**The Student Community for Resources, Q&A, Blogs & Opportunities**
+**The Student Community for Resources, Q&A, Blogs, Opportunities, and Real-Time Collaboration**
 
 
 ## 📖 Overview
 
-**PeerVerse** is a modern, full-stack, community-driven platform built explicitly for college students and learners in the tech ecosystem. 
+**The Quad** is a modern, full-stack, community-driven platform built explicitly for college students and learners in the tech ecosystem. 
 
-Designed with a premium dark/light mode UI and a focus on speed, PeerVerse combines the best parts of a university resource repository, a StackOverflow-style Q&A forum, a tech blogging platform, and an opportunities board into one cohesive hub. It features rich integrations (like GitHub & LeetCode tracking on profiles) and a comprehensive moderation architecture to maintain a high-quality community environment.
+Designed with a premium dark/light mode UI and a focus on speed, The Quad combines the best parts of a university resource repository, a StackOverflow-style Q&A forum, a tech blogging platform, and an opportunities board into one cohesive hub. It features rich integrations (like GitHub & LeetCode tracking on profiles) and a comprehensive moderation architecture to maintain a high-quality community environment.
 
 ---
 
@@ -33,6 +33,11 @@ Designed with a premium dark/light mode UI and a focus on speed, PeerVerse combi
 - Explore free PDF books and study materials across various domains.
 - Read books directly in the browser with a custom-themed built-in PDF viewer.
 - Fullscreen reading mode for a distraction-free experience.
+
+### ⚡ Real-Time Chat & Lounges
+- Global public lounges for broad community discussions.
+- Create private or public ephemeral study rooms that auto-delete after 10 minutes of inactivity.
+- Direct Messaging (DMs) with real-time typing indicators, online presence dots, and read receipts.
 
 ### 💬 Q&A Forum
 - Tech-focused Q&A system.
@@ -61,7 +66,7 @@ Designed with a premium dark/light mode UI and a focus on speed, PeerVerse combi
 
 ## 🏗️ Architecture & Tech Stack
 
-PeerVerse is structured as a monorepo containing a `client` and `server`.
+The Quad is structured as a monorepo containing a `client` and `server`.
 
 ### Frontend (`client/`)
 - **Framework**: React 18 powered by Vite.
@@ -69,9 +74,11 @@ PeerVerse is structured as a monorepo containing a `client` and `server`.
 - **Icons & UI**: `lucide-react` for iconography and custom Radix UI/Shadcn-inspired accessible primitives.
 - **Routing**: `react-router-dom` v6.
 - **State & Data Fetching**: Context API combined with robust Axios interceptors for automated JWT refresh.
+- **Real-Time Communication**: `socket.io-client` for seamless live updates, typing indicators, and presence tracking.
 
 ### Backend (`server/`)
 - **Runtime**: Node.js with Express.js.
+- **Real-Time Engine**: `socket.io` for bi-directional event-based communication.
 - **Database**: PostgreSQL hosted in production.
 - **ORM**: Drizzle ORM for type-safe schema definitions, relationships, and queries.
 - **Authentication**: JWT-based (Access & HTTP-Only Refresh Cookies) with OTP email verification during registration.
@@ -98,7 +105,7 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
 # Database Connection
-DATABASE_URL=postgresql://user:password@localhost:5432/peerverse
+DATABASE_URL=postgresql://user:password@localhost:5432/the quad
 
 # JWT Secrets (Generate secure random strings)
 JWT_ACCESS_SECRET=your_access_secret
@@ -130,22 +137,22 @@ To create your first admin or moderator user, you can manually insert them into 
 ## 📂 Project Structure
 
 ```text
-PeerVerse-CommunityApp/
+The Quad-CommunityApp/
 ├── client/
 │   ├── public/              # Static assets, Favicons, SEO files
 │   ├── src/
 │   │   ├── components/      # Reusable UI components & layouts
 │   │   ├── context/         # React Contexts (App, Auth, Theme)
 │   │   ├── pages/           # Route views (Home, Profile, Admin Console, etc.)
-│   │   ├── services/        # Axios API configurations
+│   │   ├── services/        # Axios API configurations & Socket integrations
 │   │   └── utils/           # Helper functions
 │   └── tailwind.config.js
 └── server/
     ├── src/
     │   ├── db/              # Drizzle ORM setup & schemas
-    │   ├── modules/         # Feature-based route/controller/service architecture
+    │   ├── modules/         # Feature-based routes, controllers, services, and socket events
     │   ├── utils/           # Utilities (Email, JWT, Logger, Errors)
-    │   └── app.js           # Express App initialization
+    │   └── server.js        # Express App initialization & Socket.io attachment
     └── drizzle.config.js
 ```
 

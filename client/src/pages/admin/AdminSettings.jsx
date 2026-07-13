@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Settings, Save, Loader2, Link2, BellRing, Flag, Check, ShieldAlert,
+  Save, Loader2, Link2, BellRing, Flag, Check, ShieldAlert,
   CalendarClock, Trash2, Calendar
 } from "lucide-react";
 import { toast } from "sonner";
@@ -111,9 +111,6 @@ export default function AdminSettings() {
     }
   };
 
-  if (fetching) {
-    return <SettingsSkeleton />;
-  }
 
   return (
     <div className="space-y-6">
@@ -132,9 +129,12 @@ export default function AdminSettings() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Registration & General */}
-        <div className="space-y-6">
+      {fetching ? (
+        <SettingsSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Registration & General */}
+          <div className="space-y-6">
           
           <div className="rounded-xl border border-rule bg-paper-2 p-6 shadow-sm">
             <h3 className="flex items-center gap-2 font-display text-lg font-bold text-ink mb-4">
@@ -348,6 +348,7 @@ export default function AdminSettings() {
 
         </div>
       </div>
+      )}
     </div>
   );
 }

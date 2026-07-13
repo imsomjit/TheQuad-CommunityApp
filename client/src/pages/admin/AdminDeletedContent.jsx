@@ -37,21 +37,19 @@ export default function AdminDeletedContent() {
     }
   };
 
-  if (loading) {
-    return <TableSkeleton />;
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Deleted Content</h1>
+          <h1 className="text-2xl font-bold font-display text-ink">Deleted Content</h1>
           <p className="text-ink-2 mt-1">Manage and restore soft-deleted items across the platform.</p>
         </div>
       </div>
 
       <div className="bg-paper border border-rule rounded-xl overflow-hidden">
-        {content.length === 0 ? (
+        {loading ? (
+          <TableSkeleton />
+        ) : content.length === 0 ? (
           <div className="p-8 text-center text-ink-3">
             <Trash2 className="h-12 w-12 mx-auto mb-3 opacity-20" />
             <p>No deleted content found.</p>
@@ -65,6 +63,7 @@ export default function AdminDeletedContent() {
                   <th className="p-4 font-medium w-1/2">Title/Body</th>
                   <th className="p-4 font-medium">Deleted By</th>
                   <th className="p-4 font-medium">Deleted At</th>
+                  <th className="p-4 font-medium">Expires In</th>
                   <th className="p-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -79,10 +78,22 @@ export default function AdminDeletedContent() {
                       </div>
                     </td>
                     <td className="p-4 text-sm">
-                      {item.deletedBy ? `@${item.deletedBy}` : "System"}
+                      {item.deletedByRole === "admin" 
+                        ? "admin user" 
+                        : item.deletedBy 
+                          ? `@${item.deletedBy}` 
+                          : "system"}
                     </td>
                     <td className="p-4 text-sm text-ink-3">
                       {new Date(item.deletedAt).toLocaleDateString()}
+                    </td>
+                    <td className="p-4 text-sm">
+                      {(() => {
+                        const daysLeft = 14 - Math.floor((new Date() - new Date(item.deletedAt)) / (1000 * 60 * 60 * 24));
+                        if (daysLeft <= 0) return <span className="text-syntax-rose font-medium">Today</span>;
+                        if (daysLeft <= 3) return <span className="text-syntax-rose font-medium">{daysLeft} days</span>;
+                        return <span className="text-ink-2">{daysLeft} days</span>;
+                      })()}
                     </td>
                     <td className="p-4 text-right">
                       <button

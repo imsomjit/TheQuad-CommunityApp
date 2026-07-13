@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, useLocation, Link } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -9,7 +9,7 @@ import { Toaster } from "./ui/sonner";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { useApp } from "../context/AppContext";
-import { Braces, AlertCircle, Info, CheckCircle2 } from "lucide-react";
+import ChatSidebar from "./chat/ChatSidebar";
 
 const ROUTE_LABELS = [
     { match: /^\/$/, label: "the feed", section: "§01", pathName: "Home feed" },
@@ -41,16 +41,28 @@ const ROUTE_LABELS = [
     { match: /^\/terms$/, label: "the terms", section: "§10", pathName: "Terms of service" },
     { match: /^\/faq$/, label: "the FAQs", section: "§10", pathName: "Asked questions" },
     { match: /^\/admin(\/.*)?$/, label: "admin console", section: "§00", pathName: "Admin Console" },
+    { match: /^\/explore$/, label: "the explore", section: "§11", pathName: "Explore" },
 ];
 
-function getRouteMeta(pathname) {
-    return (
-        ROUTE_LABELS.find((r) => r.match.test(pathname)) || {
-            label: "page",
-            section: "§",
-            pathName: "a learning space"
+function getRouteMeta(pathname, search = "") {
+    const route = ROUTE_LABELS.find((r) => r.match.test(pathname)) || {
+        label: "page",
+        section: "§",
+        pathName: "a learning space"
+    };
+
+    if (pathname === "/explore" && search) {
+        const params = new URLSearchParams(search);
+        const tab = params.get("tab");
+        if (tab) {
+            return {
+                ...route,
+                pathName: `Explore / ${tab}`
+            };
         }
-    );
+    }
+
+    return route;
 }
 
 export default function Layout() {
@@ -58,12 +70,30 @@ export default function Layout() {
     const { isAuthenticated } = useAuth();
     const { siteSettings } = useApp();
     const location = useLocation();
-    const meta = getRouteMeta(location.pathname);
+    const meta = getRouteMeta(location.pathname, location.search);
     const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
 
     const [scrolled, setScrolled] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("thequad_is_chat_open") === "true";
+        }
+        return false;
+    });
     const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        localStorage.setItem("thequad_is_chat_open", isChatOpen);
+    }, [isChatOpen]);
+
+    useEffect(() => {
+        const handleOpenChatSidebar = () => {
+            setIsChatOpen(true);
+        };
+        window.addEventListener("open_chat_sidebar", handleOpenChatSidebar);
+        return () => window.removeEventListener("open_chat_sidebar", handleOpenChatSidebar);
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => setNow(new Date()), 60000);
@@ -79,17 +109,17 @@ export default function Layout() {
     }, []);
 
     return (
-        <div className="relative min-h-screen overflow-x-hidden bg-paper text-ink font-body">
+        <div className="relative min-h-screen bg-paper text-ink font-body">
             {/* Backdrop textures (theme-aware) */}
             <div className="dot-bg pointer-events-none fixed inset-0 opacity-40" />
             <div className="paper-grain pointer-events-none fixed inset-0" />
 
             <div className="relative z-10">
-                <div className={`fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 ease-out pr-[var(--removed-body-scroll-bar-size,0px)] ${scrolled ? '-translate-y-6 sm:-translate-y-7' : 'translate-y-0'}`}>
+                <div className="fixed top-0 z-40 w-full flex flex-col transition-transform duration-300 ease-out pr-[var(--removed-body-scroll-bar-size,0px)]">
                     {/* Running header / monospace breadcrumb bar */}
                     <div 
-                        className={`border-b border-rule/60 bg-paper-2 backdrop-blur-md h-6 sm:h-7 transition-opacity duration-300 ease-out overflow-hidden ${
-                            scrolled ? "opacity-0" : "opacity-100"
+                        className={`border-b border-rule/60 bg-paper-2/80 backdrop-blur-md transition-all duration-300 ease-out overflow-hidden ${
+                            scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
                         {siteSettings?.announcementActive && siteSettings?.announcementText ? (
@@ -107,7 +137,7 @@ export default function Layout() {
                             <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                                 <span className="flex items-center gap-2">
                                     <span className="text-accent animate-pulse">●</span>
-                                    peerverse / vol.01 / {meta.pathName}
+                                    the quad / vol.01 / {meta.pathName}
                                 </span>
 
                                 <span className="hidden items-center gap-2 sm:flex">
@@ -132,14 +162,15 @@ export default function Layout() {
                             onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
                             scrolled={scrolled}
                         />
-                        <MobileNav />
+                        <MobileNav onChatToggle={() => setIsChatOpen(!isChatOpen)} />
                     </>
                 )}
 
                 {/* Main content area offset by sidebar on desktop */}
                 <div 
-                    className={`${hideSidebar ? "" : isSidebarCollapsed ? "md:pl-[80px]" : "md:pl-64"} pt-[92px] flex flex-col min-h-screen transition-all duration-300 ease-in-out`}
-                    style={{ "--sidebar-width": hideSidebar ? "0px" : isSidebarCollapsed ? "80px" : "16rem" }}
+                    className={`transition-all duration-300 ease-out pt-[92px] flex flex-col min-h-screen pl-0 pr-0 ${
+                        hideSidebar ? "md:pl-0" : isSidebarCollapsed ? "md:pl-[81px]" : "md:pl-[15rem]"
+                    } ${(isChatOpen && !hideSidebar) ? "md:pr-[23rem]" : "md:pr-0"}`}
                 >
 
                     {/* Main content */}
@@ -154,6 +185,13 @@ export default function Layout() {
         </div>
 
         <Toaster position="bottom-right" theme={theme === "light" ? "light" : "dark"} />
+        {!hideSidebar && (
+            <ChatSidebar 
+                isOpen={isChatOpen} 
+                onToggle={() => setIsChatOpen(!isChatOpen)}
+                scrolled={scrolled}
+            />
+        )}
     </div>
   );
 }

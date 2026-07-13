@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
     Github, ExternalLink, Star, GitFork, Users, BookOpen,
-    MessageSquare, Award, MapPin, Calendar, Sparkles, FolderGit2,
+    Award, MapPin, Calendar, Sparkles, FolderGit2,
     FolderOpen, Edit3, Linkedin, Twitter, Instagram, Code2,
-    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap
+    Trophy, Globe, Building2, Camera, ChevronRight, UserCheck, UserPlus, LogOut, ShieldAlert, Zap, Bookmark, MessageSquare
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -167,6 +167,27 @@ export default function Profile() {
         setFollowLoading(false);
     };
 
+    // ── Direct Messaging ────────────────────────────────────────────────────────
+    const [messageLoading, setMessageLoading] = useState(false);
+    const handleMessage = async () => {
+        if (!isAuthenticated) { navigate("/login"); return; }
+        if (!profile || profile.id === currentUser?.id) return;
+        
+        setMessageLoading(true);
+        try {
+            const { chatApi } = await import("../services/api");
+            const res = await chatApi.createDirectRoom(profile.id);
+            if (res.data && res.data.id) {
+                // Open ChatSidebar if closed, and select the direct room
+                window.dispatchEvent(new CustomEvent("open_chat_sidebar"));
+                window.dispatchEvent(new CustomEvent("open_chat_room", { detail: { roomId: res.data.id } }));
+            }
+        } catch (e) {
+            toast.error(e.response?.data?.message || "Failed to start conversation");
+        }
+        setMessageLoading(false);
+    };
+
     // ── Avatar quick-upload ──────────────────────────────────────────────────────
     const handleAvatarUpload = async (e) => {
         const file = e.target.files?.[0];
@@ -214,7 +235,7 @@ export default function Profile() {
     const totalLangBytes = ghLanguages.reduce((a, l) => a + (l.bytes || 0), 0) || 1;
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="px-2 px-2 sm:px-6 md:px-0 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* ── Banner + Header ─────────────────────────────────────────────── */}
             <div>
                 {/* Banner */}
@@ -273,10 +294,16 @@ export default function Profile() {
                             {isOwnProfile ? (
                                 <>
                                     <Link
+                                        to={`/u/${currentUser?.username}/bookmarks`}
+                                        className="inline-flex sm:hidden items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
+                                    >
+                                        <Bookmark className="w-3.5 h-3.5 text-syntax-rose" /> Saved
+                                    </Link>
+                                    <Link
                                         to="/settings/profile"
                                         className="inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-medium text-ink font-mono bg-paper border border-rule hover:border-ink-3 transition-colors shrink-0"
                                     >
-                                        <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit profile</span><span className="sm:hidden">Edit</span>
+                                        <Edit3 className="w-3.5 h-3.5 text-syntax-mint" /> Edit
                                     </Link>
                                     <button
                                         onClick={() => logout()}
@@ -286,23 +313,36 @@ export default function Profile() {
                                     </button>
                                 </>
                             ) : (
-                                <button
-                                    onClick={handleFollow}
-                                    disabled={followLoading}
-                                    className={`inline-flex items-center gap-1.5 h-8 sm:h-9 px-3 sm:px-4 rounded-md text-xs sm:text-sm font-semibold transition-all shrink-0 ${
-                                        following
-                                            ? "text-ink bg-paper border border-rule hover:border-red-300 hover:text-red-400"
-                                            : "text-paper bg-accent btn-primary hover:brightness-110"
-                                    }`}
-                                >
-                                    {followLoading ? (
-                                        <Loader inline size="sm" />
-                                    ) : following ? (
-                                        <><UserCheck className="w-3.5 h-3.5" /> Following</>
-                                    ) : (
-                                        <><UserPlus className="w-3.5 h-3.5" /> Follow</>
-                                    )}
-                                </button>
+                                <>
+                                    <button
+                                        onClick={handleFollow}
+                                        disabled={followLoading}
+                                        className={`inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-sm font-semibold transition-all shrink-0 shadow-sm ${
+                                            following
+                                                ? "text-ink bg-paper border border-rule hover:border-red-300 hover:text-red-400"
+                                                : "text-paper bg-accent hover:brightness-110"
+                                        }`}
+                                    >
+                                        {followLoading ? (
+                                            <Loader inline size="sm" />
+                                        ) : following ? (
+                                            <><UserCheck className="w-4 h-4" /> Following</>
+                                        ) : (
+                                            <><UserPlus className="w-4 h-4" /> Follow</>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={handleMessage}
+                                        disabled={messageLoading}
+                                        className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-sm font-semibold text-ink bg-paper border border-rule hover:bg-paper-2 transition-all shrink-0 shadow-sm"
+                                    >
+                                        {messageLoading ? (
+                                            <Loader inline size="sm" />
+                                        ) : (
+                                            <><MessageSquare className="w-4 h-4" /> Message</>
+                                        )}
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -310,16 +350,16 @@ export default function Profile() {
                     {/* Name & tags */}
                     <div className="flex flex-col gap-3 mt-2">
                         <h1 className="font-display text-4xl sm:text-5xl font-extrabold text-ink tracking-tight leading-none">
-                            <span className="marker">{profile.name}</span>
+                            {profile.name}
                         </h1>
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-ink-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-accent">
                                 @{profile.username}
                             </span>
                             {profile.website && (
                                 <a href={profile.website} target="_blank" rel="noreferrer"
                                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper-2 border border-rule text-xs sm:text-sm font-medium text-ink-2 hover:text-ink hover:border-ink-3 transition-colors truncate max-w-[150px] sm:max-w-none">
-                                    <Globe className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//, "")}</span>
+                                    <Globe className="w-3.5 h-3.5 text-syntax-cyan shrink-0" /> <span className="truncate">{profile.website.replace(/^https?:\/\//, "")}</span>
                                 </a>
                             )}
                         </div>
@@ -334,19 +374,19 @@ export default function Profile() {
                     <div className="mt-6 flex flex-wrap gap-4 text-sm font-mono text-ink-2">
                         {profile.organization && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1"><Building2 className="w-4 h-4 text-ink-2" fill="var(--syntax-amber)" /></div>
+                                <div className="p-1"><Building2 className="w-4 h-4 text-syntax-amber" /></div>
                                 <span>{profile.organization}</span>
                             </div>
                         )}
                         {profile.location && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1"><MapPin className="w-4 h-4 text-ink-2" fill="var(--syntax-rose)" /></div>
+                                <div className="p-1"><MapPin className="w-4 h-4 text-syntax-rose" /></div>
                                 <span>{profile.location}</span>
                             </div>
                         )}
                         {profile.college && (
                             <div className="flex items-center gap-2">
-                                <div className="p-1"><BookOpen className="w-4 h-4 text-ink-2" fill="var(--syntax-mint)" /></div>
+                                <div className="p-1"><BookOpen className="w-4 h-4 text-syntax-mint" /></div>
                                 <span>
                                     {profile.college}
                                     {profile.branch && <span className="text-accent mx-1">•</span>}
@@ -725,7 +765,7 @@ function ActivityTabs({ profile }) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function StatTile({ icon: Icon, label, value, colorVar }) {
-    const c = `var(${colorVar})`;
+    const c = `rgb(var(${colorVar}))`;
     return (
         <div className="relative overflow-hidden p-4 sm:p-6 border border-rule rounded-xl bg-paper-2/40 card-elevated group transition-all duration-300 hover:border-ink-3 hover:-translate-y-1 hover:shadow-lg">
             <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20 transition-opacity group-hover:opacity-40" style={{ backgroundColor: c }} />

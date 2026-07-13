@@ -26,8 +26,10 @@ const listOpportunities = async (filters) => {
     const searchString = `%${q}%`;
     queryConditions.push(
       or(
-        ilike(opportunities.title, searchString),
-        ilike(opportunities.description, searchString),
+        sql`to_tsvector('english', coalesce(${opportunities.title}, '')) @@ plainto_tsquery('english', ${q})`,
+        ilike(opportunities.organizer, searchString),
+        sql`${opportunities.source}::text ILIKE ${searchString}`,
+        sql`${opportunities.type}::text ILIKE ${searchString}`,
         sql`${opportunities.tags}::text ILIKE ${searchString}`
       )
     );

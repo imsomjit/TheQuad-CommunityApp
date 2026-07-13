@@ -3,7 +3,8 @@
 const cron = require("node-cron");
 const { sql, and, eq, lte } = require("drizzle-orm");
 const { db } = require("../db/index");
-const { users, notifications, broadcasts } = require("../db/schema/index");
+const { users, notifications, broadcasts, resources, posts, books, questions, opportunities, answers, comments } = require("../db/schema/index");
+const cloudinary = require("../config/cloudinary");
 const { sendEmail } = require("./email");
 const logger = require("./logger");
 const sseManager = require("../config/sse");
@@ -43,12 +44,12 @@ const startCronJobs = () => {
           type: "system_broadcast",
           targetType: "birthday",
           targetId: user.id,
-          targetTitle: `[Birthday] PeerVerse: Happy Birthday, ${user.name}! 🥳 Wishing you a fantastic day ahead!`,
+          targetTitle: `[Birthday] The Quad: Happy Birthday, ${user.name}! 🥳 Wishing you a fantastic day ahead!`,
           isRead: false,
         });
 
         // Send Email
-        const emailSubject = "Happy Birthday from PeerVerse! 🎉";
+        const emailSubject = "Happy Birthday from The Quad! 🎉";
         const emailHtml = getBirthdayEmailTemplate(user.name);
         
         await sendEmail({
@@ -146,6 +147,75 @@ const startCronJobs = () => {
       logger.info("[Cron] Refresh token cleanup completed.");
     } catch (error) {
       logger.error("[Cron] Error running refresh token cleanup job:", error);
+    }
+  });
+
+  // Run everyday at midnight to hard-delete soft-deleted content older than 14 days
+  cron.schedule("0 0 * * *", async () => {
+    try {
+      logger.info("[Cron] Running 14-day soft-delete cleanup job...");
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+
+      // Helper to process deletion
+      const processTableDeletion = async (table, hasFiles = false, fileFields = []) => {
+        const expiredRecords = await db
+          .select()
+          .from(table)
+          .where(
+            and(
+              eq(table.isDeleted, true),
+              lte(table.deletedAt, fourteenDaysAgo)
+            )
+          );
+
+        if (expiredRecords.length === 0) return 0;
+
+        // Delete files from Cloudinary
+        if (hasFiles) {
+          for (const record of expiredRecords) {
+            for (const field of fileFields) {
+              const publicId = record[field.name];
+              if (publicId) {
+                try {
+                  await cloudinary.uploader.destroy(publicId, { resource_type: field.type });
+                } catch (err) {
+                  logger.error(`[Cron] Failed to delete Cloudinary file ${publicId}:`, err);
+                }
+              }
+            }
+          }
+        }
+
+        // Hard delete from DB
+        const ids = expiredRecords.map(r => r.id);
+        // Using inArray might hit limits if ids array is huge, but soft-deletes aren't typically millions per day.
+        // Let's use raw SQL for safe batch deletion
+        const tableName = table[Symbol.for('drizzle:Name')];
+        await db.execute(sql.raw(`DELETE FROM "${tableName}" WHERE id IN (${ids.join(',')})`));
+        return ids.length;
+      };
+
+      let totalDeleted = 0;
+
+      // Resources (has filePublicId)
+      totalDeleted += await processTableDeletion(resources, true, [{ name: 'filePublicId', type: 'raw' }]);
+      // Books (has filePublicId and coverPublicId)
+      totalDeleted += await processTableDeletion(books, true, [
+        { name: 'filePublicId', type: 'raw' },
+        { name: 'coverPublicId', type: 'image' }
+      ]);
+      // Posts (has coverImagePublicId)
+      totalDeleted += await processTableDeletion(posts, true, [{ name: 'coverImagePublicId', type: 'image' }]);
+      
+      // No files
+      totalDeleted += await processTableDeletion(questions);
+      totalDeleted += await processTableDeletion(opportunities);
+      totalDeleted += await processTableDeletion(answers);
+      totalDeleted += await processTableDeletion(comments);
+
+      logger.info(`[Cron] Soft-delete cleanup completed. Permanently removed ${totalDeleted} items.`);
+    } catch (error) {
+      logger.error("[Cron] Error running soft-delete cleanup job:", error);
     }
   });
 

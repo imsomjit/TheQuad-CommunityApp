@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, X, Upload, ArrowDownUp, BookText, Eye, Download, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { Search, X, Upload, ArrowDownUp, BookText, } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { booksApi } from "../services/api";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
@@ -25,8 +26,18 @@ const SORTS = [
     { key: "popular", label: "Popular" },
 ];
 
-export default function Library() {
+export default function Library({ inExplore = false }) {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    useEffect(() => {
+        if (!isDesktop && !inExplore) {
+            navigate("/explore?tab=library", { replace: true });
+        }
+    }, [isDesktop, inExplore, navigate]);
+
+
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -60,6 +71,8 @@ export default function Library() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, sort, subject, q]);
 
+    if (!isDesktop && !inExplore) return null;
+
     return (
         <div className="mx-auto max-w-7xl pb-24 md:pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
@@ -70,11 +83,11 @@ export default function Library() {
                             &sect;05 &middot; the library
                         </p>
 
-                        <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+                        <h1 className="hidden md:inline mt-2 font-display text-5xl md:text-6xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
                             Read. <span className="font-display-italic text-accent">Learn.</span> & <span className="italic marker">Grow.</span>
                         </h1>
 
-                        <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-2">
+                        <p className="mt-4 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
                             Explore free PDF books and study materials from a wide range of subjects. Discover new topics and prepare for your next exam.
                         </p>
                     </div>

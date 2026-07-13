@@ -8,35 +8,31 @@ import {
     BookOpen,
     MessageSquare,
     Users,
-    Award,
     Terminal,
     Search,
     Target,
-    Bookmark,
     Calendar,
     Clock,
     Trophy,
     CodeXml,
     FileText,
     BookText,
-    Download,
-    Eye
+    PenLine,
 } from "lucide-react";
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { usersApi, postsApi, opportunitiesApi, booksApi, resourcesApi } from "../services/api";
+import { usersApi, postsApi, opportunitiesApi, booksApi, resourcesApi, tagsApi } from "../services/api";
 import ResourceCard from "../components/ResourceCard";
 import QuestionCard from "../components/QuestionCard";
 import PostCard from "../components/PostCard";
 import BookCard from "../components/BookCard";
-import BookmarkButton from "../components/BookmarkButton";
 import TagBadge from "../components/TagBadge";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 import { ResourceCardSkeleton, QuestionCardSkeleton, Skeleton, PostCardSkeleton, BookCardSkeleton, OpportunityCardSkeleton } from "../components/Skeletons";
 import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
-import { timeAgo } from "../utils/timeAgo";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 const STAT_COLOR = {
     resources: "--syntax-mint",
@@ -45,8 +41,22 @@ const STAT_COLOR = {
     answers: "--syntax-amber",
 };
 
+const getRankAvatarStyle = (index) => {
+    if (index === 0) return "ring-1 ring-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.3)] border-yellow-300/50";
+    if (index === 1) return "ring-1 ring-slate-300/80 shadow-[0_0_10px_rgba(203,213,225,0.2)] border-slate-300/50";
+    if (index === 2) return "ring-1 ring-orange-500/80 shadow-[0_0_10px_rgba(249,115,22,0.2)] border-orange-500/50";
+    return "border-rule group-hover:border-accent";
+};
+
+const getRankNumberStyle = (index) => {
+    if (index === 0) return "text-yellow-500 font-extrabold text-xs drop-shadow-[0_0_4px_rgba(250,204,21,0.4)]";
+    if (index === 1) return "text-slate-400 font-bold text-xs drop-shadow-[0_0_2px_rgba(203,213,225,0.3)]";
+    if (index === 2) return "text-orange-500 font-bold text-xs drop-shadow-[0_0_2px_rgba(249,115,22,0.3)]";
+    return "text-ink-3 font-bold text-[10px]";
+};
+
 function StatTile({ icon: Icon, label, value, colorKey }) {
-    const c = `var(${STAT_COLOR[colorKey]})`;
+    const c = `rgb(var(${STAT_COLOR[colorKey]}))`;
 
     return (
         <div className="group relative overflow-hidden rounded-md border border-rule bg-paper-2 p-4 transition-colors hover:border-ink-3">
@@ -155,18 +165,26 @@ export default function Home() {
     const [opportunitiesCount, setOpportunitiesCount] = useState(0);
     const [contentsCount, setContentsCount] = useState(0);
 
+    const [globalTags, setGlobalTags] = useState([]);
+
     useEffect(() => {
-        const fetchContributors = async () => {
+        const fetchContributorsAndTags = async () => {
             try {
-                const data = await usersApi.getTopContributors();
-                setTopContributors(data);
+                const [usersData, tagsData] = await Promise.all([
+                    usersApi.getTopContributors(),
+                    tagsApi.getAll()
+                ]);
+                setTopContributors(usersData);
+                if (tagsData.success) {
+                    setGlobalTags(tagsData.data);
+                }
             } catch (err) {
-                console.error("Failed to fetch top contributors", err);
+                console.error("Failed to fetch top contributors or tags", err);
             } finally {
                 setContributorsLoading(false);
             }
         };
-        fetchContributors();
+        fetchContributorsAndTags();
     }, []);
 
     useEffect(() => {
@@ -193,7 +211,7 @@ export default function Home() {
                     if (res.data?.pagination?.total) return Number(res.data.pagination.total);
                     return 0;
                 };
-                
+
                 setOpportunitiesCount(getCount(oppsData) + getCount(upcomingOpps));
 
                 const resourcesCount = getCount(resourcesData);
@@ -244,17 +262,8 @@ export default function Home() {
             .slice(0, 3);
     }, [questions]);
 
-    const allTags = useMemo(() => {
-        const counts = {};
-
-        resources.forEach(r => r.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
-        questions.forEach(q => q.tags?.forEach(t => counts[t] = (counts[t] || 0) + 1));
-
-        return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    }, [resources, questions]);
-
     return (
-        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="px-2 sm:px-6 md:px-0 space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {!isAuthenticated && (
                 <>
                     {/* ── EDITORIAL HERO ─────────────────────────────────── */}
@@ -288,38 +297,50 @@ export default function Home() {
                             <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
                                 <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
                                     <Terminal className="h-3.5 w-3.5 text-accent" />
-                                    PV · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
+                                    TQ · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
                                 </p>
 
-                                <h1 className="h-[180px] sm:h-[200px] md:h-[220px] lg:h-auto font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
-                                    A <span className="font-display-italic text-accent">learning</span>{" "}
-                                    <span className="font-display-italic">space</span>
-                                    <br />
-                                    for <TypewriterEffect />
+                                <h1 className="relative grid grid-cols-1 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
+                                    {/* Hidden sizing layers for all phrases to establish exact max height dynamically */}
+                                    {TYPEWRITER_PHRASES.map((phrase) => (
+                                        <div key={phrase} className="col-start-1 row-start-1 invisible pointer-events-none" aria-hidden="true">
+                                            A <span className="font-display-italic text-accent">learning</span>{" "}
+                                            <span className="font-display-italic">space</span>
+                                            <br />
+                                            for <span className="marker">{phrase}</span>
+                                        </div>
+                                    ))}
+
+                                    {/* Visible typing layer */}
+                                    <div className="col-start-1 row-start-1">
+                                        A <span className="font-display-italic text-accent">learning</span>{" "}
+                                        <span className="font-display-italic">space</span>
+                                        <br />
+                                        for <TypewriterEffect />
+                                    </div>
                                 </h1>
 
-                                <p className="-mt-2 sm:mt-8 max-w-2xl text-base  leading-relaxed text-ink-2 sm:text-lg">
-                                    Share annotated notes, debate past-year papers, and grow a
-                                    public technical profile linked to your GitHub. PeerVerse is
-                                    built like a developer tool — and reads like a journal you
-                                    actually want to open.
+                                <p className="mt-4 sm:mt-8 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
+                                    Your campus quad, digitized. Share annotated notes, debate technical concepts, 
+                                    and socialize with peers while growing a public profile linked to your GitHub. 
+                                    The Quad combines collaborative study spaces with dev-grade tools.
                                 </p>
 
                                 <div className="mt-9 flex flex-wrap items-center gap-4">
                                     <Link
                                         to="/resources"
                                         data-testid="hero-browse-btn"
-                                        className="inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm font-semibold text-paper btn-primary shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
+                                        className="group inline-flex items-center gap-2 rounded-md bg-accent px-5 py-3 text-sm text-paper btn-primary shadow-xl shadow-accent/20 transition-all hover:scale-[1.02]"
                                     >
-                                        View Resources <ArrowRight className="h-4 w-4" />
+                                        <Flame className="h-4 w-4 group-hover:animate-bounce" /> Trending notes
                                     </Link>
 
                                     <Link
-                                        to="/ask"
+                                        to="/questions"
                                         data-testid="hero-ask-btn"
-                                        className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
+                                        className="group inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2/50 px-5 py-3 text-sm text-ink transition-all hover:border-ink-3 hover:bg-paper-2/80 hover:shadow-lg"
                                     >
-                                        Ask a question
+                                        Questions feed <ArrowRight className="h-4 w-4 group-hover:-rotate-45 duration-300" />
                                     </Link>
 
                                     <span className="ml-2 hidden font-mono text-xs text-ink-3 md:inline bg-paper-2/50 px-2.5 py-1.5 rounded-md border border-rule/50">
@@ -349,7 +370,7 @@ export default function Home() {
                                     />
                                     <StatTile
                                         icon={Target}
-                                        label="opportunities"
+                                        label="Openings"
                                         value={opportunitiesCount.toLocaleString()}
                                         colorKey="answers"
                                     />
@@ -387,51 +408,87 @@ export default function Home() {
             )}
 
             {isAuthenticated && (
-                <header className="">
-                    <div className="flex flex-wrap items-end justify-between gap-4">
-                        <div>
-                            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
-                                &sect;01 &middot; The feed
-                            </p>
+                <header className="relative pb-8 mb-10 border-b border-rule/50">
+                    {/* Subtle Desktop Background Glows */}
+                    <div className="hidden md:block absolute top-10 right-20 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-                            <h1 className="mt-2 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-                                {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br className="hidden sm:inline" /><span className="hidden sm:inline">what are you <span className="marker">learning today?</span></span><span className="inline sm:hidden">ready to <span className="marker">explore?</span></span>
-                            </h1>
+                    <div className="relative z-10 max-w-3xl">
+                        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-accent">
+                            &sect;01 &middot; The feed
+                        </p>
 
-                            <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-2">
-                                Welcome to your learning space. Discover curated resources, engage in meaningful discussions, showcase your work, and stay connected with a community that believes knowledge grows when it's shared.
-                            </p>
-                        </div>
+                        <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
+                            {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br/><span className="hidden md:inline">what are you <span className="marker italic">learning today?</span></span><span className="inline md:hidden">ready to <span className="marker italic">explore?</span></span>
+                        </h1>
 
-                        <div className="flex items-center mt-2 gap-3">
-                            <Link to="/ask" className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-3 text-sm font-semibold text-paper transition-all hover:brightness-110 active:scale-95">
-                                <MessageSquare className="h-4 w-4" /> Ask Question
-                            </Link>
-                            <Link to="/upload" className="inline-flex items-center gap-2 rounded-md border border-rule bg-paper-2 px-4 py-3 text-sm font-semibold text-ink transition-all hover:border-ink-3 hover:bg-paper active:scale-95">
-                                <BookOpen className="h-4 w-4" /> Share Note
-                            </Link>
-                        </div>
+                        <p className="mt-6 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
+                            Welcome to your learning space. Discover curated resources, engage in meaningful discussions, showcase your work, and stay connected with a community that believes knowledge grows when it's shared.
+                        </p>
                     </div>
 
-                    {/* Mobile Search Bar */}
-                    <div className="mt-8 sm:hidden relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
-                        <input
-                            type="text"
-                            placeholder="Search notes, papers, questions…"
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && e.target.value.trim()) {
-                                    window.location.href = `/search?q=${encodeURIComponent(e.target.value.trim())}`;
-                                }
-                            }}
-                            className="w-full h-10 rounded-md border border-rule bg-paper-2/60 pl-9 pr-4 text-sm text-ink placeholder:text-ink-3 focus:outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30"
-                        />
+                    {/* Premium Search & Quick Actions - Unified for Mobile & Desktop */}
+                    <div className="relative z-10 mt-10 max-w-3xl space-y-6">
+                        
+                        {/* Premium Search Bar */}
+                        <div className="relative group">
+                            <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-accent to-syntax-cyan opacity-20 blur transition duration-500 group-hover:opacity-40"></div>
+                            <div className="relative flex items-center w-full h-14 md:h-16 rounded-full bg-paper border border-rule/50 shadow-lg overflow-hidden focus-within:ring-2 focus-within:ring-accent/50 focus-within:border-transparent transition-all">
+                                <div className="pl-5 md:pl-6 flex items-center justify-center">
+                                    <Search className="h-5 w-5 md:h-6 md:w-6 text-accent animate-pulse" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search notes, questions, papers..."
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && e.target.value.trim()) {
+                                            window.location.href = `/search?q=${encodeURIComponent(e.target.value.trim())}`;
+                                        }
+                                    }}
+                                    className="w-full h-full bg-transparent pl-4 pr-4 text-[15px] md:text-lg text-ink placeholder:text-ink-3 focus:outline-none"
+                                />
+                                <div className="pr-2 md:pr-3">
+                                    <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-paper-2 border border-rule text-ink-3 shadow-sm hover:bg-paper-3 hover:text-ink active:scale-95 transition-all cursor-pointer" onClick={() => {
+                                        const input = document.querySelector('input[placeholder="Search notes, questions, papers..."]');
+                                        if (input && input.value.trim()) {
+                                            window.location.href = `/search?q=${encodeURIComponent(input.value.trim())}`;
+                                        }
+                                    }}>
+                                        <span className="text-sm md:text-base font-mono leading-none">&rarr;</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Actions Grid */}
+                        <div className="grid grid-cols-2 gap-3 md:hidden">
+                            <Link to="/explore" className="group relative overflow-hidden flex flex-col items-start justify-center gap-2 rounded-2xl bg-paper-2 border border-rule p-4 md:p-5 transition-all active:scale-95 shadow-sm hover:shadow-md hover:-translate-y-1">
+                                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 bg-accent/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-accent/20 text-accent transition-transform group-hover:scale-110">
+                                    <BookOpen className="h-5 w-5 md:h-6 md:w-6" />
+                                </div>
+                                <div className="mt-1 md:mt-2">
+                                    <span className="block text-[15px] md:text-base font-bold text-ink leading-none">Explore</span>
+                                    <span className="text-[10px] md:text-[11px] text-ink-3 font-mono mt-1.5 block uppercase tracking-wider">Start discovering...</span>
+                                </div>
+                            </Link>
+                            
+                            <Link to="/ask" className="group relative overflow-hidden flex flex-col items-start justify-center gap-2 rounded-2xl bg-paper-2 border border-rule p-4 md:p-5 transition-all active:scale-95 shadow-sm hover:shadow-md hover:-translate-y-1">
+                                <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 bg-syntax-magenta/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-syntax-magenta/20 text-syntax-magenta transition-transform group-hover:scale-110">
+                                    <PenLine className="h-5 w-5 md:h-6 md:w-6" />
+                                </div>
+                                <div className="mt-1 md:mt-2">
+                                    <span className="block text-[15px] md:text-base font-bold text-ink leading-none">Discuss</span>
+                                    <span className="text-[10px] md:text-[11px] text-ink-3 font-mono mt-1.5 block uppercase tracking-wider">Ask the community...</span>
+                                </div>
+                            </Link>
+                        </div>
                     </div>
                 </header>
             )}
 
             {/* ── EDITORIAL DIVIDER ─────────────────────────────── */}
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                     §02 · the Resources
                 </span>
@@ -494,12 +551,12 @@ export default function Home() {
                                     <Skeleton className="h-6 w-20" />
                                     <Skeleton className="h-6 w-14" />
                                 </>
-                            ) : allTags.length > 0 ? (
-                                allTags.map(([tag, count]) => (
-                                    <Link key={tag} to={`/resources?tag=${tag}`}>
+                            ) : globalTags.length > 0 ? (
+                                globalTags.map((tagObj) => (
+                                    <Link key={tagObj.tag} to={`/search?q=${encodeURIComponent(tagObj.tag)}`}>
                                         <TagBadge>
-                                            {tag}
-                                            <span className="ml-1.5 text-ink-3">{count}</span>
+                                            {tagObj.tag}
+                                            <span className="ml-1.5 text-ink-3">{tagObj.count}</span>
                                         </TagBadge>
                                     </Link>
                                 ))
@@ -513,7 +570,7 @@ export default function Home() {
                     <div className="rounded-md border border-rule bg-paper-2/60 p-5">
                         <h3 className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             <span className="flex items-center gap-2">
-                                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                                <Trophy className="h-3.5 w-3.5 text-accent" />
                                 // monthly top contributors
                             </span>
                         </h3>
@@ -535,8 +592,11 @@ export default function Home() {
                                         className="group flex cursor-pointer items-center justify-between last:border-0 last:pb-0"
                                     >
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <span className="font-mono text-[10px] font-bold text-ink-3 w-4">#{i + 1}</span>
-                                            <img src={user.avatar} alt="" className="h-8 w-8 rounded-md object-cover border border-rule group-hover:border-accent transition-colors shrink-0" />
+                                            <span className={`font-mono w-4 shrink-0 transition-all ${getRankNumberStyle(i)}`}>#{i + 1}</span>
+                                            <div className="relative shrink-0 flex items-center justify-center">
+                                                <img src={user.avatar || getAvatarFallback(user.name, user.username)} alt="" className={`h-8 w-8 rounded-md object-cover border transition-all bg-paper-2 ${getRankAvatarStyle(i)}`} />
+                                                {i === 0 && <Sparkles className="absolute -top-1 -right-1 h-3.5 w-3.5 text-yellow-400 drop-shadow-md" />}
+                                            </div>
                                             <div className="flex flex-col overflow-hidden">
                                                 <span className="truncate text-sm font-medium text-ink transition-colors group-hover:text-accent">
                                                     {user.username} <span className="font-mono text-xs text-ink-3 font-normal ml-1"></span>
@@ -569,9 +629,9 @@ export default function Home() {
 
                             <div className="mt-3 flex items-center gap-3">
                                 <img
-                                    src={currentUser.avatar}
+                                    src={currentUser.avatar || getAvatarFallback(currentUser.name, currentUser.username)}
                                     alt=""
-                                    className="h-14 w-14 rounded-md border border-rule object-cover"
+                                    className="h-14 w-14 rounded-md border border-rule object-cover bg-paper-2"
                                 />
 
                                 <div>
@@ -606,7 +666,7 @@ export default function Home() {
             </div>
 
             {/* ── Divider ─────────────────────────────────────── */}
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                     §03 · the forum
                 </span>
@@ -651,7 +711,7 @@ export default function Home() {
             </section>
 
             {/* ── Divider ─────────────────────────────────────── */}
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                     §04 · the blog
                 </span>
@@ -700,7 +760,7 @@ export default function Home() {
             </section>
 
             {/* ── Divider ─────────────────────────────────────── */}
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                     §05 · the library
                 </span>
@@ -737,7 +797,7 @@ export default function Home() {
                             ))}
                         </div>
                     ) : (
-                        <EmptyPlaceholder 
+                        <EmptyPlaceholder
                             icon={BookText}
                             title="No books yet"
                             description="The library is empty."
@@ -749,7 +809,7 @@ export default function Home() {
             </section>
 
             {/* ── Divider ─────────────────────────────────────── */}
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
                 <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                     §06 · the board
                 </span>
@@ -799,7 +859,7 @@ export default function Home() {
                                             <span className="text-ink">{opp.organizer || "Unknown"}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-ink-2 px-2.5 py-1 bg-paper border border-rule/60 rounded-full shadow-sm">
-                                            <Trophy className="w-3.5 h-3.5" fill="var(--accent)" />
+                                            <Trophy className="w-3.5 h-3.5 text-accent" fill="currentColor" />
                                             <span>{opp.type === "CODING_CONTEST" ? "Contest" : "Competition"}</span>
                                         </div>
                                     </div>

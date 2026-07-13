@@ -16,6 +16,7 @@ import { generateSlug } from "../utils/slugify";
 import VoteButtons from "./VoteButtons";
 import TagBadge from "./TagBadge";
 import { useApp } from "../context/AppContext";
+import { getAvatarFallback } from "../utils/fallbacks";
 const RESOURCE_TYPES = [
   { key: "notes", label: "Notes", icon: "BookOpen" },
   { key: "pyq", label: "PYQ", icon: "FileText" },
@@ -59,7 +60,7 @@ export default function ResourceCard({ resource, variant = "list" }) {
 
     const { bookmarks, toggleBookmark } = useApp();
     const isBookmarked = bookmarks.has(`resource:${resource.id}`);
-    const colorVar = `var(${TYPE_VAR[resource.type] || "--ink-2"})`;
+    const colorVar = `rgb(var(${TYPE_VAR[resource.type] || "--ink-2"}))`;
     const Icon = ICONS[type.icon] || Folder;
 
     return (
@@ -137,9 +138,9 @@ export default function ResourceCard({ resource, variant = "list" }) {
                     {/* Uploader */}
                     <div className="flex items-center gap-2">
                         <img
-                            src={resource.uploader.avatar}
+                            src={resource.uploader.avatar || getAvatarFallback(resource.uploader.name, resource.uploader.username)}
                             alt={resource.uploader.name}
-                            className="h-6 w-6 rounded-sm border border-rule object-cover"
+                            className="h-6 w-6 rounded-sm border border-rule object-cover bg-paper-2"
                         />
 
                         <span className="text-xs text-ink-2">

@@ -83,13 +83,13 @@ const getBaseTemplate = (content, title) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>The <span>PeerVerse</span></h1>
+      <h1>The <span>The Quad</span></h1>
     </div>
     <div class="content">
       ${content}
     </div>
     <div class="footer">
-      <p>&copy; ${new Date().getFullYear()} PeerVerse. All rights reserved.</p>
+      <p>&copy; ${new Date().getFullYear()} The Quad. All rights reserved.</p>
       <p>If you didn't request this email, you can safely ignore it.</p>
     </div>
   </div>
@@ -100,60 +100,60 @@ const getBaseTemplate = (content, title) => `
 const getOtpEmailTemplate = (otp) => {
   const content = `
     <h2 style="margin-top: 0; color: #1c1814;">Verify your email</h2>
-    <p>Welcome to PeerVerse! We're excited to have you on board.</p>
+    <p>Welcome to The Quad! We're excited to have you on board.</p>
     <p>Please use the following verification code to complete your registration:</p>
     <div class="otp-box">
       <p class="otp-code">${otp}</p>
     </div>
     <p style="font-size: 14px; color: #5a534a;">This code will expire in 15 minutes.</p>
   `;
-  return getBaseTemplate(content, "Verify your email for PeerVerse");
+  return getBaseTemplate(content, "Verify your email for The Quad");
 };
 
 const getResendOtpEmailTemplate = (otp) => {
   const content = `
     <h2 style="margin-top: 0; color: #1c1814;">Your verification code</h2>
-    <p>You requested a new verification code for your PeerVerse account.</p>
+    <p>You requested a new verification code for your The Quad account.</p>
     <div class="otp-box">
       <p class="otp-code">${otp}</p>
     </div>
     <p style="font-size: 14px; color: #5a534a;">This code will expire in 15 minutes.</p>
   `;
-  return getBaseTemplate(content, "Your new verification code for PeerVerse");
+  return getBaseTemplate(content, "Your new verification code for The Quad");
 };
 
 const getWelcomeEmailTemplate = (name) => {
   const content = `
     <h2 style="margin-top: 0; color: #1c1814;">Welcome to the community, ${name}!</h2>
     <p>Your email has been successfully verified, and your account is now fully active.</p>
-    <p>We built PeerVerse to be an annotated lab notebook for people who code. We hope you'll find it a valuable space to share, learn, and grow alongside your peers.</p>
-    <a href="https://peerverse.com" class="btn">Explore PeerVerse</a>
+    <p>We built The Quad to be an annotated lab notebook for people who code. We hope you'll find it a valuable space to share, learn, and grow alongside your peers.</p>
+    <a href="https://thequad.web.app" class="btn">Explore The Quad</a>
   `;
-  return getBaseTemplate(content, "Welcome to The PeerVerse!");
+  return getBaseTemplate(content, "Welcome to the quad!");
 };
 
 const getBirthdayEmailTemplate = (name) => {
   const content = `
     <h2 style="margin-top: 0; color: #1c1814;">Happy Birthday, ${name}! 🎉</h2>
-    <p>All of us at PeerVerse want to wish you a fantastic birthday!</p>
+    <p>All of us at The Quad want to wish you a fantastic birthday!</p>
     <p>We hope this year brings you joy, success, and lots of clean, bug-free code. Keep learning and sharing with the community.</p>
     <div class="otp-box" style="font-size: 24px; border: none; padding: 10px;">
       🎂 🎈 🎁
     </div>
     <p>Have a wonderful day!</p>
   `;
-  return getBaseTemplate(content, "Happy Birthday from PeerVerse!");
+  return getBaseTemplate(content, "Happy Birthday from The Quad!");
 };
 
 const getResetPasswordEmailTemplate = (resetUrl, name) => {
   const content = `
     <h2 style="margin-top: 0; color: #1c1814;">Reset your password, ${name}</h2>
-    <p>We received a request to reset the password for your PeerVerse account.</p>
+    <p>We received a request to reset the password for your The Quad account.</p>
     <p>You can reset your password by clicking the button below:</p>
     <a href="${resetUrl}" class="btn">Reset Password</a>
     <p style="margin-top: 24px; font-size: 14px; color: #5a534a;">If you didn't request a password reset, you can safely ignore this email. This link will expire in 15 minutes.</p>
   `;
-  return getBaseTemplate(content, "Reset your PeerVerse password");
+  return getBaseTemplate(content, "Reset your The Quad password");
 };
 
 module.exports = {

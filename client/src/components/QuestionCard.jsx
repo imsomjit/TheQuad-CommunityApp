@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Eye, MessageSquare, CheckCircle2 } from "lucide-react";
 import { generateSlug } from "../utils/slugify";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 import TagBadge from "./TagBadge";
 
@@ -108,9 +109,9 @@ export default function QuestionCard({ question }) {
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-rule/60 pt-3">
                     <div className="flex items-center gap-2">
                         <img
-                            src={question.author.avatar}
+                            src={question.author.avatar || getAvatarFallback(question.author.name, question.author.username)}
                             alt={question.author.name}
-                            className="h-6 w-6 rounded-sm border border-rule object-cover"
+                            className="h-6 w-6 rounded-sm border border-rule object-cover bg-paper-2"
                         />
 
                         <span className="text-xs text-ink-2">
