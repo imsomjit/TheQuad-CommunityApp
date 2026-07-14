@@ -36,9 +36,7 @@ router.post("/users/:id/ban", restrictTo("admin"), controller.banUser); // Only 
 // Moderators
 router.post("/moderators", restrictTo("admin"), controller.createModerator);
 
-// Featured Content
-router.get("/featured", controller.getFeaturedContent);
-router.patch("/content/:type/:id/feature", controller.toggleFeatureContent);
+
 
 // Opportunities
 router.post("/opportunities", controller.createOpportunity);

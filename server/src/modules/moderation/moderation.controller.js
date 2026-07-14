@@ -133,16 +133,6 @@ const updateUserRole = asyncHandler(async (req, res) => {
   res.json({ success: true, data });
 });
 
-const toggleFeatureContent = asyncHandler(async (req, res) => {
-  const { type, id } = req.params;
-  const data = await moderationService.toggleFeatureContent(type, parseInt(id), req.user.id);
-  res.json({ success: true, data });
-});
-
-const getFeaturedContent = asyncHandler(async (req, res) => {
-  const data = await moderationService.getFeaturedContent();
-  res.json({ success: true, data });
-});
 
 const createOpportunity = asyncHandler(async (req, res) => {
   const data = await moderationService.createOpportunity(req.body);
@@ -173,8 +163,7 @@ module.exports = {
   getUserHistory,
   createModerator,
   updateUserRole,
-  toggleFeatureContent,
-  getFeaturedContent,
+
   createOpportunity,
   updateOpportunity,
   deleteOpportunity,

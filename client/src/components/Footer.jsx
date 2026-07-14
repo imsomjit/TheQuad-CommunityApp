@@ -21,17 +21,18 @@ export default function Footer() {
             <div className="mx-auto max-w-7xl w-full grid grid-cols-2 gap-10 px-4 py-12 sm:grid-cols-4 sm:px-6 lg:px-2">
                 {/* Brand column */}
                 <div className="col-span-2 sm:col-span-1">
-                    <span className="flex items-baseline gap-0.5">
-                        <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
-                            The
-                        </span>
-
-                        <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent pl-1">
-                            Quad
-                        </span>
-
-                        <span className="ml-1 font-mono text-[10px] text-ink-3">
-                            /vol.02
+                    <span className="flex items-center gap-1 mb-3">
+                        <img src="/logo.png" alt="The Quad" className="h-8 w-8 object-contain drop-shadow-sm" />
+                        <span className="flex items-baseline">
+                            <span className="font-display text-3xl font-semibold leading-none tracking-tight text-ink">
+                                The
+                            </span>
+                            <span className="font-display-italic text-3xl font-semibold leading-none tracking-tight text-accent pl-1">
+                                Quad
+                            </span>
+                            <span className="ml-1 font-mono text-[10px] text-ink-3">
+                                /vol.02
+                            </span>
                         </span>
                     </span>
                     <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-2">

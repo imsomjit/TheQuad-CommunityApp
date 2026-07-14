@@ -272,7 +272,7 @@ export default function PostEditor() {
   const [newSeriesTitle, setNewSeriesTitle] = useState("");
   const [creatingSeries, setCreatingSeries] = useState(false);
 
-  const [postId, setPostId] = useState(id ? parseInt(id) : null);
+  const [postId, setPostId] = useState(id || null);
   const [status, setStatus] = useState("draft");
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -284,7 +284,7 @@ export default function PostEditor() {
   // Load existing post for editing
   useEffect(() => {
     if (!id) return;
-    postsApi.getById(parseInt(id)).then((p) => {
+    postsApi.getById(id).then((p) => {
       setTitle(p.title);
       setBody(p.body);
       setCategory(p.category);
@@ -444,7 +444,7 @@ export default function PostEditor() {
         post = await postsApi.create(payload);
         setPostId(post.id);
         // Update URL without reloading
-        window.history.replaceState({}, "", `/posts/${post.id}/edit`);
+        window.history.replaceState({}, "", `/posts/${post.slug || post.publicId || post.id}/edit`);
       }
 
       // Upload cover if selected
@@ -496,7 +496,7 @@ export default function PostEditor() {
         finalPost = await postsApi.create({ ...payload, status: "draft" });
         pid = finalPost.id;
         setPostId(pid);
-        window.history.replaceState({}, "", `/posts/${pid}/edit`);
+        window.history.replaceState({}, "", `/posts/${finalPost.slug || finalPost.publicId || pid}/edit`);
       } else {
         finalPost = await postsApi.update(pid, payload);
       }

@@ -42,7 +42,6 @@ const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminOpportunities = lazy(() => import("./pages/admin/AdminOpportunities"));
-const AdminFeatured = lazy(() => import("./pages/admin/AdminFeatured"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminDeletedContent = lazy(() => import("./pages/admin/AdminDeletedContent"));
 const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
@@ -192,10 +191,6 @@ function App() {
                   <Route
                     path="/admin/opportunities"
                     element={<AdminOpportunities />}
-                  />
-                  <Route
-                    path="/admin/featured"
-                    element={<AdminFeatured />}
                   />
                   <Route
                     path="/admin/deleted-content"

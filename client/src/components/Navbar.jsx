@@ -66,16 +66,15 @@ export default function Navbar({ scrolled }) {
                 <Link
                     to="/"
                     data-testid="nav-logo"
-                    className={`group flex items-baseline gap-2 transition-transform duration-300 origin-left ${
+                    className={`group flex items-center gap-1 transition-transform duration-300 origin-left ${
                         scrolled ? "scale-90" : "scale-100"
                     }`}
                 >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 transition-colors group-hover:border-accent">
-                        <Braces
-                            className="h-4 w-4 text-accent"
-                            strokeWidth={2}
-                        />
-                    </span>
+                    <img 
+                        src="/logo.png" 
+                        alt="The Quad" 
+                        className="h-9 w-9 object-contain drop-shadow-sm transition-transform group-hover:scale-105" 
+                    />
 
                     <span className="flex items-baseline">
                         <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">

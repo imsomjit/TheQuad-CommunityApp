@@ -556,7 +556,7 @@ export default function PostDetail() {
                     </Link>
                     {isAuthor && (
                       <Link
-                        to={`/posts/${post.id}/edit`}
+                        to={`/posts/${post.slug || post.publicId || post.id}/edit`}
                         className="flex items-center gap-1 rounded-full bg-paper border border-rule px-2 py-0.5 text-[10px] uppercase font-mono tracking-widest text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                       >
                         <Edit2 className="h-3 w-3" /> Edit
