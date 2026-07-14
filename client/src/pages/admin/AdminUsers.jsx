@@ -5,8 +5,10 @@ import { Search, ShieldAlert, Ban, UserCog, History, UserPlus } from "lucide-rea
 import { Input } from "../../components/ui/input";
 import { useApp } from "../../context/AppContext";
 import { TableSkeleton } from "../../components/Skeletons";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminUsers() {
+  useDocumentTitle("[Admin] User Management");
   const { currentUser } = useApp();
   const isAdmin = currentUser?.role === "admin";
   

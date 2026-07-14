@@ -63,23 +63,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, scrolled }) {
                         <NavLink to="/admin/analytics" className={linkClass} title="System Statistics">
                             <BarChart3 className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>System Statistics</span>}
                         </NavLink>
-
-                        {/* Upcoming feature */}
-                        <div
-                            className={`${linkClass({ isActive: false })} cursor-not-allowed opacity-60`}
-                            title="Coming Soon"
-                        >
-                            <Star className="h-5 w-5 shrink-0" />
-                            {!isCollapsed && (
-                                <>
-                                    <span>Featured</span>
-                                    <span className="ml-auto rounded-md bg-paper px-2 py-0.5 text-[10px] text-accent">
-                                        Soon
-                                    </span>
-                                </>
-                            )}
-                        </div>
-
+                        
                         <NavLink to="/admin/books/upload" className={linkClass} title="Library Books">
                             <Library className="h-5 w-5 shrink-0" /> {!isCollapsed && <span>Library Books</span>}
                         </NavLink>

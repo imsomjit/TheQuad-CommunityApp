@@ -3,8 +3,10 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import api from "../../services/api";
 import { AlertCircle, } from "lucide-react";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminReports() {
+  useDocumentTitle("[Admin] Reports Queue");
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("pending");

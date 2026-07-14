@@ -33,6 +33,14 @@ router.route("/rooms/:roomId/pin")
   .post(auth, chatWriteLimiter, chatController.pinRoom)
   .delete(auth, chatWriteLimiter, chatController.unpinRoom);
 
+// POST /api/chat/rooms/:roomId/clear
+router.route("/rooms/:roomId/clear")
+  .post(auth, chatWriteLimiter, chatController.clearChat);
+
+// DELETE /api/chat/rooms/:roomId
+router.route("/rooms/:roomId")
+  .delete(auth, chatWriteLimiter, chatController.deleteChat);
+
 const { restrictTo } = require("../../middleware/auth");
 
 // POST /api/chat/admin/rooms

@@ -36,7 +36,7 @@ exports.getRoomMessages = asyncHandler(async (req, res) => {
     throw new AppError("Room ID is required", 400);
   }
 
-  const messages = await chatService.getRoomMessages(roomId);
+  const messages = await chatService.getRoomMessages(roomId, req.user?.id);
   
   res.status(200).json({
     success: true,
@@ -129,6 +129,30 @@ exports.createDirectRoom = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: { id: roomId },
+  });
+});
+
+exports.clearChat = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  if (!roomId) throw new AppError("Room ID is required", 400);
+  
+  await chatService.clearChat(req.user.id, roomId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Chat cleared successfully",
+  });
+});
+
+exports.deleteChat = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  if (!roomId) throw new AppError("Room ID is required", 400);
+  
+  await chatService.deleteUserRoom(req.user.id, roomId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Chat deleted successfully",
   });
 });
 

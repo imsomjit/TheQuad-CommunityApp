@@ -213,10 +213,22 @@ const joinRoomByCode = async (code) => {
 };
 
 /**
- * Fetch message history for a specific room
+ * Fetch message history for a specific room, respecting the user's clearedAt timestamp
  */
-const getRoomMessages = async (roomId) => {
-  return await db
+const getRoomMessages = async (roomId, userId) => {
+  let clearedAt = null;
+  if (userId) {
+    const participant = await db
+      .select({ clearedAt: chatParticipants.clearedAt })
+      .from(chatParticipants)
+      .where(and(eq(chatParticipants.roomId, roomId), eq(chatParticipants.userId, userId)))
+      .limit(1);
+    if (participant.length > 0) {
+      clearedAt = participant[0].clearedAt;
+    }
+  }
+
+  const query = db
     .select({
       id: chatMessages.id,
       content: chatMessages.content,
@@ -232,8 +244,13 @@ const getRoomMessages = async (roomId) => {
     })
     .from(chatMessages)
     .leftJoin(users, eq(chatMessages.senderId, users.id))
-    .where(eq(chatMessages.roomId, roomId))
-    .orderBy(asc(chatMessages.createdAt));
+    .where(eq(chatMessages.roomId, roomId));
+    
+  if (clearedAt) {
+    query.where(and(eq(chatMessages.roomId, roomId), gt(chatMessages.createdAt, clearedAt)));
+  }
+
+  return await query.orderBy(asc(chatMessages.createdAt));
 };
 
 /**
@@ -308,6 +325,34 @@ const getOrCreateDirectRoom = async (user1Id, user2Id) => {
   });
 };
 
+/**
+ * Clear chat messages for a specific user
+ */
+const clearChat = async (userId, roomId) => {
+  await db
+    .update(chatParticipants)
+    .set({ clearedAt: new Date() })
+    .where(and(eq(chatParticipants.roomId, roomId), eq(chatParticipants.userId, userId)));
+};
+
+/**
+ * Delete a room completely (user must be a participant)
+ */
+const deleteUserRoom = async (userId, roomId) => {
+  // Verify user is a participant
+  const isParticipant = await db
+    .select({ id: chatParticipants.id })
+    .from(chatParticipants)
+    .where(and(eq(chatParticipants.roomId, roomId), eq(chatParticipants.userId, userId)))
+    .limit(1);
+
+  if (isParticipant.length === 0) {
+    throw new Error("You are not a participant of this room");
+  }
+
+  await db.delete(chatRooms).where(eq(chatRooms.id, roomId));
+};
+
 module.exports = {
   getRooms,
   createRoom,
@@ -318,4 +363,6 @@ module.exports = {
   createGlobalRoom,
   deleteGlobalRoom,
   getOrCreateDirectRoom,
+  clearChat,
+  deleteUserRoom,
 };

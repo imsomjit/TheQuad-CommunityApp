@@ -4,6 +4,7 @@ const { pgTable, serial, boolean, text, jsonb } = require("drizzle-orm/pg-core")
 
 const siteSettings = pgTable("site_settings", {
   id: serial("id").primaryKey(),
+  maintenanceMode: boolean("maintenance_mode").default(false).notNull(),
   registrationEnabled: boolean("registration_enabled").default(true).notNull(),
   announcementText: text("announcement_text"),
   announcementType: text("announcement_type").default("INFO").notNull(), // INFO, SUCCESS, WARNING, ERROR

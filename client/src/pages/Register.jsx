@@ -25,6 +25,7 @@ import {
 } from "../components/ui/select";
 import { toast } from "sonner";
 import { usersApi, API_BASE } from "../services/api";
+import { getAvatarFallback } from "../utils/fallbacks";
 
 export default function Register() {
   useDocumentTitle("Create an Account");
@@ -109,13 +110,7 @@ export default function Register() {
     return { level: 3, label: "strong", color: "bg-accent-2" };
   })();
 
-  const displayContributors = [
-    ...(topContributors || []),
-    { id: 'mock1', username: 'alex', name: 'Alex' },
-    { id: 'mock2', username: 'jordan', name: 'Jordan' },
-    { id: 'mock3', username: 'taylor', name: 'Taylor' },
-    { id: 'mock4', username: 'casey', name: 'Casey' }
-  ].slice(0, 4);
+  const displayContributors = (topContributors || []).slice(0, 8);
 
   return (
     <div className="min-h-[100vw] sm:min-h-screen bg-paper flex">
@@ -178,11 +173,11 @@ export default function Register() {
                   <div
                     key={user.id || i}
                     className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-paper bg-paper-2 overflow-hidden"
-                    style={{ zIndex: 4 - i }}
-                    title={user.name}
+                    style={{ zIndex: 10 - i }}
+                    title={`@${user.username}`}
                   >
                     <img 
-                      src={user.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.username || user.name}`} 
+                      src={user.avatarUrl || user.avatar || getAvatarFallback(user.name, user.username)} 
                       alt={user.name} 
                       className="h-full w-full object-cover" 
                     />

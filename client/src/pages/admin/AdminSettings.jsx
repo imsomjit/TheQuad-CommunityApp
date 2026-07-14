@@ -15,8 +15,10 @@ import {
 } from "../../components/ui/select";
 import { useApp } from "../../context/AppContext";
 import { SettingsSkeleton } from "../../components/Skeletons";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminSettings() {
+  useDocumentTitle("[Admin] Site Settings");
   const { siteSettings: globalSettings, setSiteSettings } = useApp();
   
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,7 @@ export default function AdminSettings() {
   
   // Settings Form State
   const [settings, setSettings] = useState({
+    maintenanceMode: false,
     registrationEnabled: true,
     announcementActive: false,
     announcementType: "INFO",
@@ -138,22 +141,40 @@ export default function AdminSettings() {
           
           <div className="rounded-xl border border-rule bg-paper-2 p-6 shadow-sm">
             <h3 className="flex items-center gap-2 font-display text-lg font-bold text-ink mb-4">
-              <ShieldAlert className="h-5 w-5 text-accent" /> Registration Control
+              <ShieldAlert className="h-5 w-5 text-accent" /> Access Control
             </h3>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-ink">Allow New Registrations</p>
-                <p className="text-xs text-ink-3">Enable or disable new users from signing up.</p>
+            <div className="flex flex-col gap-6">
+              <div className={`flex items-center justify-between border-b border-rule pb-6 ${settings.announcementActive ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div>
+                  <p className="text-sm font-medium text-ink">Read-Only Maintenance Mode</p>
+                  <p className="text-xs text-ink-3">Prevent non-admins from writing data.</p>
+                </div>
+                <label className="relative inline-flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={settings.maintenanceMode}
+                    onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
+                  />
+                  <div className="peer h-6 w-11 rounded-full bg-rule after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-accent peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:border-gray-600"></div>
+                </label>
               </div>
-              <label className="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  className="peer sr-only"
-                  checked={settings.registrationEnabled}
-                  onChange={(e) => setSettings({ ...settings, registrationEnabled: e.target.checked })}
-                />
-                <div className="peer h-6 w-11 rounded-full bg-rule after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-accent peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:border-gray-600"></div>
-              </label>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-ink">Allow New Registrations</p>
+                  <p className="text-xs text-ink-3">Enable or disable new users from signing up.</p>
+                </div>
+                <label className="relative inline-flex cursor-pointer items-center">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={settings.registrationEnabled}
+                    onChange={(e) => setSettings({ ...settings, registrationEnabled: e.target.checked })}
+                  />
+                  <div className="peer h-6 w-11 rounded-full bg-rule after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-accent peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:border-gray-600"></div>
+                </label>
+              </div>
             </div>
           </div>
 
@@ -161,7 +182,7 @@ export default function AdminSettings() {
             <h3 className="flex items-center gap-2 font-display text-lg font-bold text-ink mb-4">
               <Flag className="h-5 w-5 text-accent" /> Homepage Announcement Banner
             </h3>
-            <div className="space-y-4">
+            <div className={`space-y-4 ${settings.maintenanceMode ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-ink">Show Banner</span>
                 <label className="relative inline-flex cursor-pointer items-center">

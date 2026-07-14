@@ -125,7 +125,18 @@ export default function Layout() {
                             scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
-                        {siteSettings?.announcementActive && siteSettings?.announcementText ? (
+                        {siteSettings?.maintenanceMode ? (
+                            <div className="flex h-full w-full overflow-hidden whitespace-nowrap font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em]">
+                                <div className="flex h-full w-max animate-marquee-infinite">
+                                    <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4">
+                                        <span className="font-semibold text-accent">🛠️ PLATFORM IS IN READ-ONLY MAINTENANCE MODE</span>  
+                                    </div>
+                                    <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4" aria-hidden="true">
+                                        <span className="font-semibold text-accent">🛠️ PLATFORM IS IN READ-ONLY MAINTENANCE MODE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : siteSettings?.announcementActive && siteSettings?.announcementText ? (
                             <div className="flex h-full w-full overflow-hidden whitespace-nowrap font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em]">
                                 <div className="flex h-full w-max animate-marquee-infinite">
                                     <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4">
