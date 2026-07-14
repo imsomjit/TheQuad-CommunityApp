@@ -98,6 +98,10 @@ const initSocket = (server) => {
     });
 
     const checkEmptyRoom = async (roomId) => {
+      // Ensure roomId is a valid UUID to prevent database errors for internal socket rooms (e.g. 'user_8')
+      const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(String(roomId));
+      if (!isUUID) return;
+
       // Small delay to allow socket internal leave to process
       setTimeout(async () => {
         const roomClients = io.sockets.adapter.rooms.get(roomId);
