@@ -76,7 +76,7 @@ export default function Navbar({ scrolled }) {
                         className="h-9 w-9 object-contain drop-shadow-sm transition-transform group-hover:scale-105" 
                     />
 
-                    <span className="flex items-baseline">
+                    <span className="flex items-baseline truncate">
                         <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
                             The
                         </span>
@@ -85,7 +85,7 @@ export default function Navbar({ scrolled }) {
                             Quad
                         </span>
 
-                        <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">
+                        <span className="ml-1 font-mono text-[10px] text-ink-3">
                             /vol.02
                         </span>
                     </span>
