@@ -6,6 +6,12 @@ on:
       - main
       - master
 
+permissions:
+  checks: write
+  pull-requests: write
+  statuses: write
+  contents: read
+
 jobs:
   build_and_preview:
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
