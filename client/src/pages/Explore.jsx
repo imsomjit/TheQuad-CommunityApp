@@ -47,8 +47,8 @@ export default function Explore() {
         <div className="w-full min-h-screen pb-24 px-2 sm:px-6 md:hidden animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 
-                {/* Sticky Header */}
-                <div className="sticky top-0 z-40 pt-5 pb-6 bg-gradient-to-b from-paper via-paper/95 to-transparent backdrop-blur-sm">
+                {/* Header Section */}
+                <div className="pt-5 pb-6">
                     <div className="mb-8 max-w-3xl">
                         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl mb-3 flex items-center gap-3">
                             <Compass className="w-8 h-8 sm:w-10 sm:h-10 text-accent drop-shadow-md" strokeWidth={2.5} />
