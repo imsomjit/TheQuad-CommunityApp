@@ -11,13 +11,16 @@ const {
 const AppError = require("../../utils/AppError");
 const paginate = require("../../utils/paginate");
 const notificationService = require("../notifications/notifications.service");
+const ai = require("../../utils/ai");
 
 // ── Questions ─────────────────────────────────────────────────────────────────
 
 const createQuestion = async (authorId, { title, body, tags = [] }) => {
+  const embedding = await ai.generateEmbedding(`${title}\n\n${body}`);
+
   const [question] = await db
     .insert(questions)
-    .values({ title, body, authorId })
+    .values({ title, body, authorId, embedding })
     .returning();
 
   if (tags.length > 0) {
@@ -30,20 +33,26 @@ const createQuestion = async (authorId, { title, body, tags = [] }) => {
 };
 
 const listQuestions = async (query) => {
-  const { q, tag, sort, page, limit: lim } = query;
+  const { q, tag, sort, page, limit: lim, semantic } = query;
   const { limit, offset, meta } = paginate({ page, limit: lim });
 
   const conditions = [];
 
+  let searchEmbedding = null;
+
   if (q) {
-    const searchParam = `%${q}%`;
-    conditions.push(
-      or(
-        sql`to_tsvector('english', ${questions.title} || ' ' || coalesce(${questions.body}, '')) @@ plainto_tsquery('english', ${q})`,
-        sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${questions.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
-        sql`EXISTS (SELECT 1 FROM question_tags WHERE question_tags.question_id = ${questions.id} AND question_tags.tag ILIKE ${searchParam})`
-      )
-    );
+    if (semantic === "true" || semantic === true) {
+      searchEmbedding = await ai.generateEmbedding(q);
+    } else {
+      const searchParam = `%${q}%`;
+      conditions.push(
+        or(
+          sql`to_tsvector('english', ${questions.title} || ' ' || coalesce(${questions.body}, '')) @@ plainto_tsquery('english', ${q})`,
+          sql`EXISTS (SELECT 1 FROM users WHERE users.id = ${questions.authorId} AND (users.name ILIKE ${searchParam} OR users.username ILIKE ${searchParam}))`,
+          sql`EXISTS (SELECT 1 FROM question_tags WHERE question_tags.question_id = ${questions.id} AND question_tags.tag ILIKE ${searchParam})`
+        )
+      );
+    }
   }
 
   if (tag) {
@@ -73,10 +82,14 @@ const listQuestions = async (query) => {
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const orderBy =
+  let orderBy =
     sort === "votes"
       ? desc(sql`${questions.upvotes} - ${questions.downvotes}`)
       : desc(questions.createdAt);
+
+  if (searchEmbedding) {
+    orderBy = asc(sql`${questions.embedding} <=> ${JSON.stringify(searchEmbedding)}::vector`);
+  }
 
   const [rows, [{ count }]] = await Promise.all([
     db
@@ -223,6 +236,10 @@ const updateQuestion = async (id, userId, patch) => {
   const { tags, ...meta } = patch;
 
   if (Object.keys(meta).length > 0) {
+    const searchTitle = meta.title || question.title;
+    const searchBody = meta.body !== undefined ? meta.body : question.body;
+    meta.embedding = await ai.generateEmbedding(`${searchTitle}\n\n${searchBody || ""}`);
+
     await db
       .update(questions)
       .set({ ...meta, isEdited: true, updatedAt: new Date() })
@@ -354,6 +371,25 @@ const acceptAnswer = async (questionId, answerId, userId) => {
     .where(and(eq(answers.id, answerId), eq(answers.questionId, questionId)));
 };
 
+/**
+ * Get recommended questions for a user
+ */
+const getRecommendations = async (userId, query) => {
+  const recentQuestions = await db
+    .select({ title: questions.title })
+    .from(questions)
+    .where(eq(questions.authorId, userId))
+    .orderBy(desc(questions.createdAt))
+    .limit(5);
+
+  let contextString = "developer engineering bug error logic javascript react python debugging"; // fallback
+  if (recentQuestions.length > 0) {
+    contextString = recentQuestions.map((q) => q.title).join(" ");
+  }
+
+  return listQuestions({ ...query, q: contextString.slice(0, 500), semantic: true });
+};
+
 module.exports = {
   createQuestion,
   listQuestions,
@@ -364,4 +400,5 @@ module.exports = {
   updateAnswer,
   deleteAnswer,
   acceptAnswer,
+  getRecommendations,
 };

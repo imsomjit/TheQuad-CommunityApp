@@ -8,6 +8,7 @@ const {
   integer,
   timestamp,
   boolean,
+  vector,
 } = require("drizzle-orm/pg-core");
 const { customAlphabet } = require("nanoid");
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 12);
@@ -22,6 +23,9 @@ const questions = pgTable("questions", {
   authorId: integer("author_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+
+  // Vector Embedding
+  embedding: vector("embedding", { dimensions: 768 }),
 
   // Stats (denormalized)
   upvotes: integer("upvotes").default(0).notNull(),

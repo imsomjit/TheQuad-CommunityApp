@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Download, Calendar, User, FileDigit, ShieldAlert, Maximize, Minimize, ChevronLeft, Eye, FileText, Lock, BookOpen, Share2, Check } from "lucide-react";
@@ -24,6 +25,7 @@ import BookmarkButton from "../components/BookmarkButton";
 import ReportModal from "../components/ReportModal";
 
 export default function BookDetail() {
+  useDocumentTitle("Book Details");
     const { publicId: slugOrId } = useParams();
     const publicId = extractIdFromSlug(slugOrId) || slugOrId;
     const { isAuthenticated, loading: authLoading } = useAuth();

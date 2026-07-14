@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -13,6 +14,7 @@ import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 
 export default function VerifyEmail() {
+  useDocumentTitle("Verify Email");
   const { verifyOtp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

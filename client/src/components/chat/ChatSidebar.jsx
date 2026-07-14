@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff, Bot, MoreVertical, Eraser, Trash2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
 import api, { getAccessToken, setAccessToken, authApi } from "../../services/api";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { chatApi } from "../../services/api";
+import { chatApi, usersApi } from "../../services/api";
 import CreateRoomModal from "./CreateRoomModal";
 import JoinRoomModal from "./JoinRoomModal";
+import AIGuideChat from "./AIGuideChat";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
+import { getAvatarFallback } from "../../utils/fallbacks";
 
 export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const { user, isAuthenticated } = useAuth();
@@ -28,6 +31,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const [activeTab, setActiveTab] = useState("lounges");
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [typingUsers, setTypingUsers] = useState({});
+  const [followingUsers, setFollowingUsers] = useState([]);
   
   const typingTimeoutRef = useRef({});
   const messagesEndRef = useRef(null);
@@ -150,6 +154,16 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       setIsInitializing(false);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === "messages" && user && user.username) {
+      usersApi.getFollowing(user.username)
+        .then(users => {
+          if (users) setFollowingUsers(users);
+        })
+        .catch(console.error);
+    }
+  }, [activeTab, user]);
 
   // Listen for room updates (creates and deletes)
   useEffect(() => {
@@ -465,10 +479,94 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     }
   };
 
+  const handleClearChat = async () => {
+    if (!activeRoom) return;
+    try {
+      await api.post(`/chat/rooms/${activeRoom.id}/clear`);
+      setMessages([]);
+      toast.success("Chat history cleared.");
+    } catch (err) {
+      toast.error("Failed to clear chat");
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!activeRoom) return;
+    if (!confirm("Are you sure you want to delete this chat completely? This action cannot be undone.")) return;
+    try {
+      await api.delete(`/chat/rooms/${activeRoom.id}`);
+      setRooms(prev => prev.filter(r => r.id !== activeRoom.id));
+      socket.emit("leave_room", activeRoom.id);
+      setActiveRoom(null);
+      if (user && user.id) {
+        localStorage.removeItem(`thequad_chat_room_${user.id}`);
+      }
+      toast.success("Chat deleted.");
+    } catch (err) {
+      toast.error("Failed to delete chat");
+    }
+  };
+
+  const startDirectMessage = async (targetUser) => {
+    try {
+      const res = await api.post(`/chat/direct/${targetUser.id}`);
+      const roomId = res.data.data.id;
+      // Try to find if room already existed in state
+      let roomToJoin = rooms.find(r => r.id === roomId);
+      if (!roomToJoin) {
+        // Create a temporary room object so we can join immediately
+        roomToJoin = {
+          id: roomId,
+          type: 'direct',
+          isPrivate: true,
+          participants: [user, targetUser],
+          unreadCount: 0
+        };
+        setRooms(prev => [...prev, roomToJoin]);
+      }
+      joinRoom(roomToJoin);
+    } catch (err) {
+      toast.error("Failed to start chat");
+    }
+  };
+
   const lounges = rooms.filter(r => r.type !== 'direct');
   const dms = rooms.filter(r => r.type === 'direct');
 
-  const visibleRooms = activeTab === "lounges" ? lounges : dms;
+  // Create synthetic rooms for followed users who don't have a DM yet
+  const dmUserIds = new Set();
+  const uniqueDmsMap = new Map();
+  
+  dms.forEach(r => {
+    const otherParticipant = r.participants?.find(p => p.id !== user?.id);
+    if (otherParticipant) {
+      const idStr = String(otherParticipant.id);
+      dmUserIds.add(idStr);
+      if (!uniqueDmsMap.has(idStr)) {
+        uniqueDmsMap.set(idStr, r);
+      }
+    }
+  });
+  const uniqueDms = Array.from(uniqueDmsMap.values());
+
+  const syntheticUserIds = new Set();
+  const followingSyntheticRooms = followingUsers
+    .filter(u => {
+      const idStr = String(u.id);
+      if (dmUserIds.has(idStr) || syntheticUserIds.has(idStr)) return false;
+      syntheticUserIds.add(idStr);
+      return true;
+    })
+    .map(u => ({
+      id: `synthetic_${u.id}`,
+      type: 'direct',
+      isSynthetic: true,
+      targetUser: u,
+      isPinned: false,
+      unreadCount: 0
+    }));
+
+  const visibleRooms = activeTab === "lounges" ? lounges : [...uniqueDms, ...followingSyntheticRooms];
   
   const dmsUnreadCount = dms.reduce((acc, r) => acc + (r.unreadCount || 0), 0);
   const loungesUnreadCount = lounges.reduce((acc, r) => acc + (r.unreadCount || 0), 0);
@@ -477,18 +575,24 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
   const renderRoom = (room) => {
     const isDirect = room.type === 'direct';
-    const otherParticipant = isDirect ? room.participants?.find(p => p.id !== user.id) : null;
+    const otherParticipant = room.isSynthetic ? room.targetUser : (isDirect ? room.participants?.find(p => p.id !== user.id) : null);
 
     return (
       <button
         key={room.id}
-        onClick={() => joinRoom(room)}
+        onClick={() => {
+          if (room.isSynthetic) {
+            startDirectMessage(room.targetUser);
+          } else {
+            joinRoom(room);
+          }
+        }}
         className="group flex w-full items-center gap-3 rounded-lg border border-transparent p-3 text-left transition-colors hover:border-rule hover:bg-paper-2"
       >
         <div className="relative">
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full overflow-hidden ${room.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
             {isDirect && otherParticipant ? (
-                <img src={otherParticipant.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${otherParticipant.username}`} alt={otherParticipant.name} className="h-full w-full object-cover" />
+                <img src={otherParticipant.avatarUrl || getAvatarFallback(otherParticipant.name, otherParticipant.username)} alt={otherParticipant.name} className="h-full w-full object-cover" />
             ) : room.type === "global" ? <Hash size={18} /> : room.type === "ephemeral" ? <Sparkles size={18} /> : <Users size={18} />}
           </div>
           {isDirect && otherParticipant && onlineUsers.has(otherParticipant.id) && (
@@ -509,29 +613,6 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               {room.unreadCount > 99 ? '99+' : room.unreadCount}
             </span>
           )}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            {room.isPinned ? (
-              <div 
-                onClick={(e) => handleUnpin(e, room.id)}
-                className="rounded p-1.5 text-accent hover:bg-rule"
-                title="Unpin"
-              >
-                <PinOff size={16} />
-              </div>
-            ) : (
-              <div 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isAuthenticated) return navigate("/login");
-                  handlePin(e, room.id);
-                }}
-                className="rounded p-1.5 text-ink-3 hover:text-accent hover:bg-rule"
-                title="Pin"
-              >
-                <Pin size={16} />
-              </div>
-            )}
-          </div>
         </div>
       </button>
     );
@@ -539,16 +620,6 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
   return (
     <>
-      {/* Floating Toggle Button */}
-      {!isOpen && (
-        <button
-          onClick={onToggle}
-          className="fixed bottom-6 right-6 z-50 hidden h-12 w-12 items-center justify-center rounded-full bg-accent text-rule shadow-lg shadow-accent/20 transition-transform hover:scale-110 active:scale-95 md:flex"
-        >
-          <MessageSquare size={22} />
-        </button>
-      )}
-
       <div
         ref={sidebarRef}
         style={{ touchAction: 'none' }} // Prevents browser from panning the whole page when dragging the sidebar
@@ -556,17 +627,31 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* Vertical Toggle Handle (Desktop only) */}
+        {!isOpen && (
+          <button
+            onClick={onToggle}
+            className="absolute top-48 -left-[42px] hidden md:flex h-32 w-[42px] -translate-y-1/2 flex-col items-center justify-center rounded-l-xl border-y border-l border-rule bg-accent/10 backdrop-blur-xl text-accent shadow-[-4px_0_12px_-4px_rgba(0,0,0,0.2)] hover:w-[48px] hover:-left-[48px] transition-all duration-300 z-50 group cursor-pointer"
+            title="Toggle Chats"
+          >
+            <div className="flex -rotate-90 flex-row items-center gap-2 uppercase tracking-[0.3em] font-mono text-[10px] font-bold whitespace-nowrap">
+              <MessageSquare size={14} className="group-hover:text-accent transition-colors opacity-70 group-hover:opacity-100" />
+              <span>Chats...</span>
+            </div>
+          </button>
+        )}
+
         {isInitializing ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3">
             <Loader2 className="h-8 w-8 animate-spin text-accent" />
             <p className="text-xs font-mono tracking-wide text-ink-3 uppercase">Restoring Session...</p>
           </div>
-        ) : !activeRoom ? (
+        ) : !activeRoom && activeTab !== 'bot' ? (
           // --- ROOM LIST VIEW ---
           <>
             <div className="flex flex-col border-b border-rule bg-paper-2/50 backdrop-blur-sm">
               <div className="flex items-center justify-between p-4 pb-2 sm:pb-1">
-                <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Chats</h2>
+                <h2 className="font-mono text-xs uppercase tracking-wider text-ink font-semibold">Chats...</h2>
                 <div className="flex items-center gap-1">
                   <button 
                     onClick={() => {
@@ -603,7 +688,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   onClick={() => setActiveTab("lounges")}
                   className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'lounges' ? 'border-accent text-accent' : 'border-transparent text-ink-3 hover:text-ink'}`}
                 >
-                  Lounges
+                  <Users size={14} /> Lounges
                   {loungesUnreadCount > 0 && (
                     <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent/20 text-[10px] font-bold text-accent">
                       {loungesUnreadCount > 99 ? '99+' : loungesUnreadCount}
@@ -615,7 +700,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                     onClick={() => setActiveTab("messages")}
                     className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'messages' ? 'border-accent text-accent' : 'border-transparent text-ink-3 hover:text-ink'}`}
                   >
-                    Messages
+                    <MessageSquare size={14} /> Messages
                     {dmsUnreadCount > 0 && (
                       <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-rule shadow-sm">
                         {dmsUnreadCount > 99 ? '99+' : dmsUnreadCount}
@@ -623,6 +708,12 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                     )}
                   </button>
                 )}
+                <button 
+                  onClick={() => setActiveTab("bot")}
+                  className={`relative pb-2 text-sm font-medium font-mono border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'bot' ? 'border-syntax-cyan text-syntax-cyan' : 'border-transparent text-ink-3 hover:text-ink'}`}
+                >
+                  <Bot size={14} /> AI Guide
+                </button>
               </div>
             </div>
             
@@ -651,6 +742,8 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               )}
             </div>
           </>
+        ) : activeTab === 'bot' ? (
+          <AIGuideChat onClose={() => setActiveTab('lounges')} />
         ) : (
           // --- CHAT WINDOW VIEW ---
           <>
@@ -670,17 +763,41 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                 </button>
                 <div className="flex items-center gap-2">
                   <div className="relative">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-full overflow-hidden ${activeRoom.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'}`}>
+                    <div 
+                      className={`flex h-8 w-8 items-center justify-center rounded-full overflow-hidden ${activeRoom.type === 'ephemeral' ? 'bg-accent/10 text-accent' : 'bg-rule/50 text-ink-2'} ${activeRoom.type === 'direct' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                      onClick={() => {
+                        if (activeRoom.type === "direct") {
+                          const otherP = activeRoom.participants?.find(p => p.id !== user?.id);
+                          if (otherP) {
+                            onToggle();
+                            navigate(`/u/${otherP.username}`);
+                          }
+                        }
+                      }}
+                      title={activeRoom.type === "direct" ? "View Profile" : ""}
+                    >
                       {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) ? (
-                          <img src={activeRoom.participants.find(p => p.id !== user.id).avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${activeRoom.participants.find(p => p.id !== user.id).username}`} alt="Avatar" className="h-full w-full object-cover" />
+                          <img src={activeRoom.participants.find(p => p.id !== user.id).avatarUrl || getAvatarFallback(activeRoom.participants.find(p => p.id !== user.id).name, activeRoom.participants.find(p => p.id !== user.id).username)} alt="Avatar" className="h-full w-full object-cover" />
                       ) : activeRoom.type === "global" ? <Hash size={14} /> : activeRoom.type === "ephemeral" ? <Sparkles size={14} /> : <Users size={14} />}
                     </div>
                     {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user.id).id) && (
-                      <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-paper bg-green-500"></div>
+                      <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-paper bg-green-500 pointer-events-none"></div>
                     )}
                   </div>
                   <div className="flex flex-col">
-                    <h2 className="font-medium text-base text-ink truncate max-w-[140px] leading-tight">
+                    <h2 
+                      className={`font-medium text-base text-ink truncate max-w-[140px] leading-tight ${activeRoom.type === 'direct' ? 'cursor-pointer hover:text-accent transition-colors' : ''}`}
+                      onClick={() => {
+                        if (activeRoom.type === "direct") {
+                          const otherP = activeRoom.participants?.find(p => p.id !== user?.id);
+                          if (otherP) {
+                            onToggle();
+                            navigate(`/u/${otherP.username}`);
+                          }
+                        }
+                      }}
+                      title={activeRoom.type === "direct" ? "View Profile" : ""}
+                    >
                       {activeRoom.type === "direct" && activeRoom.participants ? activeRoom.participants.find(p => p.id !== user.id)?.name || activeRoom.name : activeRoom.name}
                     </h2>
                     {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user.id).id) && (
@@ -692,13 +809,45 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                   )}
                 </div>
               </div>
-              <button 
-                onClick={onToggle}
-                className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors"
-                title="Close Chat"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={onToggle}
+                  className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors"
+                  title="Close Sidebar"
+                >
+                  <X size={18} />
+                </button>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <button className="rounded p-1.5 text-ink-3 hover:bg-rule hover:text-ink transition-colors" title="Options">
+                      <MoreVertical size={18} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                  {activeRoom.isPinned ? (
+                    <DropdownMenuItem onClick={(e) => handleUnpin(e, activeRoom.id)}>
+                      <PinOff size={16} className="mr-2" />
+                      Unpin Chat
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={(e) => handlePin(e, activeRoom.id)}>
+                      <Pin size={16} className="mr-2" />
+                      Pin Chat
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleClearChat}>
+                    <Eraser size={16} className="mr-2" />
+                    Clear Chat
+                  </DropdownMenuItem>
+                  {(activeRoom.type === 'direct' || (activeRoom.type === 'ephemeral' && activeRoom.creatorId === user?.id)) && (
+                    <DropdownMenuItem onClick={handleDeleteChat} className="text-red-500 hover:text-red-600 hover:bg-red-50 focus:text-red-600 focus:bg-red-50">
+                      <Trash2 size={16} className="mr-2" />
+                      Delete Chat
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              </div>
             </div>
 
             {/* Secret Code Header for Private Rooms (not Direct) */}

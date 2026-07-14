@@ -14,6 +14,7 @@ class SettingsService {
 
     if (result.length === 0) {
       const inserted = await db.insert(siteSettings).values({
+        maintenanceMode: false,
         registrationEnabled: true,
         announcementActive: false,
         announcementType: "INFO",
@@ -38,10 +39,11 @@ class SettingsService {
   async updateSettings(updates) {
     const current = await this.getSettings();
 
-    const result = await db.update(siteSettings)
-      .set({
-        registrationEnabled: updates.registrationEnabled !== undefined ? updates.registrationEnabled : current.registrationEnabled,
-        announcementActive: updates.announcementActive !== undefined ? updates.announcementActive : current.announcementActive,
+      const result = await db.update(siteSettings)
+        .set({
+          maintenanceMode: updates.maintenanceMode !== undefined ? updates.maintenanceMode : current.maintenanceMode,
+          registrationEnabled: updates.registrationEnabled !== undefined ? updates.registrationEnabled : current.registrationEnabled,
+          announcementActive: updates.announcementActive !== undefined ? updates.announcementActive : current.announcementActive,
         announcementType: updates.announcementType || current.announcementType,
         announcementText: updates.announcementText !== undefined ? updates.announcementText : current.announcementText,
         socialLinks: updates.socialLinks ? { ...current.socialLinks, ...updates.socialLinks } : current.socialLinks

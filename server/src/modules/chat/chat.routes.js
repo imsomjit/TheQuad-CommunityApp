@@ -3,7 +3,7 @@
 const express = require("express");
 const chatController = require("./chat.controller");
 const { auth, optionalAuth } = require("../../middleware/auth");
-const { chatReadLimiter, chatWriteLimiter } = require("../../middleware/rateLimiter");
+const { chatReadLimiter, chatWriteLimiter, aiLimiter } = require("../../middleware/rateLimiter");
 
 const router = express.Router();
 
@@ -33,6 +33,14 @@ router.route("/rooms/:roomId/pin")
   .post(auth, chatWriteLimiter, chatController.pinRoom)
   .delete(auth, chatWriteLimiter, chatController.unpinRoom);
 
+// POST /api/chat/rooms/:roomId/clear
+router.route("/rooms/:roomId/clear")
+  .post(auth, chatWriteLimiter, chatController.clearChat);
+
+// DELETE /api/chat/rooms/:roomId
+router.route("/rooms/:roomId")
+  .delete(auth, chatWriteLimiter, chatController.deleteChat);
+
 const { restrictTo } = require("../../middleware/auth");
 
 // POST /api/chat/admin/rooms
@@ -42,5 +50,9 @@ router.route("/admin/rooms")
 // DELETE /api/chat/admin/rooms/:roomId
 router.route("/admin/rooms/:roomId")
   .delete(auth, restrictTo("admin", "moderator"), chatWriteLimiter, chatController.deleteAdminRoom);
+
+// POST /api/chat/bot
+router.route("/bot")
+  .post(aiLimiter, chatController.generateGuideChat);
 
 module.exports = router;

@@ -15,6 +15,7 @@ const chatParticipants = pgTable("chat_participants", {
     .notNull(),
   joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
   lastReadAt: timestamp("last_read_at", { withTimezone: true }).defaultNow().notNull(),
+  clearedAt: timestamp("cleared_at", { withTimezone: true }),
 });
 
 const chatParticipantsRelations = relations(chatParticipants, ({ one }) => ({

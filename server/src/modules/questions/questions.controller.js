@@ -18,6 +18,12 @@ const list = asyncHandler(async (req, res) => {
   res.json({ success: true, ...result });
 });
 
+const recommendations = asyncHandler(async (req, res) => {
+  const query = questionQuerySchema.parse(req.query);
+  const result = await questionService.getRecommendations(req.user.id, query);
+  res.json({ success: true, ...result });
+});
+
 const create = asyncHandler(async (req, res) => {
   const question = await questionService.createQuestion(req.user.id, req.body);
   res.status(201).json({ success: true, data: question });
@@ -90,6 +96,7 @@ const acceptAnswer = asyncHandler(async (req, res) => {
 
 module.exports = {
   list,
+  recommendations,
   create,
   getOne,
   update,

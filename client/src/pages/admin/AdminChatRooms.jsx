@@ -5,8 +5,10 @@ import { MessageSquare, Plus, Trash2, Users } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { useApp } from "../../context/AppContext";
 import { socket } from "../../services/socket";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminChatRooms() {
+  useDocumentTitle("[Admin] Global Lounges");
   const { currentUser } = useApp();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);

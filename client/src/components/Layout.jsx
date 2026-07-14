@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { ArrowUp } from "lucide-react";
 
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -74,6 +75,7 @@ export default function Layout() {
     const hideSidebar = location.pathname === "/login" || location.pathname === "/register";
 
     const [scrolled, setScrolled] = useState(false);
+    const [showTopBtn, setShowTopBtn] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(() => {
         if (typeof window !== "undefined") {
@@ -103,6 +105,7 @@ export default function Layout() {
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
+            setShowTopBtn(window.scrollY > 400);
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
@@ -122,7 +125,18 @@ export default function Layout() {
                             scrolled ? "h-0 border-transparent opacity-0" : "h-6 sm:h-7 opacity-100"
                         }`}
                     >
-                        {siteSettings?.announcementActive && siteSettings?.announcementText ? (
+                        {siteSettings?.maintenanceMode ? (
+                            <div className="flex h-full w-full overflow-hidden whitespace-nowrap font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em]">
+                                <div className="flex h-full w-max animate-marquee-infinite">
+                                    <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4">
+                                        <span className="font-semibold text-accent">🛠️ PLATFORM IS IN READ-ONLY MAINTENANCE MODE</span>  
+                                    </div>
+                                    <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4" aria-hidden="true">
+                                        <span className="font-semibold text-accent">🛠️ PLATFORM IS IN READ-ONLY MAINTENANCE MODE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : siteSettings?.announcementActive && siteSettings?.announcementText ? (
                             <div className="flex h-full w-full overflow-hidden whitespace-nowrap font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em]">
                                 <div className="flex h-full w-max animate-marquee-infinite">
                                     <div className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4">
@@ -137,7 +151,7 @@ export default function Layout() {
                             <div className="mx-auto flex h-full w-full items-center justify-between gap-3 px-4 font-mono text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-3 sm:px-6 lg:px-10">
                                 <span className="flex items-center gap-2">
                                     <span className="text-accent animate-pulse">●</span>
-                                    the quad / vol.01 / {meta.pathName}
+                                    the quad / vol.02 / {meta.pathName}
                                 </span>
 
                                 <span className="hidden items-center gap-2 sm:flex">
@@ -183,6 +197,17 @@ export default function Layout() {
                     <Footer />
             </div>
         </div>
+
+        {/* Scroll to Top Button */}
+        <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className={`fixed bottom-6 right-6 z-40 hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-paper/80 backdrop-blur-sm border border-rule text-ink-3 hover:text-ink hover:border-ink-3 shadow-sm transition-all duration-300 ${
+                showTopBtn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+            }`}
+            title="Scroll to Top"
+        >
+            <ArrowUp size={18} />
+        </button>
 
         <Toaster position="bottom-right" theme={theme === "light" ? "light" : "dark"} />
         {!hideSidebar && (

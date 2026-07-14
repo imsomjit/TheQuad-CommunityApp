@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
@@ -21,6 +22,9 @@ import {
     GraduationCap,
     Share2,
     Check,
+    MessageSquare,
+    Send,
+    X,
 } from "lucide-react";
 
 import { Worker, Viewer } from '@react-pdf-viewer/core';
@@ -77,6 +81,7 @@ function timeAgo(ts) {
 }
 
 export default function ResourceDetail() {
+  useDocumentTitle("Resource Details");
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -99,6 +104,84 @@ export default function ResourceDetail() {
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
     const [shareToast, setShareToast] = useState(false);
+
+    // Chat Sidebar State
+    const [showChat, setShowChat] = useState(false);
+    const [chatMessages, setChatMessages] = useState([]);
+    const [chatInput, setChatInput] = useState("");
+    const [chatLoading, setChatLoading] = useState(false);
+    const chatContainerRef = React.useRef(null);
+    
+    // Drag logic for Chat Window
+    const [chatPos, setChatPos] = useState({ 
+        x: Math.max(20, window.innerWidth / 2 - 190), 
+        y: Math.max(20, window.innerHeight / 2 - 275) 
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragRef = React.useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
+
+    const handleDragStart = (e) => {
+        // Only allow dragging on header (not on buttons inside header)
+        if (e.target.closest('button')) return;
+        setIsDragging(true);
+        dragRef.current = {
+            startX: e.clientX,
+            startY: e.clientY,
+            initialX: chatPos.x,
+            initialY: chatPos.y
+        };
+    };
+
+    useEffect(() => {
+        const handleDrag = (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - dragRef.current.startX;
+            const dy = e.clientY - dragRef.current.startY;
+            setChatPos({
+                x: dragRef.current.initialX + dx,
+                y: dragRef.current.initialY + dy
+            });
+        };
+
+        const handleDragEnd = () => {
+            setIsDragging(false);
+        };
+
+        if (isDragging) {
+            window.addEventListener('mousemove', handleDrag);
+            window.addEventListener('mouseup', handleDragEnd);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleDrag);
+            window.removeEventListener('mouseup', handleDragEnd);
+        };
+    }, [isDragging]);
+
+    // Auto scroll chat to bottom
+    useEffect(() => {
+        if (showChat && chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [chatMessages, showChat]);
+
+    const handleChatSubmit = async (e) => {
+        e.preventDefault();
+        if (!chatInput.trim() || chatLoading) return;
+
+        const userMsg = { role: "user", content: chatInput };
+        setChatMessages((prev) => [...prev, userMsg]);
+        setChatInput("");
+        setChatLoading(true);
+
+        try {
+            const res = await resourcesApi.chat(resource.id, userMsg.content, chatMessages);
+            setChatMessages((prev) => [...prev, { role: "ai", content: res.data.data.reply }]);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to chat with PDF");
+        } finally {
+            setChatLoading(false);
+        }
+    };
 
     const handleShare = async () => {
         const url = window.location.href;
@@ -421,6 +504,16 @@ export default function ResourceDetail() {
                                 Preview
                             </button>
                         )}
+
+                        {isAuthenticated && (
+                            <button
+                                onClick={() => setShowChat(true)}
+                                className="hidden xl:inline-flex flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3 hover:border-accent hover:text-accent"
+                            >
+                                <Sparkles className="h-4 w-4" />
+                                Chat with PDF
+                            </button>
+                        )}
                     </div>
 
                     <div className="hidden sm:block flex-1" />
@@ -599,6 +692,86 @@ export default function ResourceDetail() {
                     targetId={parseInt(resource.id) || resource.id}
                 />
             </article>
+
+            {/* Chat Floating Window */}
+            {showChat && (
+                <div 
+                    style={{ left: chatPos.x, top: chatPos.y }}
+                    className="fixed z-50 w-[380px] max-w-[90vw] h-[550px] max-h-[85vh] border border-rule bg-paper shadow-2xl rounded-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                >
+                    <div 
+                        onMouseDown={handleDragStart}
+                        className={`flex items-center justify-between border-b border-rule px-4 py-3 bg-paper-2 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} active:cursor-grabbing`}
+                    >
+                        <div className="flex items-center gap-2 text-ink pointer-events-none">
+                            <Sparkles className="h-4 w-4 text-accent" />
+                            <h3 className="font-display font-bold text-sm">Chat with Document</h3>
+                        </div>
+                        <button 
+                            onClick={() => setShowChat(false)}
+                            className="p-1.5 rounded-md text-ink-2 hover:text-ink hover:bg-paper-3 transition-colors"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+
+                        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+                            {chatMessages.length === 0 ? (
+                                <div className="text-center py-10 text-ink-3">
+                                    <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                                    <p className="text-sm">Ask me anything about this document!</p>
+                                    <div className="mt-4 flex flex-col gap-2 px-6">
+                                        <button onClick={() => setChatInput("Summarize this document in 3 bullet points.")} className="text-xs text-left px-3 py-2 bg-paper-2 rounded border border-rule hover:border-accent transition-colors">"Summarize this document..."</button>
+                                        <button onClick={() => setChatInput("What are the key concepts covered here?")} className="text-xs text-left px-3 py-2 bg-paper-2 rounded border border-rule hover:border-accent transition-colors">"What are the key concepts..."</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                chatMessages.map((msg, i) => (
+                                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${
+                                            msg.role === 'user' 
+                                                ? 'bg-accent text-white rounded-br-none' 
+                                                : 'bg-paper-2 border border-rule text-ink rounded-bl-none'
+                                        }`}>
+                                            {msg.role === 'ai' ? (
+                                                <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
+                                            ) : (
+                                                msg.content
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            {chatLoading && (
+                                <div className="flex justify-start">
+                                    <div className="max-w-[85%] rounded-2xl bg-paper-2 border border-rule text-ink rounded-bl-none px-4 py-2 text-sm flex items-center gap-1.5">
+                                        <Sparkles className="h-3 w-3 animate-pulse text-accent" />
+                                        Thinking...
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <form onSubmit={handleChatSubmit} className="border-t border-rule p-3 bg-paper">
+                            <div className="flex items-center gap-2 rounded-xl border border-rule bg-paper-2 p-1 focus-within:border-accent focus-within:ring-1 focus-within:ring-accent transition-all">
+                                <input
+                                    type="text"
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    placeholder="Ask a question..."
+                                    className="flex-1 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-ink-3 outline-none"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!chatInput.trim() || chatLoading}
+                                    className="rounded-lg bg-accent p-2 text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                                >
+                                    <Send className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+            )}
         </div>
     );
 }

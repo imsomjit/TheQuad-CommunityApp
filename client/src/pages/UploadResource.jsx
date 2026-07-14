@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,7 +7,10 @@ import {
     FileText,
     ArrowLeft,
     Plus,
+    Sparkles,
 } from "lucide-react";
+
+import { resourcesApi } from "../services/api";
 
 import { useApp } from "../context/AppContext";
 import { Input } from "../components/ui/input";
@@ -31,6 +35,7 @@ const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
 import { toast } from "sonner";
 
 export default function UploadResource() {
+  useDocumentTitle("Upload Resource");
     const { addResource } = useApp();
     const navigate = useNavigate();
 
@@ -45,6 +50,36 @@ export default function UploadResource() {
     const [tagInput, setTagInput] = useState("");
     const [file, setFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [extracting, setExtracting] = useState(false);
+
+    const handleAutoExtract = async () => {
+        if (!file || file.type !== 'application/pdf') {
+            toast.error("Please upload a PDF file first to extract metadata.");
+            return;
+        }
+        
+        setExtracting(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const response = await resourcesApi.parseMetadata(formData);
+            const metadata = response.data.data;
+            
+            if (metadata.title) setTitle(metadata.title);
+            if (metadata.description) setDescription(metadata.description);
+            if (metadata.college) setCollege(metadata.college);
+            if (metadata.branch) setBranch(metadata.branch);
+            if (metadata.semester) setSemester(metadata.semester.toString());
+            if (metadata.subject) setSubject(metadata.subject);
+            if (metadata.tags && metadata.tags.length > 0) setTags(metadata.tags);
+            
+            toast.success("Metadata extracted successfully!");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to extract metadata");
+        } finally {
+            setExtracting(false);
+        }
+    };
 
     const handleFile = (f) => {
         if (!f) return;
@@ -154,8 +189,22 @@ export default function UploadResource() {
             </header>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* File Upload */}
-                <Field label="File *">
+                {/* File Upload Header with Action */}
+                <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-ink">File *</label>
+                    <button
+                        type="button"
+                        onClick={handleAutoExtract}
+                        disabled={extracting || !file || file.type !== 'application/pdf'}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-accent-soft bg-accent-soft/30 px-3 py-1.5 text-xs font-medium text-accent transition-all hover:bg-accent-soft hover:shadow-sm disabled:opacity-50 disabled:hover:bg-accent-soft/30 disabled:hover:shadow-none"
+                    >
+                        <Sparkles className={`h-3.5 w-3.5 ${extracting ? 'animate-pulse' : ''}`} />
+                        {extracting ? "Extracting..." : "🪄 Auto-Extract"}
+                    </button>
+                </div>
+                
+                {/* File Upload Dropzone */}
+                <div>
                     <label
                         data-testid="file-drop-zone"
                         onDragOver={(e) => e.preventDefault()}
@@ -195,7 +244,7 @@ export default function UploadResource() {
                             </>
                         )}
                     </label>
-                </Field>
+                </div>
 
                 {/* Title */}
                 <Field label="Title *">

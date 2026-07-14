@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -73,6 +74,7 @@ export const LANG_COLORS = {
 };
 
 export default function Profile() {
+  useDocumentTitle("Profile Page");
     const { username } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useApp();
@@ -481,7 +483,7 @@ export default function Profile() {
                 <StatTile icon={BookOpen} colorVar="--syntax-mint" label="resources uploaded" value={profile.stats?.resources || 0} />
                 <StatTile icon={Award} colorVar="--syntax-violet" label="questions answered" value={profile.stats?.answers || 0} />
                 <StatTile icon={Sparkles} colorVar="--syntax-amber" label="total upvotes" value={profile.stats?.totalUpvotes || 0} />
-                <StatTile icon={Zap} colorVar="--syntax-cyan" label="contribution points" value={profile.stats?.monthlyPoints || 0} />
+                <StatTile icon={Zap} colorVar="--syntax-cyan" label="contribution points" value={profile.stats?.totalPoints || 0} />
             </div>
 
             {/* ── LeetCode bento ──────────────────────────────────────────────── */}

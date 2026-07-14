@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("./utils/logger");
 const errorHandler = require("./middleware/errorHandler");
 const env = require("./config/env");
+const maintenanceCheck = require("./middleware/maintenance");
 
 // ── Route modules ─────────────────────────────────────────────────────────────
 const authRoutes = require("./modules/auth/auth.routes");
@@ -68,6 +69,9 @@ const createApp = () => {
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
+  // ── Maintenance check ─────────────────────────────────────────────────────
+  app.use(maintenanceCheck);
 
   // ── API Routes ────────────────────────────────────────────────────────────
   app.use("/api/auth", authRoutes);

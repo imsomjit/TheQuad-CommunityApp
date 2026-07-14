@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -18,6 +19,7 @@ import { format } from "date-fns";
 import { generateSlug } from "../utils/slugify";
 
 export default function Opportunities({ inExplore = false }) {
+  useDocumentTitle("Coding Contests and Competitions");
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const isDesktop = useMediaQuery("(min-width: 768px)");

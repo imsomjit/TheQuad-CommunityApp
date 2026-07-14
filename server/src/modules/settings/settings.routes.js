@@ -9,6 +9,7 @@ const validate = require("../../middleware/validate");
 const { z } = require("zod");
 
 const updateSettingsSchema = z.object({
+  maintenanceMode: z.boolean().optional(),
   registrationEnabled: z.boolean().optional(),
   announcementActive: z.boolean().optional(),
   announcementType: z.enum(["INFO", "WARNING", "SUCCESS", "ERROR"]).optional(),

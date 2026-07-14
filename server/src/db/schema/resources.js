@@ -9,6 +9,7 @@ const {
   timestamp,
   pgEnum,
   boolean,
+  vector,
 } = require("drizzle-orm/pg-core");
 const { customAlphabet } = require("nanoid");
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 12);
@@ -31,12 +32,16 @@ const resources = pgTable("resources", {
   description: text("description"),
   type: resourceTypeEnum("type").notNull(),
 
+  // Vector Embedding
+  embedding: vector("embedding", { dimensions: 768 }),
+
   // Cloudinary file info
   fileUrl: text("file_url").notNull(),
   filePublicId: text("file_public_id").notNull(), // for deletion from Cloudinary
   fileName: varchar("file_name", { length: 255 }),
   fileSize: integer("file_size"), // in bytes
   pages: integer("pages"),
+  parsedText: text("parsed_text"), // Extracted text for AI Chat
 
   // Academic metadata
   college: varchar("college", { length: 200 }),

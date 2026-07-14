@@ -10,6 +10,7 @@ const {
   resourceReadLimiter,
   resourceWriteLimiter,
   uploadLimiter,
+  aiLimiter,
 } = require("../../middleware/rateLimiter");
 const { db } = require("../../db/index");
 const { resources } = require("../../db/schema/index");
@@ -46,6 +47,9 @@ router.param("id", async (req, res, next, val) => {
 // GET /api/resources  — public, 120 req/min
 router.get("/", resourceReadLimiter, optionalAuth, controller.list);
 
+// GET /api/resources/recommendations — get personalized recommendations
+router.get("/recommendations", auth, resourceReadLimiter, controller.recommendations);
+
 // POST /api/resources — auth required, 10 uploads/hr + 30 writes/15min
 router.post(
   "/",
@@ -72,7 +76,29 @@ router.patch(
 // DELETE /api/resources/:id — auth + owner/mod check in service
 router.delete("/:id", auth, resourceWriteLimiter, controller.remove);
 
-// POST /api/resources/:id/download — auth required (logged-in users only)
-router.post("/:id/download", resourceReadLimiter, auth, controller.download);
+// POST /api/resources/:id/download  (tracks downloads)
+router.post(
+  "/:id/download",
+  resourceReadLimiter,
+  auth,
+  controller.download
+);
+
+// POST /api/resources/parse-metadata (pre-upload extraction)
+router.post(
+  "/parse-metadata",
+  auth,
+  aiLimiter,
+  uploadResourceFile,
+  controller.parseMetadata
+);
+
+// POST /api/resources/:id/chat
+router.post(
+  "/:id/chat",
+  auth,
+  aiLimiter,
+  controller.chat
+);
 
 module.exports = router;

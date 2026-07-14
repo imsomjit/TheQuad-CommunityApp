@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import {
     Flame,
     Sparkles,
@@ -93,9 +94,9 @@ const TYPEWRITER_PHRASES = [
     "curious learners",
     "ambitious minds",
     "problem solvers",
-    "knowledge seekers",
     "lifelong learners",
-    "peers helping peers"
+    "pure beginners",
+    "college freshers"
 ];
 
 function TypewriterEffect() {
@@ -145,6 +146,7 @@ function TypewriterEffect() {
 }
 
 export default function Home() {
+    useDocumentTitle("The Quad | Student Community for Resources, Q&A, Blogs & Opportunities");
     const { resources, questions, currentUser, apiLoaded } = useApp();
     const { isAuthenticated } = useAuth();
 
@@ -284,12 +286,20 @@ export default function Home() {
                                 </p>
                                 <p className="mt-1 font-mono text-xs text-ink-2">// hero</p>
 
+
+                                
+
+                                <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                                    Feature
+                                </p>
+                                <p className="mt-1 font-mono text-xs text-ink-2">🤖 ai-powered</p>
+
                                 <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                                     status
                                 </p>
                                 <p className="mt-1 flex items-center gap-1.5 font-mono text-xs text-ink-2">
                                     <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent-2" />
-                                    in development
+                                    in production
                                 </p>
                             </aside>
 
@@ -297,7 +307,7 @@ export default function Home() {
                             <div className="col-span-12 px-6 py-10 sm:col-span-10 sm:px-10 sm:py-14">
                                 <p className="mb-5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-3">
                                     <Terminal className="h-3.5 w-3.5 text-accent" />
-                                    TQ · volume 01 · powered by peers <span className="hidden sm:inline">for peers</span>
+                                    TQ · volume 02 · powered by peers <span className="hidden sm:inline">for peers</span>
                                 </p>
 
                                 <h1 className="relative grid grid-cols-1 font-display text-5xl font-bold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-[5.25rem]">
@@ -321,8 +331,8 @@ export default function Home() {
                                 </h1>
 
                                 <p className="mt-4 sm:mt-8 max-w-2xl text-base leading-relaxed text-ink-2 sm:text-lg">
-                                    Your campus quad, digitized. Share annotated notes, debate technical concepts, 
-                                    and socialize with peers while growing a public profile linked to your GitHub. 
+                                    Your campus quad, digitized. Share annotated notes, debate technical concepts,
+                                    and socialize with peers while growing a public profile linked to your GitHub.
                                     The Quad combines collaborative study spaces with dev-grade tools.
                                 </p>
 
@@ -418,7 +428,7 @@ export default function Home() {
                         </p>
 
                         <h1 className="mt-4 font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl">
-                            {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br/><span className="hidden md:inline">what are you <span className="marker italic">learning today?</span></span><span className="inline md:hidden">ready to <span className="marker italic">explore?</span></span>
+                            {greeting} <span className="font-display-italic text-accent">{currentUser?.name?.split(' ')[0] || 'Peer'}</span>, <br /><span className="hidden md:inline">what are you <span className="marker italic">learning today?</span></span><span className="inline md:hidden">ready to <span className="marker italic">explore?</span></span>
                         </h1>
 
                         <p className="mt-6 max-w-2xl text-md md:text-lg leading-relaxed text-ink-2">
@@ -428,7 +438,7 @@ export default function Home() {
 
                     {/* Premium Search & Quick Actions - Unified for Mobile & Desktop */}
                     <div className="relative z-10 mt-10 max-w-3xl space-y-6">
-                        
+
                         {/* Premium Search Bar */}
                         <div className="relative group">
                             <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-accent to-syntax-cyan opacity-20 blur transition duration-500 group-hover:opacity-40"></div>
@@ -471,7 +481,7 @@ export default function Home() {
                                     <span className="text-[10px] md:text-[11px] text-ink-3 font-mono mt-1.5 block uppercase tracking-wider">Start discovering...</span>
                                 </div>
                             </Link>
-                            
+
                             <Link to="/ask" className="group relative overflow-hidden flex flex-col items-start justify-center gap-2 rounded-2xl bg-paper-2 border border-rule p-4 md:p-5 transition-all active:scale-95 shadow-sm hover:shadow-md hover:-translate-y-1">
                                 <div className="absolute top-0 right-0 w-16 h-16 md:w-20 md:h-20 bg-syntax-magenta/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                                 <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-syntax-magenta/20 text-syntax-magenta transition-transform group-hover:scale-110">
@@ -622,7 +632,7 @@ export default function Home() {
 
                     {/* Profile card — index-card style */}
                     {isAuthenticated && currentUser && (
-                        <div className="hidden sm:inline relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
+                        <div className="hidden sm:block relative overflow-hidden rounded-md border border-rule bg-paper-2/60 p-5">
                             <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                             // profile card
                             </p>

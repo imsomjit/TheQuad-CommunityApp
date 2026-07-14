@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     Search,
     Bell,
@@ -66,18 +66,17 @@ export default function Navbar({ scrolled }) {
                 <Link
                     to="/"
                     data-testid="nav-logo"
-                    className={`group flex items-baseline gap-2 transition-transform duration-300 origin-left ${
+                    className={`group flex items-center gap-1 transition-transform duration-300 origin-left ${
                         scrolled ? "scale-90" : "scale-100"
                     }`}
                 >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-paper-2 transition-colors group-hover:border-accent">
-                        <Braces
-                            className="h-4 w-4 text-accent"
-                            strokeWidth={2}
-                        />
-                    </span>
+                    <img 
+                        src="/logo.png" 
+                        alt="The Quad" 
+                        className="h-9 w-9 object-contain drop-shadow-sm transition-transform group-hover:scale-105" 
+                    />
 
-                    <span className="flex items-baseline">
+                    <span className="flex items-baseline truncate">
                         <span className="font-display text-[28px] sm:text-3xl font-bold sm:font-semibold leading-none tracking-tight text-ink group-hover:text-accent transition-colors">
                             The
                         </span>
@@ -86,8 +85,8 @@ export default function Navbar({ scrolled }) {
                             Quad
                         </span>
 
-                        <span className="ml-1 hidden font-mono text-[10px] text-ink-3 sm:inline">
-                            /vol.01
+                        <span className="ml-1 font-mono text-[10px] text-ink-3">
+                            /vol.02
                         </span>
                     </span>
                 </Link>

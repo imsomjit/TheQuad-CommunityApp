@@ -40,6 +40,7 @@ const getPublicProfile = async (username, viewerUserId = null) => {
     [{ followingCount }],
     [{ totalUpvotes }],
     [{ monthlyPoints }],
+    [{ totalPoints }],
   ] = await Promise.all([
     db.select({ resourceCount: sql`count(*)`.mapWith(Number) })
       .from(resources).where(eq(resources.uploaderId, user.id)),
@@ -100,6 +101,38 @@ const getPublicProfile = async (username, viewerUserId = null) => {
         (SELECT count FROM month_comments) * 2 + 
         (SELECT count FROM month_received_upvotes) * 3 AS score
     `).then((r) => [{ monthlyPoints: Number(r.rows[0]?.score ?? 0) }]),
+    
+    // Lifetime contribution points
+    db.execute(sql`
+      WITH 
+      all_questions AS (SELECT COUNT(*) as count FROM questions WHERE is_deleted = false AND author_id = ${user.id}),
+      all_answers AS (SELECT COUNT(*) as count FROM answers WHERE is_deleted = false AND author_id = ${user.id}),
+      all_resources AS (SELECT COUNT(*) as count FROM resources WHERE is_deleted = false AND uploader_id = ${user.id}),
+      all_posts AS (SELECT COUNT(*) as count FROM posts WHERE status = 'published' AND is_deleted = false AND author_id = ${user.id}),
+      all_comments AS (SELECT COUNT(*) as count FROM comments WHERE is_deleted = false AND author_id = ${user.id}),
+      all_votes AS (
+        SELECT v.target_id as id, v.target_type as type
+        FROM votes v
+        WHERE v.direction = 'up'
+      ),
+      all_vote_authors AS (
+        SELECT r.uploader_id as user_id FROM all_votes v JOIN resources r ON v.id = r.id WHERE v.type = 'resource' AND r.uploader_id = ${user.id}
+        UNION ALL
+        SELECT q.author_id as user_id FROM all_votes v JOIN questions q ON v.id = q.id WHERE v.type = 'question' AND q.author_id = ${user.id}
+        UNION ALL
+        SELECT a.author_id as user_id FROM all_votes v JOIN answers a ON v.id = a.id WHERE v.type = 'answer' AND a.author_id = ${user.id}
+        UNION ALL
+        SELECT p.author_id as user_id FROM all_votes v JOIN posts p ON v.id = p.id WHERE v.type = 'blog' AND p.author_id = ${user.id}
+      ),
+      all_received_upvotes AS (SELECT COUNT(*) as count FROM all_vote_authors)
+      SELECT 
+        (SELECT count FROM all_questions) * 4 + 
+        (SELECT count FROM all_answers) * 15 + 
+        (SELECT count FROM all_resources) * 10 + 
+        (SELECT count FROM all_posts) * 10 + 
+        (SELECT count FROM all_comments) * 2 + 
+        (SELECT count FROM all_received_upvotes) * 3 AS score
+    `).then((r) => [{ totalPoints: Number(r.rows[0]?.score ?? 0) }]),
   ]);
 
   // Check if viewer follows this user
@@ -118,6 +151,7 @@ const getPublicProfile = async (username, viewerUserId = null) => {
       following: followingCount,
       totalUpvotes,
       monthlyPoints,
+      totalPoints,
     },
     viewerFollows,
   };

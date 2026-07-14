@@ -8,8 +8,10 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { generateSlug } from "../../utils/slugify";
 import { TableSkeleton } from "../../components/Skeletons";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminBooks() {
+    useDocumentTitle("[Admin] Books Management");
     const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm();
     const [filePreview, setFilePreview] = useState(null);
     const [coverPreview, setCoverPreview] = useState(null);

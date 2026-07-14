@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Users } from "lucide-react";
@@ -11,6 +12,7 @@ import { UserCardSkeleton } from "../components/Skeletons";
  * `mode` prop passed from App.jsx route: "followers" | "following"
  */
 export default function FollowList({ mode = "followers" }) {
+  useDocumentTitle("Followers & Following");
     const { username } = useParams();
     const navigate = useNavigate();
     const { isAuthenticated, user: authUser } = useAuth();

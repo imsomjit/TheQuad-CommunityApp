@@ -4,6 +4,7 @@ const chatService = require("./chat.service");
 const asyncHandler = require("../../utils/asyncHandler");
 const AppError = require("../../utils/AppError");
 const { getIo } = require("./chat.socket");
+const ai = require("../../utils/ai");
 
 exports.getRooms = asyncHandler(async (req, res) => {
   const rooms = await chatService.getRooms(req.user?.id);
@@ -35,7 +36,7 @@ exports.getRoomMessages = asyncHandler(async (req, res) => {
     throw new AppError("Room ID is required", 400);
   }
 
-  const messages = await chatService.getRoomMessages(roomId);
+  const messages = await chatService.getRoomMessages(roomId, req.user?.id);
   
   res.status(200).json({
     success: true,
@@ -131,6 +132,30 @@ exports.createDirectRoom = asyncHandler(async (req, res) => {
   });
 });
 
+exports.clearChat = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  if (!roomId) throw new AppError("Room ID is required", 400);
+  
+  await chatService.clearChat(req.user.id, roomId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Chat cleared successfully",
+  });
+});
+
+exports.deleteChat = asyncHandler(async (req, res) => {
+  const { roomId } = req.params;
+  if (!roomId) throw new AppError("Room ID is required", 400);
+  
+  await chatService.deleteUserRoom(req.user.id, roomId);
+  
+  res.status(200).json({
+    success: true,
+    message: "Chat deleted successfully",
+  });
+});
+
 exports.getOnlineUsers = asyncHandler(async (req, res) => {
   const io = getIo();
   const onlineUserIds = [];
@@ -149,5 +174,19 @@ exports.getOnlineUsers = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: onlineUserIds,
+  });
+});
+
+exports.generateGuideChat = asyncHandler(async (req, res) => {
+  const { message, history } = req.body;
+  if (!message) {
+    throw new AppError("Message is required", 400);
+  }
+  
+  const reply = await ai.chatWithPlatformGuide(history || [], message);
+  
+  res.status(200).json({
+    success: true,
+    data: reply,
   });
 });

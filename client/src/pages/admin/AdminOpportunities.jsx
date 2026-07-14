@@ -4,8 +4,10 @@ import { adminApi, opportunitiesApi } from "../../services/api";
 import { Briefcase, Plus, Trash2, Edit } from "lucide-react";
 import { Input } from "../../components/ui/input";
 import { TableSkeleton } from "../../components/Skeletons";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminOpportunities() {
+  useDocumentTitle("[Admin] Opportunities Management");
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);

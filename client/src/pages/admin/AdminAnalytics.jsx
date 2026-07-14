@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { adminApi } from "../../services/api";
 import { Users, BookOpen, MessageSquare, FileText, AlertTriangle, UserMinus } from "lucide-react";
 import { toast } from "sonner";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminAnalytics() {
+  useDocumentTitle("[Admin] Platform Analytics");
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 

@@ -3,8 +3,10 @@ import { Trash2, RefreshCw, Eye } from "lucide-react";
 import { adminApi } from "../../services/api";
 import { toast } from "sonner";
 import { TableSkeleton } from "../../components/Skeletons";
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 export default function AdminDeletedContent() {
+  useDocumentTitle("[Admin] Content Management");
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
 

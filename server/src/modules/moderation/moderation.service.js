@@ -555,30 +555,7 @@ const updateUserRole = async (userId, newRole) => {
   return { id: userId, role: newRole };
 };
 
-const toggleFeatureContent = async (type, id, moderatorId) => {
-  const table = getTargetTable(type);
-  if (!table) throw new AppError("Invalid content type for featuring", 400, "INVALID_TARGET");
 
-  const [content] = await db.select().from(table).where(eq(table.id, id)).limit(1);
-  if (!content) throw new AppError("Content not found", 404, "NOT_FOUND");
-  
-  const newStatus = !content.isFeatured;
-  
-  await db.update(table).set({ isFeatured: newStatus }).where(eq(table.id, id));
-  
-  return { id, isFeatured: newStatus };
-};
-
-const getFeaturedContent = async () => {
-  // We'll fetch featured resources, questions, and posts and merge them
-  const [featuredResources, featuredQuestions, featuredBlogs] = await Promise.all([
-    db.select({ id: resources.id, title: resources.title, type: sql`'resource'` }).from(resources).where(eq(resources.isFeatured, true)),
-    db.select({ id: questions.id, title: questions.title, type: sql`'question'` }).from(questions).where(eq(questions.isFeatured, true)),
-    db.select({ id: posts.id, title: posts.title, type: sql`'blog'` }).from(posts).where(eq(posts.isFeatured, true)),
-  ]);
-
-  return [...featuredResources, ...featuredQuestions, ...featuredBlogs];
-};
 
 const createOpportunity = async (data) => {
   const [opp] = await db.insert(opportunities).values({
@@ -622,8 +599,7 @@ module.exports = {
   getUserHistory,
   createModerator,
   updateUserRole,
-  toggleFeatureContent,
-  getFeaturedContent,
+
   createOpportunity,
   updateOpportunity,
   deleteOpportunity,

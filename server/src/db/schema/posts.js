@@ -11,6 +11,7 @@ const {
   pgEnum,
   jsonb,
   unique,
+  vector,
 } = require("drizzle-orm/pg-core");
 const { customAlphabet } = require("nanoid");
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 12);
@@ -35,6 +36,11 @@ const posts = pgTable("posts", {
   body: text("body").notNull().default(""), // raw markdown
   renderedHtml: text("rendered_html"), // server-rendered HTML
   excerpt: varchar("excerpt", { length: 500 }), // auto or manual summary
+  tldr: text("tldr"), // AI generated summary
+
+  // Vector Embedding
+  embedding: vector("embedding", { dimensions: 768 }),
+
 
   // Cover image (Cloudinary)
   coverImageUrl: text("cover_image_url"),

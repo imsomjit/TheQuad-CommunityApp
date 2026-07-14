@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import {
@@ -12,7 +13,8 @@ import {
   Code,
   Palette,
   BrainCircuit,
-  Zap
+  Zap,
+  Sparkles
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { resourcesApi, questionsApi, postsApi, booksApi, opportunitiesApi } from "../services/api";
@@ -25,12 +27,14 @@ import OpportunityCard from "../components/OpportunityCard";
 import EmptyPlaceholder from "../components/EmptyPlaceholder";
 
 export default function Search() {
+  useDocumentTitle("Search");
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const [searchInput, setSearchInput] = useState(query);
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
+  const [semanticMode, setSemanticMode] = useState(false);
 
   useEffect(() => {
     setSearchInput(query);
@@ -69,10 +73,11 @@ export default function Search() {
     const fetchAll = async () => {
       setLoading(true);
       try {
+        const params = { q: query, semantic: semanticMode };
         const [resRes, qRes, pRes, bRes, oRes] = await Promise.all([
-          resourcesApi.list({ q: query, limit: 10 }).catch(() => ({ data: [] })),
-          questionsApi.list({ q: query, limit: 8 }).catch(() => ({ data: [] })),
-          postsApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
+          resourcesApi.list({ ...params, limit: 10 }).catch(() => ({ data: [] })),
+          questionsApi.list({ ...params, limit: 8 }).catch(() => ({ data: [] })),
+          postsApi.list({ ...params, limit: 4 }).catch(() => ({ data: [] })),
           booksApi.list({ search: query, limit: 4 }).catch(() => ({ data: [] })),
           opportunitiesApi.list({ q: query, limit: 4 }).catch(() => ({ data: [] })),
         ]);
@@ -92,7 +97,7 @@ export default function Search() {
     };
 
     fetchAll();
-  }, [query]);
+  }, [query, semanticMode]);
 
   // Fix books response structure if needed
   const booksData = Array.isArray(results.books) ? results.books : (results.books?.data || []);
@@ -144,6 +149,27 @@ export default function Search() {
               </div>
             </div>
           </form>
+
+          {/* Semantic Search Toggle */}
+          <div className="mb-6 flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSemanticMode(!semanticMode)}
+              className={`flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-mono uppercase tracking-widest transition-all ${
+                semanticMode
+                  ? "border-accent/40 bg-accent/10 text-accent shadow-sm"
+                  : "border-rule bg-paper-2 text-ink-3 hover:border-ink-3 hover:text-ink"
+              }`}
+            >
+              <Sparkles className={`h-4 w-4 ${semanticMode ? "text-accent" : ""}`} />
+              Semantic Search
+            </button>
+            {semanticMode && (
+              <span className="text-[10px] text-ink-3">
+                Uses AI to find meaning instead of exact keywords.
+              </span>
+            )}
+          </div>
 
           {/* Quick suggestions when empty, otherwise showing results status */}
           <div className="h-auto min-h-[2rem]">

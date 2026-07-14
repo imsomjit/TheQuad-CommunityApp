@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -49,6 +50,7 @@ const linkFor = (notification) => {
 };
 
 export default function Notifications() {
+  useDocumentTitle("Recent Notifications");
   const { isAuthenticated } = useAuth();
   const { 
     markNotifRead: globalMarkNotifRead, 

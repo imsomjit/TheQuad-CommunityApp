@@ -1,3 +1,4 @@
+import useDocumentTitle from '../hooks/useDocumentTitle';
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 import { resourcesApi, booksApi, opportunitiesApi, usersApi, API_BASE } from "../services/api";
 
 export default function Login() {
+  useDocumentTitle("User Login");
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
