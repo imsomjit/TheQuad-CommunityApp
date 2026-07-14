@@ -508,7 +508,7 @@ export default function ResourceDetail() {
                         {isAuthenticated && (
                             <button
                                 onClick={() => setShowChat(true)}
-                                className="flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3 hover:border-accent hover:text-accent"
+                                className="hidden xl:inline-flex flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3 hover:border-accent hover:text-accent"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 Chat with PDF
