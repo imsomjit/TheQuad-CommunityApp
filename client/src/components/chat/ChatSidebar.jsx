@@ -602,7 +602,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
 
   const renderRoom = (room) => {
     const isDirect = room.type === 'direct';
-    const otherParticipant = room.isSynthetic ? room.targetUser : (isDirect ? room.participants?.find(p => p.id !== user.id) : null);
+    const otherParticipant = room.isSynthetic ? room.targetUser : (isDirect ? room.participants?.find(p => p.id !== user?.id) : null);
 
     return (
       <button
@@ -804,11 +804,11 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                       }}
                       title={activeRoom.type === "direct" ? "View Profile" : ""}
                     >
-                      {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) ? (
-                          <img src={activeRoom.participants.find(p => p.id !== user.id).avatarUrl || getAvatarFallback(activeRoom.participants.find(p => p.id !== user.id).name, activeRoom.participants.find(p => p.id !== user.id).username)} alt="Avatar" className="h-full w-full object-cover" />
+                      {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user?.id) ? (
+                          <img src={activeRoom.participants.find(p => p.id !== user?.id).avatarUrl || getAvatarFallback(activeRoom.participants.find(p => p.id !== user?.id).name, activeRoom.participants.find(p => p.id !== user?.id).username)} alt="Avatar" className="h-full w-full object-cover" />
                       ) : activeRoom.type === "global" ? <Hash size={14} /> : activeRoom.type === "ephemeral" ? <Sparkles size={14} /> : <Users size={14} />}
                     </div>
-                    {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user.id).id) && (
+                    {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user?.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user?.id).id) && (
                       <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-paper bg-green-500 pointer-events-none"></div>
                     )}
                   </div>
@@ -826,9 +826,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                       }}
                       title={activeRoom.type === "direct" ? "View Profile" : ""}
                     >
-                      {activeRoom.type === "direct" && activeRoom.participants ? activeRoom.participants.find(p => p.id !== user.id)?.name || activeRoom.name : activeRoom.name}
+                      {activeRoom.type === "direct" && activeRoom.participants ? activeRoom.participants.find(p => p.id !== user?.id)?.name || activeRoom.name : activeRoom.name}
                     </h2>
-                    {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user.id).id) && (
+                    {activeRoom.type === "direct" && activeRoom.participants?.find(p => p.id !== user?.id) && onlineUsers.has(activeRoom.participants.find(p => p.id !== user?.id).id) && (
                       <span className="text-[10px] text-green-500 font-medium leading-none mt-0.5">Online</span>
                     )}
                   </div>
@@ -908,9 +908,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                 </div>
               ) : messages.length > 0 ? (
                 messages.map((msg, i) => {
-                  const isMe = msg.senderId === user.id;
+                  const isMe = msg.senderId === user?.id;
                   const isLastMessage = i === messages.length - 1;
-                  const isReadByOther = msg.readBy && msg.readBy.some(id => id !== user.id);
+                  const isReadByOther = msg.readBy && msg.readBy.some(id => id !== user?.id);
                   
                   const prevMsg = i > 0 ? messages[i - 1] : null;
                   const nextMsg = i < messages.length - 1 ? messages[i + 1] : null;
