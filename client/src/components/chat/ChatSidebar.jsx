@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, Pin, PinOff, Bot, MoreVertical, Eraser, Trash2 } from "lucide-react";
+import { MessageSquare, X, Hash, Users, Plus, Send, ChevronLeft, Loader2, Sparkles, Key, Copy, Check, CheckCheck, Pin, PinOff, Bot, MoreVertical, Eraser, Trash2 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useApp } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
 import api, { getAccessToken, setAccessToken, authApi } from "../../services/api";
-import { format } from "date-fns";
+import { format, isSameDay, isToday, isYesterday } from "date-fns";
 import { toast } from "sonner";
 import { chatApi, usersApi } from "../../services/api";
 import CreateRoomModal from "./CreateRoomModal";
@@ -15,6 +16,7 @@ import { getAvatarFallback } from "../../utils/fallbacks";
 
 export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const { user, isAuthenticated } = useAuth();
+  const { setNotifications } = useApp();
   const navigate = useNavigate();
   
   const [rooms, setRooms] = useState([]);
@@ -32,6 +34,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [typingUsers, setTypingUsers] = useState({});
   const [followingUsers, setFollowingUsers] = useState([]);
+  const [startingChatId, setStartingChatId] = useState(null);
   
   const typingTimeoutRef = useRef({});
   const messagesEndRef = useRef(null);
@@ -211,12 +214,12 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       // Join socket room
       socket.emit("join_room", room.id);
       
-      // Emit mark read if it's a DM
+      // Optimistically clear the unread count in local state
+      setRooms(prev => prev.map(r => String(r.id) === String(room.id) ? { ...r, unreadCount: 0 } : r));
+
+      // Emit mark read to backend only if it's a DM (we don't track read receipts for global lounges to save DB space)
       if (room.type === 'direct') {
         socket.emit("mark_read", room.id);
-        
-        // Optimistically clear the unread count in local state
-        setRooms(prev => prev.map(r => r.id === room.id ? { ...r, unreadCount: 0 } : r));
       }
     } catch (err) {
       console.error(err);
@@ -232,7 +235,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   useEffect(() => {
     const handleReceiveMessage = (msg) => {
       // If the chat is open AND the user is looking at this exact room
-      if (isOpen && activeRoom && msg.roomId === activeRoom.id) {
+      if (isOpen && activeRoom && String(msg.roomId) === String(activeRoom.id)) {
         setMessages((prev) => [...prev, msg]);
         scrollToBottom();
         // Send mark_read immediately since they are looking at it
@@ -240,21 +243,41 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
           socket.emit("mark_read", activeRoom.id);
         }
       } else if (msg.senderId !== user?.id) {
-        // Increment unread count for the room
-        setRooms(prev => prev.map(r => r.id === msg.roomId ? { ...r, unreadCount: (r.unreadCount || 0) + 1 } : r));
-        // Otherwise, if it's a DM, show a notification toast
-        const room = rooms.find(r => r.id === msg.roomId);
-        if (room && room.type === 'direct') {
-           const sender = room.participants?.find(p => p.id === msg.senderId);
-           toast.info(`New message from ${sender ? sender.name : 'someone'}`, {
-             description: msg.text,
-             action: {
-               label: "View",
-               onClick: () => {
-                 window.dispatchEvent(new CustomEvent("open_chat_sidebar"));
-                 window.dispatchEvent(new CustomEvent("open_chat_room", { detail: { roomId: room.id } }));
-               }
-             }
+        // Increment unread count for the room and move to top
+        const exists = rooms.find(r => String(r.id) === String(msg.roomId));
+        if (!exists) {
+          // If the room is not in our local state, it means it's a brand new chat.
+          // Fetch the updated list of rooms from the backend to load it with its unread counts.
+          fetchRooms();
+        } else {
+          setRooms(prev => {
+            const roomToUpdate = prev.find(r => String(r.id) === String(msg.roomId));
+            if (!roomToUpdate) return prev;
+            const filtered = prev.filter(r => String(r.id) !== String(msg.roomId));
+            return [{ ...roomToUpdate, unreadCount: (roomToUpdate.unreadCount || 0) + 1 }, ...filtered];
+          });
+        }
+        // If chatbar is not open, show notification in AppContext instead of toast
+        const room = rooms.find(r => String(r.id) === String(msg.roomId));
+        const isGlobal = room ? room.type === 'global' : false;
+        
+        if (!isOpen && !isGlobal) {
+           const sender = msg.sender || (room && room.participants?.find(p => p.id === msg.senderId));
+           const newNotif = {
+             id: `chat_${msg.id}`,
+             type: "chat_message",
+             text: "sent you a new message",
+             targetType: "chat",
+             targetId: msg.roomId,
+             targetTitle: "message from " + (sender ? sender.name : 'someone'),
+             target: msg.content ? (msg.content.substring(0, 40) + (msg.content.length > 40 ? "..." : "")) : "",
+             actor: sender,
+             read: false,
+             createdAt: new Date().toISOString()
+           };
+           setNotifications(prev => {
+             if (prev.find(n => n.id === newNotif.id)) return prev;
+             return [newNotif, ...prev];
            });
         }
       }
@@ -321,7 +344,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
     };
 
     const handleMessagesRead = ({ roomId, byUserId }) => {
-      if (activeRoom && activeRoom.id === roomId) {
+      if (activeRoom && String(activeRoom.id) === String(roomId)) {
         setMessages(prev => prev.map(m => ({ ...m, readBy: [...(m.readBy || []), byUserId] })));
       }
     };
@@ -508,6 +531,8 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
   };
 
   const startDirectMessage = async (targetUser) => {
+    if (startingChatId === targetUser.id) return;
+    setStartingChatId(targetUser.id);
     try {
       const res = await api.post(`/chat/direct/${targetUser.id}`);
       const roomId = res.data.data.id;
@@ -527,6 +552,8 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
       joinRoom(roomToJoin);
     } catch (err) {
       toast.error("Failed to start chat");
+    } finally {
+      setStartingChatId(null);
     }
   };
 
@@ -609,8 +636,9 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
         </div>
         <div className="flex items-center gap-2">
           {room.unreadCount > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-rule shadow-sm">
-              {room.unreadCount > 99 ? '99+' : room.unreadCount}
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-accent"></span>
             </span>
           )}
         </div>
@@ -873,7 +901,7 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
               </div>
             )}
             
-            <div className="flex-1 overflow-y-auto overscroll-contain p-4 flex flex-col gap-3" style={{ touchAction: 'pan-y' }}>
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 flex flex-col [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" style={{ touchAction: 'pan-y' }}>
               {loadingMessages ? (
                 <div className="flex flex-1 items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-ink-3" />
@@ -882,26 +910,70 @@ export default function ChatSidebar({ isOpen, onToggle, scrolled }) {
                 messages.map((msg, i) => {
                   const isMe = msg.senderId === user.id;
                   const isLastMessage = i === messages.length - 1;
-                  const isReadByOther = msg.readBy && msg.readBy.length > 0;
+                  const isReadByOther = msg.readBy && msg.readBy.some(id => id !== user.id);
+                  
+                  const prevMsg = i > 0 ? messages[i - 1] : null;
+                  const nextMsg = i < messages.length - 1 ? messages[i + 1] : null;
+                  
+                  const currentMsgDate = new Date(msg.createdAt);
+                  const prevMsgDate = prevMsg ? new Date(prevMsg.createdAt) : null;
+                  
+                  const showDateDivider = !prevMsgDate || !isSameDay(currentMsgDate, prevMsgDate);
+                  
+                  let dateDividerText = "";
+                  if (showDateDivider) {
+                    if (isToday(currentMsgDate)) dateDividerText = "Today";
+                    else if (isYesterday(currentMsgDate)) dateDividerText = "Yesterday";
+                    else dateDividerText = format(currentMsgDate, "MMMM d, yyyy");
+                  }
+                  
+                  const isFirstFromSender = !prevMsg || prevMsg.senderId !== msg.senderId || showDateDivider;
+                  const isLastFromSender = !nextMsg || nextMsg.senderId !== msg.senderId;
+                  
+                  const showUsername = !isMe && msg.sender && activeRoom?.type !== 'direct' && isFirstFromSender;
+                  const marginTopClass = i === 0 ? "mt-0" : (isFirstFromSender ? (showUsername ? "mt-0.5" : "mt-3") : "mt-0.5");
+                  
+                  let radiusClasses = "rounded-[22px]";
+                  if (isMe) {
+                    radiusClasses += isFirstFromSender ? " rounded-tr-[22px]" : " rounded-tr-[4px]";
+                    radiusClasses += isLastFromSender ? " rounded-br-[22px]" : " rounded-br-[4px]";
+                  } else {
+                    radiusClasses += isFirstFromSender ? " rounded-tl-[22px]" : " rounded-tl-[4px]";
+                    radiusClasses += isLastFromSender ? " rounded-bl-[22px]" : " rounded-bl-[4px]";
+                  }
                   
                   return (
-                    <div key={msg.id || i} className={`flex max-w-[85%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}>
-                      {!isMe && msg.sender && (
-                        <span className="mb-1 text-xs text-ink-3 ml-1">@{msg.sender.username}</span>
+                    <React.Fragment key={msg.id || i}>
+                      {showDateDivider && (
+                        <div className="flex justify-center my-4 w-full">
+                          <span className="text-[10px] font-medium font-mono uppercase tracking-wider text-ink-3 px-3 py-1">
+                            {dateDividerText}
+                          </span>
+                        </div>
                       )}
-                      <div className={`rounded-2xl px-4 py-2 text-base md:text-sm ${isMe ? "bg-accent text-paper rounded-tr-sm" : "bg-paper-3 text-ink rounded-tl-sm border border-rule"}`}>
-                        {msg.content}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1 mx-1">
-                        <span className="text-xs text-ink-3">
+                      <div className={`flex max-w-[85%] flex-col ${isMe ? "self-end items-end" : "self-start items-start"}`}>
+                      {showUsername && (
+                        <span className={`text-[11px] font-medium text-ink-3 ml-2 ${i === 0 ? "mt-0 mb-0.5" : "mt-4 mb-0.5"}`}>@{msg.sender.username}</span>
+                      )}
+                      <div className={`relative px-3.5 py-1.5 text-base md:text-sm min-w-[65px] ${marginTopClass} ${radiusClasses} ${isMe ? "bg-accent text-paper shadow-sm" : "bg-paper-3 text-ink shadow-sm border border-rule"}`}>
+                        <span className="break-words whitespace-pre-wrap align-top leading-snug">{msg.content}</span>
+                        <span className={`float-right ml-3 mt-1.5 flex items-center gap-1 text-[9px] ${isMe ? "text-paper/90" : "text-ink-3"}`}>
                           {format(new Date(msg.createdAt), "HH:mm")}
+                          {isMe && (
+                            <span className="flex items-center" title={isReadByOther ? "Read" : "Sent"}>
+                                {isReadByOther ? (
+                                    <CheckCheck size={14} strokeWidth={2.5} className="text-paper" />
+                                ) : (
+                                    <Check size={12} strokeWidth={2.5} className="text-paper/70" />
+                                )}
+                            </span>
+                          )}
                         </span>
-                        {isMe && isLastMessage && isReadByOther && (
-                          <span className="text-[10px] text-accent flex items-center gap-0.5"><Check size={12} /> Read</span>
-                        )}
+                        <div className="clear-both"></div>
                       </div>
                     </div>
-                  )
+                  </React.Fragment>
+                )
                 })
               ) : (
                 <div className="flex flex-1 items-center justify-center flex-col text-ink-3 text-sm">

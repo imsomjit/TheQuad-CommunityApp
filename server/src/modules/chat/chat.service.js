@@ -65,15 +65,18 @@ const getRooms = async (userId) => {
   const userDirectParticipants = await db
     .select({ 
       roomId: chatParticipants.roomId,
-      lastReadAt: chatParticipants.lastReadAt 
+      lastReadAt: chatParticipants.lastReadAt,
+      joinedAt: chatParticipants.joinedAt
     })
     .from(chatParticipants)
     .where(eq(chatParticipants.userId, userId));
 
   const directRoomIds = userDirectParticipants.map(p => p.roomId);
   
-  // Fetch unread counts
+  // Fetch unread counts and latest messages
   const unreadCounts = {};
+  const lastMessageAts = {};
+  
   for (const p of userDirectParticipants) {
     const [{ c }] = await db
       .select({ c: count() })
@@ -84,6 +87,17 @@ const getRooms = async (userId) => {
         ne(chatMessages.senderId, userId)
       ));
     unreadCounts[p.roomId] = c;
+
+    // Get latest message timestamp
+    const { desc } = require("drizzle-orm");
+    const [latestMsg] = await db
+      .select({ createdAt: chatMessages.createdAt })
+      .from(chatMessages)
+      .where(eq(chatMessages.roomId, p.roomId))
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(1);
+      
+    lastMessageAts[p.roomId] = latestMsg ? latestMsg.createdAt.getTime() : (p.joinedAt ? p.joinedAt.getTime() : 0);
   }
   
   if (directRoomIds.length > 0) {
@@ -125,6 +139,7 @@ const getRooms = async (userId) => {
           joinCode: row.joinCode,
           createdAt: row.createdAt,
           unreadCount: unreadCounts[row.id] || 0,
+          lastMessageAt: lastMessageAts[row.id] || 0,
           participants: [],
         };
       }
@@ -136,7 +151,10 @@ const getRooms = async (userId) => {
       });
     }
 
-    allRooms = [...allRooms, ...Object.values(groupedDirectRooms)];
+    // Sort direct rooms by most recent activity
+    const sortedDirectRooms = Object.values(groupedDirectRooms).sort((a, b) => b.lastMessageAt - a.lastMessageAt);
+
+    allRooms = [...allRooms, ...sortedDirectRooms];
   }
 
   // Map to add isPinned
@@ -217,14 +235,24 @@ const joinRoomByCode = async (code) => {
  */
 const getRoomMessages = async (roomId, userId) => {
   let clearedAt = null;
+  let otherLastReadAt = null;
+  let otherUserId = null;
+
   if (userId) {
-    const participant = await db
-      .select({ clearedAt: chatParticipants.clearedAt })
+    const participants = await db
+      .select({ userId: chatParticipants.userId, clearedAt: chatParticipants.clearedAt, lastReadAt: chatParticipants.lastReadAt })
       .from(chatParticipants)
-      .where(and(eq(chatParticipants.roomId, roomId), eq(chatParticipants.userId, userId)))
-      .limit(1);
-    if (participant.length > 0) {
-      clearedAt = participant[0].clearedAt;
+      .where(eq(chatParticipants.roomId, roomId));
+      
+    if (participants.length > 0) {
+      for (const p of participants) {
+        if (p.userId === userId) {
+          clearedAt = p.clearedAt;
+        } else {
+          otherLastReadAt = p.lastReadAt;
+          otherUserId = p.userId;
+        }
+      }
     }
   }
 
@@ -250,7 +278,12 @@ const getRoomMessages = async (roomId, userId) => {
     query.where(and(eq(chatMessages.roomId, roomId), gt(chatMessages.createdAt, clearedAt)));
   }
 
-  return await query.orderBy(asc(chatMessages.createdAt));
+  const results = await query.orderBy(asc(chatMessages.createdAt));
+
+  return results.map(msg => ({
+    ...msg,
+    readBy: (otherLastReadAt && new Date(msg.createdAt) <= new Date(otherLastReadAt)) ? [otherUserId] : []
+  }));
 };
 
 /**

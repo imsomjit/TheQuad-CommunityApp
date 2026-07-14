@@ -403,7 +403,7 @@ const getPostById = async (id) => {
 /**
  * Get a post by slug (public — only published).
  */
-const getPostByPublicId = async (publicId, incrementView = false) => {
+const getPostByPublicId = async (publicId, incrementView = false, includeDrafts = false) => {
   if (incrementView) {
     await db
       .update(posts)
@@ -443,7 +443,11 @@ const getPostByPublicId = async (publicId, incrementView = false) => {
     })
     .from(posts)
     .leftJoin(users, eq(posts.authorId, users.id))
-    .where(and(eq(posts.publicId, publicId), eq(posts.status, "published"), eq(posts.isDeleted, false)))
+    .where(and(
+      eq(posts.publicId, publicId), 
+      eq(posts.isDeleted, false),
+      ...(includeDrafts ? [] : [eq(posts.status, "published")])
+    ))
     .limit(1);
 
   if (!row) throw new AppError("Post not found", 404, "NOT_FOUND");

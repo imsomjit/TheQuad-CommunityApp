@@ -46,6 +46,9 @@ const iconFor = (notification) => {
         case "comment_on_answer":
             return MessageCircle;
 
+        case "chat_message":
+            return MessageCircle;
+
         default:
             return Bell;
     }
@@ -58,6 +61,10 @@ const linkFor = (notification) => {
     }
     if (notification.type.includes("resource")) {
         return `/resources/${notification.targetId}`;
+    }
+
+    if (notification.type === "chat_message") {
+        return "#";
     }
 
     return `/questions/${notification.targetId}`;
@@ -130,7 +137,14 @@ export default function NotificationDropdown({ children }) {
                             <Link
                                 key={notification.id}
                                 to={linkFor(notification)}
-                                onClick={() => markNotifRead(notification.id)}
+                                onClick={(e) => {
+                                    markNotifRead(notification.id);
+                                    if (notification.type === "chat_message") {
+                                        e.preventDefault();
+                                        window.dispatchEvent(new CustomEvent("open_chat_sidebar"));
+                                        window.dispatchEvent(new CustomEvent("open_chat_room", { detail: { roomId: notification.targetId } }));
+                                    }
+                                }}
                                 data-testid={`notification-item-${notification.id}`}
                                 className={`flex gap-3 border-b border-rule/60 px-4 py-3 transition-colors hover:bg-paper-2 ${!notification.read ? "bg-accent-soft/40" : ""
                                     }`}

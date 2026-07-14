@@ -42,8 +42,8 @@ const generateTagsAndTldr = async (title, content) => {
   const prompt = `
 You are an expert technical writer and AI assistant for a community platform.
 Analyze the following blog post or question. 
-1. Create a concise TL;DR (1-2 sentences maximum).
-2. Generate 3 to 5 highly relevant tags (single words or short hyphenated phrases, lowercase).
+1. Create an insightful and informative TL;DR consisting of 4 to 5 lines with 3 to 5 bullet points.
+2. Generate 5 to 8 highly relevant tags (single words or short hyphenated phrases, lowercase).
 
 Title: ${title}
 

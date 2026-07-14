@@ -56,16 +56,27 @@ const initSocket = (server) => {
 
     // Auto-join direct message rooms so users receive DMs in real-time
     try {
-      const { chatParticipants } = require("../../db/schema");
+      const { chatParticipants, chatRooms } = require("../../db/schema");
       const userDirectRooms = await db
         .select({ roomId: chatParticipants.roomId })
         .from(chatParticipants)
         .where(eq(chatParticipants.userId, socket.user.id));
       
       userDirectRooms.forEach(room => {
-        socket.join(room.roomId);
+        socket.join(String(room.roomId));
       });
-      logger.debug(`User ${socket.user.id} auto-joined ${userDirectRooms.length} DM rooms.`);
+
+      // Auto-join global rooms as well
+      const globalRooms = await db
+        .select({ id: chatRooms.id })
+        .from(chatRooms)
+        .where(eq(chatRooms.type, 'global'));
+
+      globalRooms.forEach(room => {
+        socket.join(String(room.id));
+      });
+
+      logger.debug(`User ${socket.user.id} auto-joined ${userDirectRooms.length} DM rooms and ${globalRooms.length} global rooms.`);
     } catch (err) {
       logger.error("Error auto-joining DM rooms:", err);
     }
@@ -75,7 +86,7 @@ const initSocket = (server) => {
 
     // Join a specific room
     socket.on("join_room", (roomId) => {
-      socket.join(roomId);
+      socket.join(String(roomId));
       logger.debug(`User ${socket.user.id} joined room ${roomId}`);
 
       // Cancel pending deletion if it exists
@@ -128,7 +139,7 @@ const initSocket = (server) => {
 
     // Leave a room
     socket.on("leave_room", (roomId) => {
-      socket.leave(roomId);
+      socket.leave(String(roomId));
       logger.debug(`User ${socket.user.id} left room ${roomId}`);
       checkEmptyRoom(roomId);
     });
@@ -154,10 +165,10 @@ const initSocket = (server) => {
         logger.debug(`[SOCKET] User ${socket.user.id} attempting to send message to room ${roomId}`);
         
         // Ensure user is in the room
-        if (!socket.rooms.has(roomId)) {
+        if (!socket.rooms.has(String(roomId))) {
           logger.warn(`[SOCKET] User ${socket.user.id} tried to send message to room ${roomId} without joining. Rooms:`, Array.from(socket.rooms));
           // Don't return, let's join them just in case
-          socket.join(roomId);
+          socket.join(String(roomId));
         }
 
         // Save to DB

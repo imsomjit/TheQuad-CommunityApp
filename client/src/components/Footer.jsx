@@ -6,9 +6,9 @@ export default function Footer() {
     const { siteSettings } = useApp();
 
     return (
-        <footer className="mt-10 border-t-2 border-double bg-paper-2/50 border-rule">
+        <footer className="mt-10 border-t-2 border-double bg-paper-2/30 border-rule">
             {/* Marquee separator (hidden when authenticated) */}
-            <div className="overflow-hidden border-b border-rule/60 bg-paper-2 py-2">
+            <div className="overflow-hidden border-b border-rule/60 bg-accent/10 py-2">
                 <div className="marquee whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                     {Array(4)
                         .fill(
@@ -39,7 +39,7 @@ export default function Footer() {
                         Your digital campus quad. A dedicated space for tech students 
                         to socialize, study together, and build the future.
                     </p>
-                    <div className="mt-5 flex items-center gap-1.5">
+                    <div className="hidden md:inline mt-5 flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-accent-2 animate-pulse" />
                         <span className="font-mono text-[10px] text-ink-3">
                             systems online
@@ -108,11 +108,11 @@ export default function Footer() {
                 </div>
 
                 {/* Typography / Legal */}
-                <div>
-                    <p className="hidden sm:inline font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
+                <div className="hidden md:inline">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-3">
                         colophon
                     </p>
-                    <ul className="mt-3 space-y-1 text-sm hidden sm:inline">
+                    <ul className="mt-3 space-y-1 text-sm">
                         <li className="font-display text-lg text-ink">
                             Fraunces
                         </li>

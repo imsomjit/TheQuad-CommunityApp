@@ -16,6 +16,7 @@ import { DetailSkeleton } from "../components/Skeletons";
 import CommentSection from "../components/CommentSection";
 import { useViewTracker } from "../hooks/useViewTracker";
 import { getAvatarFallback } from "../utils/fallbacks";
+import { generateSlug } from "../utils/slugify";
 
 
 // ── Category metadata card ────────────────────────────────────────────────────
@@ -522,7 +523,7 @@ export default function PostDetail() {
           </h1>
 
           {/* Meta row */}
-          <div className="flex items-center justify-between mb-8 pb-8 border-b border-rule">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-8 border-b border-rule">
             <div className="flex items-center gap-4">
               {post.author && (
                 <div className="relative">
@@ -556,7 +557,7 @@ export default function PostDetail() {
                     </Link>
                     {isAuthor && (
                       <Link
-                        to={`/posts/${post.slug || post.publicId || post.id}/edit`}
+                        to={`/posts/${generateSlug(post.title, post.publicId || post.id)}/edit`}
                         className="flex items-center gap-1 rounded-full bg-paper border border-rule px-2 py-0.5 text-[10px] uppercase font-mono tracking-widest text-ink-2 transition-colors hover:border-ink-3 hover:text-ink"
                       >
                         <Edit2 className="h-3 w-3" /> Edit
@@ -580,8 +581,8 @@ export default function PostDetail() {
               </div>
             </div>
 
-            {/* Social Share / Bookmark (Desktop Inline) */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Social Share / Bookmark */}
+            <div className="flex items-center gap-3 self-start md:self-auto">
               <button
                 onClick={handleGenerateTldr}
                 disabled={generatingTldr}

@@ -61,18 +61,24 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pagination, setPagination] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // "all" | "unread"
 
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
-    setLoading(true);
     try {
+      setLoading(true);
       const result = await notificationsApi.list({ page, limit: 20 });
-      setNotifications(result.data);
+      
+      // Merge synthetic chat notifications from global state that are not from the API
+      const chatNotifs = globalNotifications.filter(n => n.type === 'chat_message');
+      
+      setNotifications([...chatNotifs, ...result.data]);
       setUnreadCount(result.unreadCount);
       setPagination(result.pagination);
+      setTotalPages(result.pagination?.totalPages || 1);
     } catch {
       toast.error("Failed to load notifications");
     } finally {
@@ -88,13 +94,23 @@ export default function Notifications() {
   // If the user marks read from the dropdown, it will automatically reflect here
   useEffect(() => {
     if (globalNotifications.length > 0) {
-      setNotifications(prev => prev.map(n => {
-        const globalMatch = globalNotifications.find(gn => gn.id === n.id);
-        if (globalMatch && globalMatch.read && !n.read) {
-          return { ...n, read: true };
-        }
-        return n;
-      }));
+      setNotifications(prev => {
+        // Sync read status for existing notifications
+        const updated = prev.map(n => {
+          const globalMatch = globalNotifications.find(gn => gn.id === n.id);
+          if (globalMatch && globalMatch.read && !n.read) {
+            return { ...n, read: true };
+          }
+          return n;
+        });
+
+        // Add any chat notifications that are in global but missing from local
+        const missingChatNotifs = globalNotifications.filter(
+          gn => gn.type === 'chat_message' && !updated.find(un => un.id === gn.id)
+        );
+
+        return [...missingChatNotifs, ...updated];
+      });
     }
   }, [globalNotifications]);
 

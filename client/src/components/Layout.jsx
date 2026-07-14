@@ -201,9 +201,9 @@ export default function Layout() {
         {/* Scroll to Top Button */}
         <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className={`fixed bottom-6 right-6 z-40 hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-paper/80 backdrop-blur-sm border border-rule text-ink-3 hover:text-ink hover:border-ink-3 shadow-sm transition-all duration-300 ${
+            className={`fixed bottom-6 z-40 hidden md:flex h-10 w-10 items-center justify-center rounded-full bg-paper/80 backdrop-blur-sm border border-rule text-ink-3 hover:text-ink hover:border-ink-3 shadow-sm transition-all duration-300 ${
                 showTopBtn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-            }`}
+            } ${(!hideSidebar && isChatOpen) ? "right-[23.5rem]" : "right-6"}`}
             title="Scroll to Top"
         >
             <ArrowUp size={18} />

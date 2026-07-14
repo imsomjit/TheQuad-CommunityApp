@@ -65,7 +65,7 @@ export default function MobileNav({ onChatToggle }) {
     return (
         <>
             <div className="fixed inset-x-0 bottom-5 z-40 md:hidden flex justify-center pointer-events-none">
-                <nav className="pointer-events-auto w-[92%] max-w-sm flex items-center justify-between rounded-full border border-rule bg-paper/95 backdrop-blur-xl px-5 py-2.5 shadow-2xl relative transition-all duration-500 animate-in slide-in-from-bottom-8 fade-in duration-700 ease-out">
+                <nav className="pointer-events-auto w-[75%] max-w-sm flex items-center justify-between rounded-full border border-rule bg-paper/95 backdrop-blur-xl px-5 py-2.5 shadow-2xl relative transition-all duration-500 animate-in slide-in-from-bottom-8 fade-in duration-700 ease-out">
                     <NavLink to="/" className={linkClass} end title="Home">
                         <Home className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={2.2} />
                         <span className="sr-only">Home</span>

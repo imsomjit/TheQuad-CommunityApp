@@ -300,7 +300,10 @@ export default function PostEditor() {
         setSeriesOrder(p.seriesOrder?.toString() || "");
       }
       setLoading(false);
-    }).catch(() => { navigate("/posts"); });
+    }).catch((err) => { 
+      console.error("Failed to load post for editing:", err);
+      navigate("/posts"); 
+    });
   }, [id, navigate]);
 
   // Load user series
@@ -444,7 +447,7 @@ export default function PostEditor() {
         post = await postsApi.create(payload);
         setPostId(post.id);
         // Update URL without reloading
-        window.history.replaceState({}, "", `/posts/${post.slug || post.publicId || post.id}/edit`);
+        window.history.replaceState({}, "", `/posts/${generateSlug(post.title, post.publicId || post.id)}/edit`);
       }
 
       // Upload cover if selected
@@ -496,7 +499,7 @@ export default function PostEditor() {
         finalPost = await postsApi.create({ ...payload, status: "draft" });
         pid = finalPost.id;
         setPostId(pid);
-        window.history.replaceState({}, "", `/posts/${finalPost.slug || finalPost.publicId || pid}/edit`);
+        window.history.replaceState({}, "", `/posts/${generateSlug(finalPost.title, finalPost.publicId || pid)}/edit`);
       } else {
         finalPost = await postsApi.update(pid, payload);
       }
