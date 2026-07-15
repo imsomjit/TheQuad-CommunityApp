@@ -45,9 +45,11 @@ export default function Terms() {
 
     return (
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 relative animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Background decorative glow */}
-            <div className="absolute top-0 right-0 -z-10 w-[600px] h-[600px] bg-syntax-rose/10 blur-[100px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/3" />
-            <div className="absolute top-40 left-0 -z-10 w-[400px] h-[400px] bg-accent/10 blur-[80px] rounded-full pointer-events-none -translate-x-1/2" />
+            {/* Background decorative glow — isolated so overflow-hidden doesn't break sticky TOC */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+                <div className="absolute top-0 -right-32 w-[600px] h-[600px] bg-syntax-rose/10 blur-[100px] rounded-full" />
+                <div className="absolute top-40 -left-32 w-[400px] h-[400px] bg-accent/10 blur-[80px] rounded-full" />
+            </div>
 
             <header className="mb-16 pb-10 border-b border-rule max-w-3xl relative">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-syntax-rose/10 text-syntax-rose font-mono text-[11px] font-semibold uppercase tracking-[0.25em] mb-6 border border-syntax-rose/20">

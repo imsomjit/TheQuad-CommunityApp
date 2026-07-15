@@ -16,8 +16,8 @@ export default function AIGuideChat({ onClose }) {
   const getGreeting = () => {
     const hour = new Date().getHours();
     let timeGreeting = "Good evening";
-    if (hour < 12) timeGreeting = "Good morning";
-    else if (hour < 18) timeGreeting = "Good afternoon";
+    if (hour >= 5 && hour < 12) timeGreeting = "Good morning";
+    else if (hour >= 12 && hour < 17) timeGreeting = "Good afternoon";
 
     const greetings = [
       `${timeGreeting}! I am your guide to The Quad. If you need any help, you can ask me—I am available for you anytime.`,
@@ -50,11 +50,20 @@ export default function AIGuideChat({ onClose }) {
   const handleReset = () => {
     setMessages([]);
     setIsTyping(true);
+    
+    const resetMessages = [
+      "Session reset. I'm ready for your next question!",
+      "Starting fresh! What would you like to explore next?",
+      "Memory cleared. How can I assist you now?",
+      "New session started. What's on your mind?"
+    ];
+    const randomMessage = resetMessages[Math.floor(Math.random() * resetMessages.length)];
+
     setTimeout(() => {
       setMessages([
         {
           role: "ai",
-          content: "Session reset! " + getGreeting()
+          content: randomMessage
         }
       ]);
       setIsTyping(false);
