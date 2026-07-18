@@ -736,7 +736,7 @@ export default function ResourceDetail() {
                                                 : 'bg-paper-2 border border-rule text-ink rounded-bl-none'
                                         }`}>
                                             {msg.role === 'ai' ? (
-                                                <div className="prose-dev text-sm [&>p]:last:mb-0 [&>p]:first:mt-0">
+                                                <div className="prose-dev !text-sm !font-sans [&>p]:last:mb-0 [&>p]:first:mt-0">
                                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                                                 </div>
                                             ) : (
