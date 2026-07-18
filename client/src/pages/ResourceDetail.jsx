@@ -32,6 +32,8 @@ import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { useTheme } from "../context/ThemeContext";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -507,11 +509,11 @@ export default function ResourceDetail() {
 
                         {isAuthenticated && (
                             <button
-                                onClick={() => setShowChat(true)}
+                                onClick={() => setShowChat(!showChat)}
                                 className="hidden xl:inline-flex flex-1 sm:flex-none justify-center inline-flex items-center gap-1.5 rounded-lg border border-rule bg-paper-2 px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper-3 hover:border-accent hover:text-accent"
                             >
                                 <Sparkles className="h-4 w-4" />
-                                Chat with PDF
+                                {showChat ? "Close Chat" : "Chat with PDF"}
                             </button>
                         )}
                     </div>
@@ -734,7 +736,9 @@ export default function ResourceDetail() {
                                                 : 'bg-paper-2 border border-rule text-ink rounded-bl-none'
                                         }`}>
                                             {msg.role === 'ai' ? (
-                                                <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
+                                                <div className="prose-dev text-sm [&>p]:last:mb-0 [&>p]:first:mt-0">
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                                                </div>
                                             ) : (
                                                 msg.content
                                             )}
